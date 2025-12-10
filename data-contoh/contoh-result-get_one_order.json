@@ -1,0 +1,269 @@
+{
+    "code": 0,
+    "data": {
+        "shop_id": 788348040,
+        "order_id": 218726109230128,
+        "order_sn": "251206N47QQ51G",
+        "advance_booking_sn": "",
+        "order_unit_migration_toggle": 2,
+        "total_price": "1251600",
+        "shipping_method": 8005,
+        "shipping_address": "Kpbogor, Jalan Tarumajaya, RT.1/RW.29, Setia Asih, Bekasi Utara, KOTA BEKASI, BEKASI UTARA, JAWA BARAT, ID, 17125",
+        "shipping_fee": "0",
+        "actual_carrier": "Hemat Kargo",
+        "order_type": 2,
+        "payment_method": 6,
+        "remark": "Per Cvt 1200 rpm\nPer sentri 1000 rpm\nRoller seling 11 gram sama 14 gram\nBusi di tukar baju sz l\nMangkok ganda kartel",
+        "status": 4,
+        "status_info": {
+            "status": "Pesanan Diterima",
+            "status_description": {
+                "description_value": "Dana telah dilepaskan, namun Pembeli masih dapat mengajukan pengembalian hingga {timestamp}.",
+                "description_timestamp": 1765963914,
+                "description_timestamp_list": [
+                    {
+                        "timestamp": 1765963914,
+                        "placeholder": "{timestamp}",
+                        "is_count_down": false
+                    }
+                ]
+            }
+        },
+        "status_info_v2": {
+            "status": "Pesanan Diterima",
+            "status_description": {
+                "description_value": "Dana telah dilepaskan, namun Pembeli masih dapat mengajukan pengembalian hingga {timestamp}.",
+                "description_placeholder_list": [
+                    {
+                        "placeholder": "{timestamp}",
+                        "placeholder_types": [
+                            1
+                        ],
+                        "timestamp": {
+                            "timestamp_value": 1765963914
+                        }
+                    }
+                ]
+            }
+        },
+        "create_time": 1765026960,
+        "complete_time": 1765382467,
+        "status_ext": 11,
+        "logistics_status": 5,
+        "pickup_time": 0,
+        "shipping_confirm_time": 1765026962,
+        "list_type": 3,
+        "arrange_pickup_by_date": 0,
+        "auto_cancel_3pl_ack_date": 1765385999,
+        "auto_cancel_arrange_ship_date": 1765213199,
+        "buyer_last_change_address_time": 0,
+        "buyer_cancel_reason": 0,
+        "cancel_reason_ext": 0,
+        "cancel_userid": 0,
+        "dropshipping_info": {
+            "enabled": 0,
+            "name": "Andrian Safrudin",
+            "phone_number": "(+62) 895-0222-0348"
+        },
+        "escrow_release_time": 1765531914,
+        "instant_buyercancel_toship": false,
+        "is_buyercancel_toship": false,
+        "logid": 1,
+        "logistics_channel": 8005,
+        "logistics_flag": 0,
+        "payby_date": 1765113360,
+        "pickup_attempts": 0,
+        "pickup_cutoff_time": 0,
+        "price_before_discount": "1251600",
+        "rate_by_date": 1766678467,
+        "buyer_rate_by_date": 1775753999,
+        "seller_address": {
+            "address_id": 200380991,
+            "user_id": 788331793,
+            "name": "Power Maxx",
+            "phone": "6281299967776",
+            "country": "ID",
+            "state": "JAWA BARAT",
+            "city": "KAB. BANDUNG",
+            "address": "Jalan Pasir Panjang, Cilampeni, Katapang (Modifikasi Ori Workshop)",
+            "status": 1,
+            "zip_code": "40921",
+            "full_address": "",
+            "district": "KATAPANG",
+            "town": "",
+            "logistics_status": 0,
+            "icno": ""
+        },
+        "seller_address_id": 200380991,
+        "seller_due_date": 0,
+        "ship_by_date": 1765213199,
+        "shipping_proof": "",
+        "fulfillment_channel_id": 80029,
+        "fulfillment_carrier_name": "SPX Hemat",
+        "fulfillment_shipping_method": 80029,
+        "masking_channel_id": 8005,
+        "masking_carrier_name": "Hemat Kargo",
+        "checkout_carrier_name": "Hemat Kargo",
+        "checkout_channel_id": 8005,
+        "buyer_address_name": "A******n",
+        "buyer_address_phone": "******48",
+        "cancellation_end_date": null,
+        "pay_by_credit_card": false,
+        "note": "",
+        "note_mtime": 0,
+        "return_id": 0,
+        "return_request_due_date": 0,
+        "order_ratable": false,
+        "order_items": [
+            {
+                "add_on_deal_id": 400224170555433,
+                "amount": 1,
+                "bundle_deal": null,
+                "bundle_deal_id": 0,
+                "bundle_deal_model": [],
+                "bundle_deal_product": [],
+                "group_id": "400224170555433",
+                "is_add_on_sub_item": false,
+                "is_prescription_item": false,
+                "is_virtual_sku": false,
+                "is_wholesale": false,
+                "item_id": 21710712117,
+                "item_list": [],
+                "item_model": {
+                    "model_id": 201208828172,
+                    "item_id": 21710712117,
+                    "name": "PCX 160,Dari Request Pembeli",
+                    "status": 1,
+                    "sku": "K1Z",
+                    "weight": 281000
+                },
+                "index": 0,
+                "line_item_id": "218726160204041",
+                "model_id": 201208828172,
+                "order_price": "1370000",
+                "product": {
+                    "name": "PAKET EXTRA FULL UPGRADE KIRIAN CVT vario pcx adv 125 150 160 old led bolam thailand vietnam indonesia lokal racing - Pulley Set ( Rumah Roller \u0026 Kipas Pulley ) + Mangkok Kampas Ganda + Per CVT + Roller + Per Kampas Ganda + Ekstra Pelengkap - powermaxx",
+                    "images": [
+                        "id-11134201-7qul0-leu86rmjqd6dc2",
+                        "id-11134207-7qula-lh66r74cdnfvcc",
+                        "id-11134207-7qul5-lh66r74cf20b4a",
+                        "sg-11134201-22120-gl6wgk85hokva5",
+                        "sg-11134201-22120-8wjfwma6hokveb",
+                        "sg-11134201-22120-smav4rd6hokvd9",
+                        "id-11134207-7r98v-lzsuy3b63ijx36",
+                        "id-11134207-8224x-mh7x3zlqbll8a6",
+                        "sg-11134201-7qvf9-liqvyaxbt94f84"
+                    ],
+                    "is_pre_order": false,
+                    "item_id": 21710712117,
+                    "model_id": 201208828172,
+                    "status": 1,
+                    "sku": "PEXFL",
+                    "weight": 281000
+                },
+                "status": 2,
+                "sub_type": 1,
+                "show_rr_tag": false,
+                "rr_tag_qty": 0,
+                "show_cancellation_tag": false,
+                "cancellation_tag_qty": 0
+            },
+            {
+                "add_on_deal_id": 400224170555433,
+                "amount": 1,
+                "bundle_deal": null,
+                "bundle_deal_id": 0,
+                "bundle_deal_model": [],
+                "bundle_deal_product": [],
+                "group_id": "400224170555433",
+                "is_add_on_sub_item": true,
+                "is_prescription_item": false,
+                "is_virtual_sku": false,
+                "is_wholesale": false,
+                "item_id": 25236869826,
+                "item_list": [],
+                "item_model": {
+                    "model_id": 176721417189,
+                    "item_id": 25236869826,
+                    "name": "",
+                    "status": 1,
+                    "sku": "",
+                    "weight": 1000
+                },
+                "index": 0,
+                "line_item_id": "218726160204042",
+                "model_id": 176721417189,
+                "order_price": "0",
+                "product": {
+                    "name": "GANTUNGAN KUNCI eksklusif key chain keychain konci powermaxx power maxx powermax power max",
+                    "images": [
+                        "id-11134207-7ras9-m14a83av2p6n0b",
+                        "id-11134207-7rask-m14a83av43r3d9",
+                        "id-11134207-7rasa-m14a83av5ibj9d",
+                        "id-11134207-7rasb-m14a83av6wvz0d",
+                        "id-11134207-7rasl-m14a83av8bgf49"
+                    ],
+                    "is_pre_order": false,
+                    "item_id": 25236869826,
+                    "model_id": 176721417189,
+                    "status": 1,
+                    "sku": "PWRMX-KEYCHAIN",
+                    "weight": 1000
+                },
+                "status": 2,
+                "sub_type": 1,
+                "show_rr_tag": false,
+                "rr_tag_qty": 0,
+                "show_cancellation_tag": false,
+                "cancellation_tag_qty": 0
+            }
+        ],
+        "buyer_user": {
+            "user_id": 319930895,
+            "user_name": "falsandrian",
+            "portrait": "id-11134233-7qul4-ljo38r5x1wyj35",
+            "delivery_succ_count": null,
+            "delivery_order_count": null,
+            "delivery_succ_percentage": null,
+            "rating_count": [
+                0,
+                1,
+                0,
+                0,
+                1,
+                2
+            ],
+            "rating_star": 3.75,
+            "shop_id": 319911296,
+            "followed": false,
+            "hide_chat_button": false,
+            "hide_buyer_user_component": false,
+            "delivery_count": null
+        },
+        "shipment_config": true,
+        "fulfill_by_shopee": false,
+        "preferred_delivery_timeslot": null,
+        "buyer_cpf_id": "",
+        "buyer_tax_id": "",
+        "buyer_tax_type_label": null,
+        "is_tax_exempted": false,
+        "channel_hotline": "",
+        "is_affiliated_shop_order": false,
+        "seller_invoice_upload_status": 0,
+        "credit_note_data_status": 0,
+        "pre_authorization_status": null,
+        "prescription_check_status": 0,
+        "prescription_images": null,
+        "pharmacist_name": null,
+        "prescription_reject_reason": null,
+        "delivery_address_component": {
+            "buyer_contact_info_popup": null,
+            "buyer_contact_info_button": null
+        },
+        "description_timestamp_format_enum": 0,
+        "receivable": null,
+        "order_ext_info": {}
+    },
+    "message": "success",
+    "user_message": "success"
+}

@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Arva Shopee Order Fetcher",
+  "version": "0.2.1",
+  "description": "Arva fetcher untuk komponen pendapatan dan detail pesanan Shopee seller.",
+  "author": "Ardiansah",
+  "action": {
+    "default_title": "Arva Shopee Orders",
+    "default_popup": "popup.html"
+  },
+  "permissions": ["scripting", "activeTab"],
+  "host_permissions": [
+    "https://seller.shopee.co.id/*",
+    "https://*.shopee.co.id/*"
+  ]
+}

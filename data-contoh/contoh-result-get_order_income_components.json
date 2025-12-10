@@ -1,0 +1,245 @@
+{
+    "code": 0,
+    "message": "success",
+    "user_message": "success",
+    "data": {
+        "order_info": {
+            "order_id": 218637179266293,
+            "order_sn": "251205JHDDG17N",
+            "is_cb_sip_aff_order": false,
+            "shipping_carrier": "",
+            "released_time": 0,
+            "source": "Shopee Wallet",
+            "status": 1
+        },
+        "seller_income_breakdown": {
+            "breakdown": [
+                {
+                    "field_id": 1,
+                    "field_name": "MERCHANDISE_SUBTOTAL",
+                    "amount": 23000000000,
+                    "display_name": "Subtotal Pesanan",
+                    "hide_amount": false,
+                    "sub_breakdown": [
+                        {
+                            "field_id": 2,
+                            "field_name": "PRODUCT_PRICE",
+                            "amount": 23000000000,
+                            "display_name": "Harga Produk",
+                            "hide_amount": false
+                        }
+                    ]
+                },
+                {
+                    "field_id": 50,
+                    "field_name": "SHIPPING_SUBTOTAL",
+                    "amount": 0,
+                    "display_name": "Estimasi Subtotal Ongkos Kirim",
+                    "hide_amount": false,
+                    "sub_breakdown": [
+                        {
+                            "field_id": 51,
+                            "field_name": "SHIPPING_FEE_PAID_BY_BUYER",
+                            "amount": 0,
+                            "display_name": "Ongkir Dibayar Pembeli",
+                            "hide_amount": false
+                        },
+                        {
+                            "field_id": 52,
+                            "field_name": "ACTUAL_SHIPPING_FEE",
+                            "amount": -4600000000,
+                            "display_name": "Estimasi Ongkos Kirim yang Dibayarkan ke Jasa Kirim",
+                            "hide_amount": false
+                        },
+                        {
+                            "field_id": 54,
+                            "field_name": "SHIPPING_REBATE_FROM_SHOPEE",
+                            "amount": 4600000000,
+                            "display_name": "Estimasi Potongan Ongkos Kirim dari Shopee",
+                            "hide_amount": false
+                        }
+                    ],
+                    "ext_info": {}
+                },
+                {
+                    "field_id": 150,
+                    "field_name": "FEES_AND_CHARGES",
+                    "amount": -4265000000,
+                    "display_name": "Biaya Lainnya",
+                    "hide_amount": false,
+                    "sub_breakdown": [
+                        {
+                            "field_id": 151,
+                            "field_name": "COMMISSION_FEE",
+                            "amount": -1840000000,
+                            "display_name": "Biaya Administrasi",
+                            "caption": "Shopee mengenakan biaya administrasi 8.00% dari harga produkmu.",
+                            "link": "https://seller.shopee.co.id/edu/article/2037",
+                            "hide_amount": false,
+                            "ext_info": {
+                                "commission_fee_infos": [
+                                    {
+                                        "name": "Biaya Admin Star Cat A",
+                                        "amount": 0,
+                                        "rule_id": 52293,
+                                        "fee_rate": 8000
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "field_id": 154,
+                            "field_name": "SERVICE_FEE",
+                            "amount": -2300000000,
+                            "display_name": "Biaya Layanan",
+                            "hide_amount": false,
+                            "ext_info": {
+                                "service_fee_infos": [
+                                    {
+                                        "name": "Biaya Layanan Promo XTRA",
+                                        "amount": -1035000000,
+                                        "rule_id": 76485,
+                                        "fee_rate": 0
+                                    },
+                                    {
+                                        "name": "Biaya Layanan Gratis Ongkir XTRA",
+                                        "amount": -1265000000,
+                                        "rule_id": 77376,
+                                        "fee_rate": 0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "field_id": 176,
+                            "field_name": "SELLER_ORDER_PROCESSING_FEE",
+                            "amount": -125000000,
+                            "display_name": "Biaya Proses Pesanan",
+                            "caption": "Biaya Proses Pesanan adalah biaya yang dikenakan untuk setiap pesanan terselesaikan yang dibuat mulai 20 Juli 2025. \u003ca href=\"https://seller.shopee.co.id/edu/article/25275\" target=\"_blank\"\u003eSelengkapnya\u003c/a\u003e",
+                            "link": "https://seller.shopee.co.id/edu/article/25275",
+                            "hide_amount": false
+                        }
+                    ]
+                },
+                {
+                    "field_id": 250,
+                    "field_name": "ESCROW_AMOUNT",
+                    "amount": 18735000000,
+                    "display_name": "Estimasi Total Penghasilan",
+                    "caption": "Pendapatan sebenarnya akan ditentukan setelah pesanan ini selesai.",
+                    "hide_amount": false
+                }
+            ]
+        },
+        "buyer_payment_breakdown": {
+            "breakdown": [
+                {
+                    "field_id": 1,
+                    "field_name": "MERCHANDISE_SUBTOTAL",
+                    "amount": 23000000000,
+                    "display_name": "Subtotal Pesanan",
+                    "hide_amount": false
+                },
+                {
+                    "field_id": 3,
+                    "field_name": "SHIPPING_FEE",
+                    "amount": 0,
+                    "display_name": "Ongkos Kirim",
+                    "hide_amount": false
+                },
+                {
+                    "field_id": 5,
+                    "field_name": "SHOPEE_VOUCHER_DISCOUNT",
+                    "amount": -2760000000,
+                    "display_name": "Voucher Shopee",
+                    "hide_amount": false
+                },
+                {
+                    "field_id": 6,
+                    "field_name": "SELLER_VOUCHER_DISCOUNT",
+                    "amount": 0,
+                    "display_name": "Voucher Toko",
+                    "hide_amount": false
+                },
+                {
+                    "field_id": 9,
+                    "field_name": "BUYER_SERVICE_FEE",
+                    "amount": 300000000,
+                    "display_name": "Biaya Layanan",
+                    "hide_amount": false
+                },
+                {
+                    "field_id": 100,
+                    "field_name": "BUYER_PAID_AMOUNT",
+                    "amount": 20540000000,
+                    "display_name": "Total Pembayaran Pembeli",
+                    "hide_amount": false
+                }
+            ]
+        },
+        "order_item_list": {
+            "order_items": [
+                {
+                    "item_id": 16973974257,
+                    "model_id": 144793914972,
+                    "group_id": "400224170555433",
+                    "line_item_id": 218637180202472,
+                    "price": 23000000000,
+                    "amount": 1,
+                    "subtotal": 23000000000,
+                    "product_name": "MANGKOK KAMPAS GANDA mio j m3 smile z gear s soul gt x ride fino xeon freego nouvo xride x ride x-ride 115 125 mangkok kopling kartel bubut racing modifikasi custom original ori anti getar gredeg power maxx powermaxx power max powermax",
+                    "product_sku": "MKG",
+                    "product_image": "id-11134201-23030-i2xv9ngsmkov37",
+                    "model_name": "Soul GT 115,Non Cartel",
+                    "model_sku": "SOULGT115-NC",
+                    "sub_type": 1,
+                    "bundle_item_price": 0,
+                    "is_add_on_subitem": false,
+                    "is_pre_order": false,
+                    "is_delivery_insured": false,
+                    "returned_qty": 0,
+                    "cancelled_qty": 0,
+                    "show_return_tag": false,
+                    "show_cancellation_tag": false,
+                    "is_overseas_return_insured": false,
+                    "has_spu_vsku": false
+                },
+                {
+                    "item_id": 25236869826,
+                    "model_id": 176721417189,
+                    "group_id": "400224170555433",
+                    "line_item_id": 218637180202473,
+                    "price": 0,
+                    "amount": 1,
+                    "subtotal": 0,
+                    "product_name": "GANTUNGAN KUNCI eksklusif key chain keychain konci powermaxx power maxx powermax power max",
+                    "product_sku": "PWRMX-KEYCHAIN",
+                    "product_image": "id-11134207-7ras9-m14a83av2p6n0b",
+                    "model_name": "",
+                    "model_sku": "",
+                    "sub_type": 1,
+                    "bundle_item_price": 0,
+                    "is_add_on_subitem": true,
+                    "is_pre_order": false,
+                    "is_delivery_insured": false,
+                    "returned_qty": 0,
+                    "cancelled_qty": 0,
+                    "show_return_tag": false,
+                    "show_cancellation_tag": false,
+                    "is_overseas_return_insured": false,
+                    "has_spu_vsku": false
+                }
+            ]
+        },
+        "adjustment_info": {
+            "total_adjustment_amount": 0,
+            "amount_after_adjustment": 18735000000
+        },
+        "error_codes": [
+            0,
+            0,
+            0,
+            0
+        ]
+    }
+}
