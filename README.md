@@ -18,9 +18,9 @@ Developer: Ardiansah / Arva.
 
 ## Catatan
 - Permintaan dikirim dengan `credentials: include`, jadi cookie sesi Anda ikut terkirim selama domain Shopee diizinkan di host permissions.
-- Endpoint bawaan:  
-  `https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components` (SPC_CDS & SPC_CDS_VER ditambahkan otomatis dari cookie/tab aktif).  
-  `https://seller.shopee.co.id/api/v3/order/get_one_order` untuk detail order.
+- Endpoint bawaan:
+  - `https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components` (SPC_CDS & SPC_CDS_VER ditambahkan otomatis dari cookie/tab aktif).
+  - `https://seller.shopee.co.id/api/v3/order/get_one_order` untuk detail order.
 
 ## Struktur singkat
 - `popup.html`, `popup.css`, `popup.js`: UI popup Arva.
