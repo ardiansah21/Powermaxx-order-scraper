@@ -8,7 +8,7 @@
     "default_title": "Arva Shopee Orders",
     "default_popup": "popup.html"
   },
-  "permissions": ["scripting", "activeTab"],
+  "permissions": ["scripting", "activeTab", "storage"],
   "host_permissions": [
     "https://seller.shopee.co.id/*",
     "https://*.shopee.co.id/*"

@@ -17,6 +17,7 @@ Developer: Ardiansah / Arva.
 - Panel Order (get_one_order): endpoint GET, order_id otomatis dari URL tab (bisa diubah).
 - Klik **Ambil Data**. Income (POST) dan Order (GET) berjalan di tab aktif dengan `credentials: include`.
 - Hasil terpisah: Ringkasan + breakdown, Order Items (Sheet), Income Breakdown (Sheet), Income JSON (copy/download), Order JSON (copy/download). Semua bagian bisa di-collapse.
+- Tombol **Buka di Tab** membuka viewer halaman penuh untuk melihat data yang panjang dengan lebih nyaman.
 
 ## Catatan
 

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arva Shopee Fetcher - Viewer</title>
+  <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="title">
+      <h1>Arva Shopee Fetcher - Viewer</h1>
+      <p id="meta">Belum ada data.</p>
+    </div>
+    <div class="actions actions-wrap">
+      <button id="refreshBtn" class="ghost">Refresh</button>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="status" id="status">Belum ada data.</div>
+  </section>
+
+  <section class="panel output">
+    <div class="panel-head">
+      <div>
+        <strong>Income Breakdown (Sheet)</strong>
+        <small>Format long, aman untuk lookup</small>
+      </div>
+      <div class="actions actions-wrap">
+        <button id="copyIncomeSheetBtn" class="ghost">Copy Data</button>
+      </div>
+    </div>
+    <div class="sheet-table-wrap" aria-live="polite">
+      <table id="incomeSheetTable" class="sheet-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel output">
+    <div class="panel-head">
+      <div>
+        <strong>Order Items (Sheet)</strong>
+        <small>TSV siap tempel</small>
+      </div>
+      <div class="actions actions-wrap">
+        <button id="copyOrderSheetBtn" class="ghost">Copy Data</button>
+      </div>
+    </div>
+    <div class="sheet-table-wrap" aria-live="polite">
+      <table id="orderSheetTable" class="sheet-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel output">
+    <div class="panel-head">
+      <div>
+        <strong>Income JSON</strong>
+        <small>Raw get_order_income_components</small>
+      </div>
+      <div class="actions actions-wrap">
+        <button id="copyIncomeJsonBtn" class="ghost">Copy</button>
+      </div>
+    </div>
+    <pre id="incomeJson" class="json-box"></pre>
+  </section>
+
+  <section class="panel output">
+    <div class="panel-head">
+      <div>
+        <strong>Order JSON</strong>
+        <small>Raw get_one_order</small>
+      </div>
+      <div class="actions actions-wrap">
+        <button id="copyOrderJsonBtn" class="ghost">Copy</button>
+      </div>
+    </div>
+    <pre id="orderJson" class="json-box"></pre>
+  </section>
+
+  <script src="viewer.js"></script>
+</body>
+</html>

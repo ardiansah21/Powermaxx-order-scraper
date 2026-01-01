@@ -24,6 +24,7 @@ const copyOrderBtn = document.getElementById("copyOrderBtn");
 const downloadOrderBtn = document.getElementById("downloadOrderBtn");
 const copyIncomeSheetBtn = document.getElementById("copyIncomeSheetBtn");
 const copyOrderSheetBtn = document.getElementById("copyOrderSheetBtn");
+const openViewerBtn = document.getElementById("openViewerBtn");
 const renderedSection = document.getElementById("rendered");
 const sellerBreakdownEl = document.getElementById("sellerBreakdown");
 const buyerBreakdownEl = document.getElementById("buyerBreakdown");
@@ -32,6 +33,8 @@ const outputIncomeEl = document.getElementById("outputIncome");
 const outputOrderEl = document.getElementById("outputOrder");
 const incomeSheetTableEl = document.getElementById("incomeSheetTable");
 const orderSheetTableEl = document.getElementById("orderSheetTable");
+
+let viewerPayloadCache = null;
 
 const setStatus = (message, tone = "info") => {
   statusEl.textContent = message;
@@ -43,6 +46,16 @@ const setStatus = (message, tone = "info") => {
 const setOutput = (incomeText, orderText) => {
   outputIncomeEl.textContent = incomeText || "";
   outputOrderEl.textContent = orderText || "";
+};
+
+const saveViewerPayload = (payload) => {
+  viewerPayloadCache = payload;
+  if (!chrome?.storage?.local) return;
+  try {
+    chrome.storage.local.set({ viewerPayload: payload });
+  } catch (e) {
+    console.warn("Gagal menyimpan viewer payload", e);
+  }
 };
 
 const setSheetOutput = (sheet, tableEl) => {
@@ -559,13 +572,26 @@ const fetchData = async () => {
     } catch (e) {
       parsedOrder = null;
     }
-    setSheetOutput(buildOrderSheet(parsedOrder?.data), orderSheetTableEl);
-    setSheetOutput(buildIncomeSheet(parsedIncome?.data), incomeSheetTableEl);
+    const orderSheet = buildOrderSheet(parsedOrder?.data);
+    const incomeSheet = buildIncomeSheet(parsedIncome?.data);
+    setSheetOutput(orderSheet, orderSheetTableEl);
+    setSheetOutput(incomeSheet, incomeSheetTableEl);
     if (parsedIncome?.data) {
       renderSummary(parsedIncome.data, parsedOrder?.data);
       renderBreakdown(parsedIncome.data.seller_income_breakdown?.breakdown, sellerBreakdownEl);
       renderBreakdown(parsedIncome.data.buyer_payment_breakdown?.breakdown, buyerBreakdownEl);
     }
+
+    const orderSn = parsedIncome?.data?.order_info?.order_sn || parsedOrder?.data?.order_sn || "";
+    saveViewerPayload({
+      updatedAt: Date.now(),
+      orderId: result.orderId || "",
+      orderSn,
+      incomeSheet,
+      orderSheet,
+      incomeRaw: incomePretty,
+      orderRaw: orderPretty
+    });
 
     const incomeOk = result.income?.ok;
     const orderOk = result.order?.ok;
@@ -633,6 +659,15 @@ const copyIncomeSheetOutput = async () => {
   }
 };
 
+const openViewerPage = async () => {
+  const url = chrome.runtime.getURL("viewer.html");
+  try {
+    await chrome.tabs.create({ url });
+  } catch (err) {
+    setStatus(`Gagal membuka viewer: ${err.message}`, "error");
+  }
+};
+
 const downloadIncomeOutput = () => {
   const text = outputIncomeEl.textContent;
   if (!text) return;
@@ -689,6 +724,7 @@ const init = () => {
   downloadOrderBtn.addEventListener("click", downloadOrderOutput);
   copyOrderSheetBtn.addEventListener("click", copyOrderSheetOutput);
   copyIncomeSheetBtn.addEventListener("click", copyIncomeSheetOutput);
+  if (openViewerBtn) openViewerBtn.addEventListener("click", openViewerPage);
 
   let incomeSettingsOpen = false;
   let orderSettingsOpen = false;
