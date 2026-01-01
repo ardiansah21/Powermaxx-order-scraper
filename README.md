@@ -16,7 +16,7 @@ Developer: Ardiansah / Arva.
 - Panel Income (get_order_income_components): endpoint & payload bisa dibiarkan default (payload kosong = `{ order_id: <auto>, components: [2,3,4,5] }`). Jika diisi, payload dikirim persis seperti JSON dari DevTools.
 - Panel Order (get_one_order): endpoint GET, order_id otomatis dari URL tab (bisa diubah).
 - Klik **Ambil Data**. Income (POST) dan Order (GET) berjalan di tab aktif dengan `credentials: include`.
-- Hasil terpisah: Ringkasan + breakdown, Income JSON (copy/download), Order JSON (copy/download). Semua bagian bisa di-collapse.
+- Hasil terpisah: Ringkasan + breakdown, Order Items (Sheet), Income Breakdown (Sheet), Income JSON (copy/download), Order JSON (copy/download). Semua bagian bisa di-collapse.
 
 ## Catatan
 
@@ -24,6 +24,17 @@ Developer: Ardiansah / Arva.
 - Endpoint bawaan:
   - `https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components` (SPC_CDS & SPC_CDS_VER ditambahkan otomatis dari cookie/tab aktif).
   - `https://seller.shopee.co.id/api/v3/order/get_one_order` untuk detail order.
+
+## Output sheet (popup)
+
+- **Order Items (Sheet)**: output TSV siap tempel; header tampil di tabel, tombol **Copy Data** menyalin data tanpa header.
+- **Income Breakdown (Sheet)**: format long (kolom tetap, aman untuk lookup). Kolom:
+  - `order_id`, `order_sn`
+  - `level`: `breakdown`, `sub_breakdown`, atau `service_fee_infos`
+  - `parent_field_name`: nama parent (mis. `FEES_AND_CHARGES` atau `SERVICE_FEE`)
+  - `field_name`, `display_name`, `amount`
+- `amount` sudah dikonversi ke angka rupiah (dibagi 100000, tanpa simbol). Nilai negatif tetap memakai tanda `-`.
+- Jika `sub_breakdown.ext_info.seller_voucher_codes` berisi beberapa kode, `display_name` akan digabung dengan koma (contoh: `Voucher Toko yang ditanggung Penjual - POWE15K11, POWE20K11`).
 
 ## Struktur singkat
 

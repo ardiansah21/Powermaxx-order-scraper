@@ -22,12 +22,16 @@ const copyIncomeBtn = document.getElementById("copyIncomeBtn");
 const downloadIncomeBtn = document.getElementById("downloadIncomeBtn");
 const copyOrderBtn = document.getElementById("copyOrderBtn");
 const downloadOrderBtn = document.getElementById("downloadOrderBtn");
+const copyIncomeSheetBtn = document.getElementById("copyIncomeSheetBtn");
+const copyOrderSheetBtn = document.getElementById("copyOrderSheetBtn");
 const renderedSection = document.getElementById("rendered");
 const sellerBreakdownEl = document.getElementById("sellerBreakdown");
 const buyerBreakdownEl = document.getElementById("buyerBreakdown");
 const orderSummaryEl = document.getElementById("orderSummary");
 const outputIncomeEl = document.getElementById("outputIncome");
 const outputOrderEl = document.getElementById("outputOrder");
+const incomeSheetTableEl = document.getElementById("incomeSheetTable");
+const orderSheetTableEl = document.getElementById("orderSheetTable");
 
 const setStatus = (message, tone = "info") => {
   statusEl.textContent = message;
@@ -39,6 +43,49 @@ const setStatus = (message, tone = "info") => {
 const setOutput = (incomeText, orderText) => {
   outputIncomeEl.textContent = incomeText || "";
   outputOrderEl.textContent = orderText || "";
+};
+
+const setSheetOutput = (sheet, tableEl) => {
+  const headers = sheet?.headers || [];
+  const rows = sheet?.rows || [];
+  renderSheetTable(tableEl, headers, rows);
+  if (tableEl) {
+    tableEl.dataset.copyText = sheet?.copy || "";
+  }
+};
+
+const renderSheetTable = (tableEl, headers = [], rows = []) => {
+  if (!tableEl) return;
+  const thead = tableEl.querySelector("thead") || tableEl.createTHead();
+  const tbody = tableEl.querySelector("tbody") || tableEl.createTBody();
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+
+  if (!headers.length) {
+    tableEl.classList.remove("multi-head");
+    return;
+  }
+  const headerRows = Array.isArray(headers[0]) ? headers : [headers];
+  tableEl.classList.toggle("multi-head", headerRows.length > 1);
+  headerRows.forEach((row) => {
+    const headerRow = document.createElement("tr");
+    row.forEach((label) => {
+      const th = document.createElement("th");
+      th.textContent = label;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+  });
+
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    row.forEach((cell) => {
+      const td = document.createElement("td");
+      td.textContent = cell;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
 };
 
 const prettify = (text) => {
@@ -58,6 +105,184 @@ const formatAmount = (amount) => {
     currency: "IDR",
     maximumFractionDigits: 0
   });
+};
+
+const formatRupiahDigits = (value) => {
+  if (value === null || value === undefined) return "";
+  return String(value).replace(/[^\d-]/g, "");
+};
+
+const formatLocalDateTime = (ts) => {
+  if (!ts) return "";
+  const ms = ts > 1e12 ? ts : ts * 1000;
+  const date = new Date(ms);
+  const pad = (num) => String(num).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2);
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${year} ${pad(date.getHours())}:${pad(
+    date.getMinutes()
+  )}:${pad(date.getSeconds())}`;
+};
+
+const sanitizeCell = (value) => {
+  const raw = value ?? "";
+  return String(raw).replace(/[\t\r\n]+/g, " ").trim();
+};
+
+const formatIncomeAmount = (amount) => {
+  if (amount === null || amount === undefined) return "";
+  const num = Number(amount);
+  if (!Number.isFinite(num)) return "";
+  const rupiah = Math.round(num / 100000);
+  if (rupiah === 0) return "0";
+  const absValue = Math.abs(rupiah);
+  return rupiah < 0 ? `-${absValue}` : String(absValue);
+};
+
+const buildVoucherDisplayName = (sub) => {
+  const base = sub?.display_name ?? "";
+  const codes = Array.isArray(sub?.ext_info?.seller_voucher_codes)
+    ? sub.ext_info.seller_voucher_codes
+    : [];
+  if (!codes.length) return base;
+  const cleanedCodes = codes
+    .map((code) => String(code ?? "").trim())
+    .filter((code) => code !== "");
+  if (!cleanedCodes.length) return base;
+  const joinedCodes = cleanedCodes.join(", ");
+  if (base.includes("{voucher code}")) {
+    return base.replace("{voucher code}", joinedCodes);
+  }
+  if (base.includes("{voucher_code}")) {
+    return base.replace("{voucher_code}", joinedCodes);
+  }
+  return `${base} - ${joinedCodes}`;
+};
+
+const buildIncomeSheet = (incomeData) => {
+  const breakdown = Array.isArray(incomeData?.seller_income_breakdown?.breakdown)
+    ? incomeData.seller_income_breakdown.breakdown
+    : [];
+  if (!breakdown.length) return { headers: [], rows: [], copy: "" };
+
+  const orderId = incomeData?.order_info?.order_id ?? "";
+  const orderSn = incomeData?.order_info?.order_sn ?? "";
+  const headers = [
+    "order_id",
+    "order_sn",
+    "level",
+    "parent_field_name",
+    "field_name",
+    "display_name",
+    "amount"
+  ];
+  const rows = [];
+
+  breakdown.forEach((item) => {
+    rows.push([
+      orderId,
+      orderSn,
+      "breakdown",
+      "",
+      item?.field_name ?? "",
+      item?.display_name ?? "",
+      formatIncomeAmount(item?.amount)
+    ]);
+
+    if (!Array.isArray(item?.sub_breakdown) || item.sub_breakdown.length === 0) {
+      return;
+    }
+
+    const subBreakdowns = item.sub_breakdown;
+    subBreakdowns.forEach((sub) => {
+      rows.push([
+        orderId,
+        orderSn,
+        "sub_breakdown",
+        item?.field_name ?? "",
+        sub?.field_name ?? "",
+        buildVoucherDisplayName(sub),
+        formatIncomeAmount(sub?.amount)
+      ]);
+
+      if (sub?.field_name !== "SERVICE_FEE") return;
+      const fees = sub?.ext_info?.service_fee_infos;
+      if (!Array.isArray(fees) || !fees.length) return;
+      fees.forEach((fee) => {
+        const feeName = fee?.name ?? "";
+        rows.push([
+          orderId,
+          orderSn,
+          "service_fee_infos",
+          sub?.field_name ?? "",
+          feeName,
+          feeName,
+          formatIncomeAmount(fee?.amount)
+        ]);
+      });
+    });
+  });
+
+  const sanitizedRows = rows.map((row) => row.map(sanitizeCell));
+  const copy = [headers, ...sanitizedRows].map((row) => row.join("\t")).join("\n");
+  return { headers, rows: sanitizedRows, copy };
+};
+
+const buildOrderSheet = (orderData) => {
+  const headers = [
+    "local.process_date",
+    "payby_date",
+    "order_id",
+    "order_sn",
+    "remark",
+    "note",
+    "order_items.item_id",
+    "order_items.model_id",
+    "order_items.sku",
+    "order_items.item_model.sku",
+    "order_items.amount",
+    "order_items.order_price",
+    "total_price"
+  ];
+  if (!orderData) return { headers, rows: [], copy: "" };
+  const items = Array.isArray(orderData.order_items) ? orderData.order_items : [];
+  const processDate = formatLocalDateTime(Date.now());
+  const paybyDate = formatLocalDateTime(orderData.payby_date);
+  const orderId = orderData.order_id ?? "";
+  const orderSn = orderData.order_sn ?? "";
+  const remark = orderData.remark ?? "";
+  const note = orderData.note ?? "";
+  const totalPrice = formatRupiahDigits(orderData.total_price ?? "");
+
+  if (!items.length) {
+    return { headers, rows: [], copy: "" };
+  }
+
+  const rows = items.map((item) => {
+    const sku = item?.product?.sku || item?.sku || item?.item_model?.sku || "";
+    const itemModelSku = item?.item_model?.sku || "";
+    const itemId = item?.item_id ?? item?.item_model?.item_id ?? "";
+    const modelId = item?.model_id ?? item?.item_model?.model_id ?? "";
+    const amount = item?.amount ?? "";
+    const orderPrice = formatRupiahDigits(item?.order_price ?? "");
+    return [
+      processDate,
+      paybyDate,
+      orderId,
+      orderSn,
+      remark,
+      note,
+      itemId,
+      modelId,
+      sku,
+      itemModelSku,
+      amount,
+      orderPrice,
+      totalPrice
+    ].map(sanitizeCell);
+  });
+
+  const copy = rows.map((row) => row.join("\t")).join("\n");
+  return { headers, rows, copy };
 };
 
 const clearRendered = () => {
@@ -80,16 +305,12 @@ const renderSummary = (incomeData, orderData) => {
     (b) => b.field_name === "ESCROW_AMOUNT" || b.field_id === 250
   );
 
-  const formatDate = (ts) => {
-    if (!ts) return "-";
-    const ms = ts > 1e12 ? ts : ts * 1000;
-    return new Date(ms).toLocaleString("id-ID");
-  };
+  const createdAt = formatLocalDateTime(createTs) || "-";
 
   const pills = [
     { label: "Order ID", value: orderInfo.order_id || "-" },
     { label: "Order SN", value: orderInfo.order_sn || "-" },
-    { label: "Dibuat", value: formatDate(createTs) },
+    { label: "Dibuat", value: createdAt },
     { label: "Status", value: orderInfo.status ?? "-" },
     {
       label: "Estimasi Total Penghasilan",
@@ -288,6 +509,8 @@ const pageFetcher = async (
 const fetchData = async () => {
   setStatus("Mengambil data (menggunakan cookie/tab aktif)...", "info");
   setOutput("", "");
+  setSheetOutput(null, orderSheetTableEl);
+  setSheetOutput(null, incomeSheetTableEl);
   clearRendered();
   fetchBtn.disabled = true;
 
@@ -336,6 +559,8 @@ const fetchData = async () => {
     } catch (e) {
       parsedOrder = null;
     }
+    setSheetOutput(buildOrderSheet(parsedOrder?.data), orderSheetTableEl);
+    setSheetOutput(buildIncomeSheet(parsedIncome?.data), incomeSheetTableEl);
     if (parsedIncome?.data) {
       renderSummary(parsedIncome.data, parsedOrder?.data);
       renderBreakdown(parsedIncome.data.seller_income_breakdown?.breakdown, sellerBreakdownEl);
@@ -386,6 +611,28 @@ const copyOrderOutput = async () => {
   }
 };
 
+const copyOrderSheetOutput = async () => {
+  const text = (orderSheetTableEl?.dataset.copyText || "").trim();
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    setStatus("Order sheet data sudah dicopy", "ok");
+  } catch (err) {
+    setStatus(`Tidak bisa copy order sheet data: ${err.message}`, "error");
+  }
+};
+
+const copyIncomeSheetOutput = async () => {
+  const text = (incomeSheetTableEl?.dataset.copyText || "").trim();
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    setStatus("Income sheet data sudah dicopy", "ok");
+  } catch (err) {
+    setStatus(`Tidak bisa copy income sheet data: ${err.message}`, "error");
+  }
+};
+
 const downloadIncomeOutput = () => {
   const text = outputIncomeEl.textContent;
   if (!text) return;
@@ -418,6 +665,8 @@ const init = () => {
   incomePayloadInput.value = "";
   setStatus("Belum ada permintaan.");
   setOutput("", "");
+  setSheetOutput(null, orderSheetTableEl);
+  setSheetOutput(null, incomeSheetTableEl);
   clearRendered();
 
   fetchBtn.addEventListener("click", fetchData);
@@ -438,6 +687,8 @@ const init = () => {
   downloadIncomeBtn.addEventListener("click", downloadIncomeOutput);
   copyOrderBtn.addEventListener("click", copyOrderOutput);
   downloadOrderBtn.addEventListener("click", downloadOrderOutput);
+  copyOrderSheetBtn.addEventListener("click", copyOrderSheetOutput);
+  copyIncomeSheetBtn.addEventListener("click", copyIncomeSheetOutput);
 
   let incomeSettingsOpen = false;
   let orderSettingsOpen = false;

@@ -347,6 +347,49 @@ pre#outputOrder {
   word-break: break-word;
   color: var(--text);
   font-size: 12px;
+  line-height: 1.5;
+  font-family: "JetBrains Mono", "Fira Code", "Menlo", "Consolas", monospace;
+}
+
+.sheet-table-wrap {
+  margin: 10px 0 0;
+  background: #0c2b22;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 14px 14px;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.sheet-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.sheet-table th,
+.sheet-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.sheet-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  font-weight: 700;
+  background: #0c2b22;
+}
+
+.sheet-table.multi-head th {
+  position: static;
+}
+
+.sheet-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .hidden {
