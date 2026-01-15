@@ -13,6 +13,8 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 ## Last Updated
 
 - 2025-01-13: AGENTS.md dibuat sebagai panduan dasar.
+- 2025-01-13: Menambahkan fitur export JSON ke API dengan base URL + token.
+- 2025-01-13: Default base URL export diset ke https://powermaxx.test dan token ditampilkan (input text).
 
 ## Ringkasan proyek
 
@@ -86,3 +88,5 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 ## Decision Log
 
 - 2025-01-13: Membuat AGENTS.md dan menetapkan aturan update keputusan.
+- 2025-01-13: Menambahkan panel export API (POST `/api/orders/import`) dengan autentikasi Bearer.
+- 2025-01-13: Default base URL export ditetapkan ke https://powermaxx.test dan token tidak disembunyikan.

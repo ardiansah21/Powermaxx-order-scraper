@@ -15,6 +15,11 @@ const toggleIncomeSettingsBtn = document.getElementById("toggleIncomeSettings");
 const toggleOrderSettingsBtn = document.getElementById("toggleOrderSettings");
 const incomeSettingsEl = document.getElementById("incomeSettings");
 const orderSettingsEl = document.getElementById("orderSettings");
+const exportBaseUrlInput = document.getElementById("exportBaseUrl");
+const exportTokenInput = document.getElementById("exportToken");
+const sendExportBtn = document.getElementById("sendExportBtn");
+const toggleExportSettingsBtn = document.getElementById("toggleExportSettings");
+const exportSettingsEl = document.getElementById("exportSettings");
 const toggleSummaryBtn = document.getElementById("toggleSummary");
 const toggleIncomeRawBtn = document.getElementById("toggleIncomeRaw");
 const toggleOrderRawBtn = document.getElementById("toggleOrderRaw");
@@ -55,6 +60,56 @@ const saveViewerPayload = (payload) => {
     chrome.storage.local.set({ viewerPayload: payload });
   } catch (e) {
     console.warn("Gagal menyimpan viewer payload", e);
+  }
+};
+
+const buildExportPayload = () => ({
+  marketplace: "shopee",
+  order_detail: viewerPayloadCache?.orderRawJson || null,
+  income_components: viewerPayloadCache?.incomeRawJson || null
+});
+
+const normalizeBaseUrl = (value) => (value || "").trim().replace(/\/+$/, "");
+
+const sendExportRequest = async () => {
+  const baseUrl = normalizeBaseUrl(exportBaseUrlInput.value);
+  const token = (exportTokenInput.value || "").trim();
+  if (!baseUrl) {
+    setStatus("Base URL wajib diisi.", "error");
+    return;
+  }
+  if (!token) {
+    setStatus("Bearer token wajib diisi.", "error");
+    return;
+  }
+  if (!viewerPayloadCache?.orderRawJson || !viewerPayloadCache?.incomeRawJson) {
+    setStatus("Data belum ada. Klik Ambil Data terlebih dahulu.", "error");
+    return;
+  }
+
+  const url = `${baseUrl}/api/orders/import`;
+  sendExportBtn.disabled = true;
+  setStatus("Mengirim data ke API...", "info");
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(buildExportPayload())
+    });
+    const text = await response.text();
+    if (response.ok) {
+      setStatus(`Export OK ${response.status}`, "ok");
+    } else {
+      setStatus(`Export gagal ${response.status}: ${response.statusText || "Error"}`, "error");
+    }
+    console.info("Export response:", text);
+  } catch (err) {
+    setStatus(`Gagal mengirim: ${err.message}`, "error");
+  } finally {
+    sendExportBtn.disabled = false;
   }
 };
 
@@ -590,7 +645,9 @@ const fetchData = async () => {
       incomeSheet,
       orderSheet,
       incomeRaw: incomePretty,
-      orderRaw: orderPretty
+      orderRaw: orderPretty,
+      incomeRawJson: parsedIncome || null,
+      orderRawJson: parsedOrder || null
     });
 
     const incomeOk = result.income?.ok;
@@ -698,6 +755,8 @@ const init = () => {
   incomeEndpointInput.value = DEFAULT_INCOME_ENDPOINT;
   orderEndpointInput.value = DEFAULT_ORDER_ENDPOINT;
   incomePayloadInput.value = "";
+  exportBaseUrlInput.value = "https://powermaxx.test";
+  exportTokenInput.value = "";
   setStatus("Belum ada permintaan.");
   setOutput("", "");
   setSheetOutput(null, orderSheetTableEl);
@@ -725,9 +784,11 @@ const init = () => {
   copyOrderSheetBtn.addEventListener("click", copyOrderSheetOutput);
   copyIncomeSheetBtn.addEventListener("click", copyIncomeSheetOutput);
   if (openViewerBtn) openViewerBtn.addEventListener("click", openViewerPage);
+  if (sendExportBtn) sendExportBtn.addEventListener("click", sendExportRequest);
 
   let incomeSettingsOpen = false;
   let orderSettingsOpen = false;
+  let exportSettingsOpen = false;
   const updateIncomeSettings = () => {
     incomeSettingsEl.classList.toggle("open", incomeSettingsOpen);
     toggleIncomeSettingsBtn.textContent = incomeSettingsOpen ? "Sembunyikan" : "Tampilkan";
@@ -735,6 +796,10 @@ const init = () => {
   const updateOrderSettings = () => {
     orderSettingsEl.classList.toggle("open", orderSettingsOpen);
     toggleOrderSettingsBtn.textContent = orderSettingsOpen ? "Sembunyikan" : "Tampilkan";
+  };
+  const updateExportSettings = () => {
+    exportSettingsEl.classList.toggle("open", exportSettingsOpen);
+    toggleExportSettingsBtn.textContent = exportSettingsOpen ? "Sembunyikan" : "Tampilkan";
   };
   toggleIncomeSettingsBtn.addEventListener("click", () => {
     incomeSettingsOpen = !incomeSettingsOpen;
@@ -744,8 +809,13 @@ const init = () => {
     orderSettingsOpen = !orderSettingsOpen;
     updateOrderSettings();
   });
+  toggleExportSettingsBtn.addEventListener("click", () => {
+    exportSettingsOpen = !exportSettingsOpen;
+    updateExportSettings();
+  });
   updateIncomeSettings();
   updateOrderSettings();
+  updateExportSettings();
 
   let summaryOpen = true;
   const updateSummaryToggle = () => {

@@ -121,6 +121,21 @@ input[type="url"] {
   outline: none;
 }
 
+input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #0f1724;
+  color: var(--text);
+  outline: none;
+}
+
+input[type="text"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(158, 213, 192, 0.2);
+}
+
 input[type="url"]:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(232, 221, 194, 0.2);
