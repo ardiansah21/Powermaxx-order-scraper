@@ -15,6 +15,7 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 - 2025-01-13: AGENTS.md dibuat sebagai panduan dasar.
 - 2025-01-13: Menambahkan fitur export JSON ke API dengan base URL + token.
 - 2025-01-13: Default base URL export diset ke https://powermaxx.test dan token ditampilkan (input text).
+- 2025-01-13: Format payload export diubah ke shopee_get_one_order_json + shopee_get_order_income_components_json.
 
 ## Ringkasan proyek
 
@@ -90,3 +91,4 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 - 2025-01-13: Membuat AGENTS.md dan menetapkan aturan update keputusan.
 - 2025-01-13: Menambahkan panel export API (POST `/api/orders/import`) dengan autentikasi Bearer.
 - 2025-01-13: Default base URL export ditetapkan ke https://powermaxx.test dan token tidak disembunyikan.
+- 2025-01-13: Payload export diganti sesuai format baru (dua field JSON Shopee).

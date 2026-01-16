@@ -15,7 +15,10 @@ Developer: Ardiansah / Arva.
 - Buka tab `seller.shopee.co.id` (sudah login) dan biarkan sebagai tab aktif, idealnya di halaman detail pesanan (`.../portal/sale/order/<order_id>`).
 - Panel Income (get_order_income_components): endpoint & payload bisa dibiarkan default (payload kosong = `{ order_id: <auto>, components: [2,3,4,5] }`). Jika diisi, payload dikirim persis seperti JSON dari DevTools.
 - Panel Order (get_one_order): endpoint GET, order_id otomatis dari URL tab (bisa diubah).
-- Panel Export API: isi Base URL + Bearer Token, lalu klik **Kirim ke API** untuk POST ke `/api/orders/import` dengan payload gabungan.
+- Panel Export API: isi Base URL + Bearer Token, lalu klik **Kirim ke API** untuk POST ke `/api/orders/import` dengan payload:
+  - `marketplace: "shopee"`
+  - `shopee_get_one_order_json: <full response get_one_order>`
+  - `shopee_get_order_income_components_json: <full response get_order_income_components>`
 - Klik **Ambil Data**. Income (POST) dan Order (GET) berjalan di tab aktif dengan `credentials: include`.
 - Hasil terpisah: Ringkasan + breakdown, Order Items (Sheet), Income Breakdown (Sheet), Income JSON (copy/download), Order JSON (copy/download). Semua bagian bisa di-collapse.
 - Tombol **Buka di Tab** membuka viewer halaman penuh untuk melihat data yang panjang dengan lebih nyaman.

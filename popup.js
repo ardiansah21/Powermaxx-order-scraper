@@ -65,8 +65,8 @@ const saveViewerPayload = (payload) => {
 
 const buildExportPayload = () => ({
   marketplace: "shopee",
-  order_detail: viewerPayloadCache?.orderRawJson || null,
-  income_components: viewerPayloadCache?.incomeRawJson || null
+  shopee_get_one_order_json: viewerPayloadCache?.orderRawJson || null,
+  shopee_get_order_income_components_json: viewerPayloadCache?.incomeRawJson || null
 });
 
 const normalizeBaseUrl = (value) => (value || "").trim().replace(/\/+$/, "");
