@@ -23,6 +23,7 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 - 2025-01-16: Popup dibuat sangat minimal dengan status animasi dan error box yang bisa dicopy.
 - 2025-01-16: Viewer menampilkan ringkasan berbasis get_one_order dan JSON default tersembunyi.
 - 2025-01-16: Viewer mengutamakan Order Items dan kedua sheet disembunyikan default (bisa ditampilkan).
+- 2025-01-16: Rebrand nama ekstensi menjadi Powermaxx Order Scraper.
 
 ## Ringkasan proyek
 
@@ -36,7 +37,7 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 
 - `manifest.json`: konfigurasi MV3, permissions, dan branding.
 - `popup.html`: UI utama (input endpoint/payload, tombol fetch, ringkasan, JSON raw, sheet output, toggle).
-- `popup.css`: tema Arva (warna gelap lembut) dan layout komponen.
+- `popup.css`: tema Powermaxx (warna gelap lembut) dan layout komponen.
 - `popup.js`: logic fetch, parsing, rendering, sheet builder, dan storage untuk viewer.
 - `viewer.html` / `viewer.css` / `viewer.js`: halaman viewer untuk tabel sheet + JSON; sumber data dari `chrome.storage.local`.
 - `options.html` / `options.css` / `options.js`: halaman pengaturan untuk Base URL + token per marketplace.
@@ -108,3 +109,4 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 - 2025-01-16: Menambahkan options page untuk konfigurasi Shopee/TikTok dan auto-detect marketplace.
 - 2025-01-16: Menghapus pengaturan dari popup dan menyederhanakan tampilan.
 - 2025-01-16: Menyembunyikan sheet di viewer secara default dan mengutamakan Order Items.
+- 2025-01-16: Rebrand ke Powermaxx Order Scraper.

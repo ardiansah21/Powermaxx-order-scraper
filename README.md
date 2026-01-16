@@ -1,6 +1,6 @@
-# Arva Shopee Order Fetcher
+# Powermaxx Order Scraper
 
-Ekstensi Chrome (Manifest V3) untuk menarik data komponen pendapatan dan detail pesanan Shopee seller.
+Ekstensi Chrome (Manifest V3) untuk menarik data komponen pendapatan dan detail pesanan marketplace (Shopee/TikTok Shop).
 
 Developer: Ardiansah / Arva.
 
@@ -49,6 +49,6 @@ Developer: Ardiansah / Arva.
 
 ## Struktur singkat
 
-- `popup.html`, `popup.css`, `popup.js`: UI popup Arva.
+- `popup.html`, `popup.css`, `popup.js`: UI popup Powermaxx.
 - `manifest.json`: konfigurasi MV3 + permissions.
 - `data-contoh/`: contoh fetch dan hasil respon untuk acuan payload/format.
