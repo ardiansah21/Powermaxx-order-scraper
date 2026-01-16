@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arva - Pengaturan</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="title">
+      <h1>Arva Pengaturan</h1>
+      <p>Konfigurasi marketplace dan kredensial API.</p>
+    </div>
+    <button id="saveBtn" class="primary">Simpan</button>
+  </header>
+
+  <section class="panel">
+    <label for="defaultMarketplace">Marketplace Default</label>
+    <select id="defaultMarketplace">
+      <option value="shopee">Shopee</option>
+      <option value="tiktok">TikTok Shop</option>
+    </select>
+    <small>Jika URL tab tidak terdeteksi, gunakan default ini.</small>
+  </section>
+
+  <section class="panel">
+    <h2>Shopee</h2>
+    <label for="shopeeBaseUrl">Base URL API</label>
+    <input id="shopeeBaseUrl" type="url" spellcheck="false" placeholder="https://powermaxx.test">
+
+    <label for="shopeeToken">Bearer Token</label>
+    <input id="shopeeToken" type="text" spellcheck="false" placeholder="Token Sanctum">
+
+    <label for="shopeeIncomeEndpoint">Endpoint Income</label>
+    <input id="shopeeIncomeEndpoint" type="url" spellcheck="false">
+
+    <label for="shopeeOrderEndpoint">Endpoint Order</label>
+    <input id="shopeeOrderEndpoint" type="url" spellcheck="false">
+  </section>
+
+  <section class="panel">
+    <h2>TikTok Shop</h2>
+    <label for="tiktokBaseUrl">Base URL API</label>
+    <input id="tiktokBaseUrl" type="url" spellcheck="false" placeholder="https://powermaxx.test">
+
+    <label for="tiktokToken">Bearer Token</label>
+    <input id="tiktokToken" type="text" spellcheck="false" placeholder="Token Sanctum">
+  </section>
+
+  <section class="panel">
+    <div class="status" id="status">Belum disimpan.</div>
+  </section>
+
+  <script src="options.js"></script>
+</body>
+</html>

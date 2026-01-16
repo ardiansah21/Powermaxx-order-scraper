@@ -63,24 +63,26 @@
     <div class="status" id="status">Belum ada permintaan.</div>
   </section>
 
-  <section class="panel collapse" id="exportPanel">
-    <div class="collapse-head">
+  <section class="panel">
+    <div class="panel-head">
       <div>
-        <h2>Export JSON (API)</h2>
-        <p>Kirim data income + order ke backend via Sanctum.</p>
+        <strong>Pengiriman API</strong>
+        <small id="exportMeta">Marketplace: -</small>
       </div>
-      <button id="toggleExportSettings" class="ghost small">Tampilkan</button>
+      <div class="actions actions-wrap">
+        <button id="openSettingsBtn" class="ghost small">Buka Pengaturan</button>
+        <button id="sendExportBtn" class="primary">Kirim ke API</button>
+      </div>
     </div>
-    <div class="collapse-body" id="exportSettings">
-      <label for="exportBaseUrl">Base URL</label>
-      <input id="exportBaseUrl" type="url" spellcheck="false" placeholder="https://powermaxx.test">
-      <small>Request dikirim ke: {base_url}/api/orders/import</small>
-
-      <label for="exportToken">Bearer Token</label>
-      <input id="exportToken" type="text" spellcheck="false" placeholder="Token Sanctum">
-      <small>Header: Authorization: Bearer &lt;token&gt;.</small>
-
-      <button id="sendExportBtn" class="primary">Kirim ke API</button>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">Base URL</div>
+        <div id="exportBaseUrlText" class="info-value">-</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Token</div>
+        <div id="exportTokenText" class="info-value">Belum diatur</div>
+      </div>
     </div>
   </section>
 

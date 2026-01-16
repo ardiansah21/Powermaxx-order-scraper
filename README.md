@@ -23,6 +23,12 @@ Developer: Ardiansah / Arva.
 - Hasil terpisah: Ringkasan + breakdown, Order Items (Sheet), Income Breakdown (Sheet), Income JSON (copy/download), Order JSON (copy/download). Semua bagian bisa di-collapse.
 - Tombol **Buka di Tab** membuka viewer halaman penuh untuk melihat data yang panjang dengan lebih nyaman.
 
+## Pengaturan
+
+- Buka halaman **Pengaturan** dari tombol **Buka Pengaturan** di popup.
+- Simpan Base URL + Bearer Token per marketplace (Shopee/TikTok).
+- Marketplace aktif dideteksi otomatis dari URL tab; jika tidak terdeteksi, pakai default marketplace di pengaturan.
+
 ## Catatan
 
 - Permintaan dikirim dengan `credentials: include`, jadi cookie sesi Anda ikut terkirim selama domain Shopee diizinkan di host permissions.

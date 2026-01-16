@@ -12,5 +12,6 @@
   "host_permissions": [
     "https://seller.shopee.co.id/*",
     "https://*.shopee.co.id/*"
-  ]
+  ],
+  "options_page": "options.html"
 }

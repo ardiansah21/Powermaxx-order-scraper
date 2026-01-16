@@ -16,6 +16,7 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 - 2025-01-13: Menambahkan fitur export JSON ke API dengan base URL + token.
 - 2025-01-13: Default base URL export diset ke https://powermaxx.test dan token ditampilkan (input text).
 - 2025-01-13: Format payload export diubah ke shopee_get_one_order_json + shopee_get_order_income_components_json.
+- 2025-01-16: Menambahkan halaman pengaturan (options page) dengan konfigurasi per marketplace dan auto-detect dari URL tab.
 
 ## Ringkasan proyek
 
@@ -32,6 +33,7 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 - `popup.css`: tema Arva (warna gelap lembut) dan layout komponen.
 - `popup.js`: logic fetch, parsing, rendering, sheet builder, dan storage untuk viewer.
 - `viewer.html` / `viewer.css` / `viewer.js`: halaman viewer untuk tabel sheet + JSON; sumber data dari `chrome.storage.local`.
+- `options.html` / `options.css` / `options.js`: halaman pengaturan untuk Base URL + token per marketplace.
 - `data-contoh/`: contoh payload dan hasil respons untuk referensi.
 
 ## Alur data (ringkas)
@@ -92,3 +94,4 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 - 2025-01-13: Menambahkan panel export API (POST `/api/orders/import`) dengan autentikasi Bearer.
 - 2025-01-13: Default base URL export ditetapkan ke https://powermaxx.test dan token tidak disembunyikan.
 - 2025-01-13: Payload export diganti sesuai format baru (dua field JSON Shopee).
+- 2025-01-16: Menambahkan options page untuk konfigurasi Shopee/TikTok dan auto-detect marketplace.

@@ -3,6 +3,22 @@ const DEFAULT_INCOME_ENDPOINT =
 const DEFAULT_ORDER_ENDPOINT =
   "https://seller.shopee.co.id/api/v3/order/get_one_order";
 const DEFAULT_COMPONENTS = "2,3,4,5";
+const SETTINGS_KEY = "arvaSettings";
+const DEFAULT_SETTINGS = {
+  defaultMarketplace: "shopee",
+  marketplaces: {
+    shopee: {
+      baseUrl: "https://powermaxx.test",
+      token: "",
+      incomeEndpoint: DEFAULT_INCOME_ENDPOINT,
+      orderEndpoint: DEFAULT_ORDER_ENDPOINT
+    },
+    tiktok: {
+      baseUrl: "https://powermaxx.test",
+      token: ""
+    }
+  }
+};
 
 const fetchBtn = document.getElementById("fetchBtn");
 const statusEl = document.getElementById("status");
@@ -15,11 +31,11 @@ const toggleIncomeSettingsBtn = document.getElementById("toggleIncomeSettings");
 const toggleOrderSettingsBtn = document.getElementById("toggleOrderSettings");
 const incomeSettingsEl = document.getElementById("incomeSettings");
 const orderSettingsEl = document.getElementById("orderSettings");
-const exportBaseUrlInput = document.getElementById("exportBaseUrl");
-const exportTokenInput = document.getElementById("exportToken");
+const exportMetaEl = document.getElementById("exportMeta");
+const exportBaseUrlTextEl = document.getElementById("exportBaseUrlText");
+const exportTokenTextEl = document.getElementById("exportTokenText");
 const sendExportBtn = document.getElementById("sendExportBtn");
-const toggleExportSettingsBtn = document.getElementById("toggleExportSettings");
-const exportSettingsEl = document.getElementById("exportSettings");
+const openSettingsBtn = document.getElementById("openSettingsBtn");
 const toggleSummaryBtn = document.getElementById("toggleSummary");
 const toggleIncomeRawBtn = document.getElementById("toggleIncomeRaw");
 const toggleOrderRawBtn = document.getElementById("toggleOrderRaw");
@@ -40,6 +56,8 @@ const incomeSheetTableEl = document.getElementById("incomeSheetTable");
 const orderSheetTableEl = document.getElementById("orderSheetTable");
 
 let viewerPayloadCache = null;
+let settingsCache = DEFAULT_SETTINGS;
+let activeMarketplace = "shopee";
 
 const setStatus = (message, tone = "info") => {
   statusEl.textContent = message;
@@ -64,16 +82,66 @@ const saveViewerPayload = (payload) => {
 };
 
 const buildExportPayload = () => ({
-  marketplace: "shopee",
+  marketplace: activeMarketplace,
   shopee_get_one_order_json: viewerPayloadCache?.orderRawJson || null,
   shopee_get_order_income_components_json: viewerPayloadCache?.incomeRawJson || null
 });
 
 const normalizeBaseUrl = (value) => (value || "").trim().replace(/\/+$/, "");
 
+const getStorageArea = () => chrome.storage?.sync || chrome.storage?.local;
+
+const loadSettings = async () => {
+  const storage = getStorageArea();
+  if (!storage) return DEFAULT_SETTINGS;
+  return new Promise((resolve) => {
+    storage.get([SETTINGS_KEY], (result) => {
+      const stored = result?.[SETTINGS_KEY];
+      if (!stored) return resolve(DEFAULT_SETTINGS);
+      resolve({
+        ...DEFAULT_SETTINGS,
+        ...stored,
+        marketplaces: {
+          ...DEFAULT_SETTINGS.marketplaces,
+          ...(stored.marketplaces || {})
+        }
+      });
+    });
+  });
+};
+
+const saveSettings = async (settings) => {
+  const storage = getStorageArea();
+  if (!storage) return;
+  return new Promise((resolve) => {
+    storage.set({ [SETTINGS_KEY]: settings }, resolve);
+  });
+};
+
+const detectMarketplace = (url) => {
+  if (!url) return settingsCache.defaultMarketplace || "shopee";
+  let host = "";
+  try {
+    host = new URL(url).hostname;
+  } catch (e) {
+    return settingsCache.defaultMarketplace || "shopee";
+  }
+  if (host.includes("shopee")) return "shopee";
+  if (host.includes("tiktok")) return "tiktok";
+  return settingsCache.defaultMarketplace || "shopee";
+};
+
+const updateExportInfo = () => {
+  const cfg = settingsCache.marketplaces?.[activeMarketplace] || {};
+  exportMetaEl.textContent = `Marketplace: ${activeMarketplace}`;
+  exportBaseUrlTextEl.textContent = cfg.baseUrl || "-";
+  exportTokenTextEl.textContent = cfg.token ? "Tersimpan" : "Belum diatur";
+};
+
 const sendExportRequest = async () => {
-  const baseUrl = normalizeBaseUrl(exportBaseUrlInput.value);
-  const token = (exportTokenInput.value || "").trim();
+  const cfg = settingsCache.marketplaces?.[activeMarketplace] || {};
+  const baseUrl = normalizeBaseUrl(cfg.baseUrl);
+  const token = (cfg.token || "").trim();
   if (!baseUrl) {
     setStatus("Base URL wajib diisi.", "error");
     return;
@@ -111,6 +179,11 @@ const sendExportRequest = async () => {
   } finally {
     sendExportBtn.disabled = false;
   }
+};
+
+const openOptionsPage = () => {
+  if (!chrome?.runtime?.openOptionsPage) return;
+  chrome.runtime.openOptionsPage();
 };
 
 const setSheetOutput = (sheet, tableEl) => {
@@ -588,9 +661,23 @@ const fetchData = async () => {
     fetchBtn.disabled = false;
     return;
   }
+  activeMarketplace = detectMarketplace(tab.url);
+  updateExportInfo();
 
-  const incomeUrl = (incomeEndpointInput.value || "").trim() || DEFAULT_INCOME_ENDPOINT;
-  const orderUrl = (orderEndpointInput.value || "").trim() || DEFAULT_ORDER_ENDPOINT;
+  if (activeMarketplace !== "shopee") {
+    setStatus("Fetch hanya tersedia untuk Shopee saat ini.", "error");
+    fetchBtn.disabled = false;
+    return;
+  }
+  const incomeCfg = settingsCache.marketplaces?.shopee || {};
+  const incomeUrl =
+    (incomeEndpointInput.value || "").trim() ||
+    incomeCfg.incomeEndpoint ||
+    DEFAULT_INCOME_ENDPOINT;
+  const orderUrl =
+    (orderEndpointInput.value || "").trim() ||
+    incomeCfg.orderEndpoint ||
+    DEFAULT_ORDER_ENDPOINT;
   const bodyOverride = (incomePayloadInput.value || "").trim();
 
   try {
@@ -751,12 +838,12 @@ const downloadOrderOutput = () => {
   setStatus("Order JSON siap diunduh", "ok");
 };
 
-const init = () => {
-  incomeEndpointInput.value = DEFAULT_INCOME_ENDPOINT;
-  orderEndpointInput.value = DEFAULT_ORDER_ENDPOINT;
+const init = async () => {
+  settingsCache = await loadSettings();
+  const shopeeCfg = settingsCache.marketplaces?.shopee || {};
+  incomeEndpointInput.value = shopeeCfg.incomeEndpoint || DEFAULT_INCOME_ENDPOINT;
+  orderEndpointInput.value = shopeeCfg.orderEndpoint || DEFAULT_ORDER_ENDPOINT;
   incomePayloadInput.value = "";
-  exportBaseUrlInput.value = "https://powermaxx.test";
-  exportTokenInput.value = "";
   setStatus("Belum ada permintaan.");
   setOutput("", "");
   setSheetOutput(null, orderSheetTableEl);
@@ -785,10 +872,10 @@ const init = () => {
   copyIncomeSheetBtn.addEventListener("click", copyIncomeSheetOutput);
   if (openViewerBtn) openViewerBtn.addEventListener("click", openViewerPage);
   if (sendExportBtn) sendExportBtn.addEventListener("click", sendExportRequest);
+  if (openSettingsBtn) openSettingsBtn.addEventListener("click", openOptionsPage);
 
   let incomeSettingsOpen = false;
   let orderSettingsOpen = false;
-  let exportSettingsOpen = false;
   const updateIncomeSettings = () => {
     incomeSettingsEl.classList.toggle("open", incomeSettingsOpen);
     toggleIncomeSettingsBtn.textContent = incomeSettingsOpen ? "Sembunyikan" : "Tampilkan";
@@ -796,10 +883,6 @@ const init = () => {
   const updateOrderSettings = () => {
     orderSettingsEl.classList.toggle("open", orderSettingsOpen);
     toggleOrderSettingsBtn.textContent = orderSettingsOpen ? "Sembunyikan" : "Tampilkan";
-  };
-  const updateExportSettings = () => {
-    exportSettingsEl.classList.toggle("open", exportSettingsOpen);
-    toggleExportSettingsBtn.textContent = exportSettingsOpen ? "Sembunyikan" : "Tampilkan";
   };
   toggleIncomeSettingsBtn.addEventListener("click", () => {
     incomeSettingsOpen = !incomeSettingsOpen;
@@ -809,13 +892,8 @@ const init = () => {
     orderSettingsOpen = !orderSettingsOpen;
     updateOrderSettings();
   });
-  toggleExportSettingsBtn.addEventListener("click", () => {
-    exportSettingsOpen = !exportSettingsOpen;
-    updateExportSettings();
-  });
   updateIncomeSettings();
   updateOrderSettings();
-  updateExportSettings();
 
   let summaryOpen = true;
   const updateSummaryToggle = () => {
@@ -848,6 +926,14 @@ const init = () => {
   });
   updateIncomeRawToggle();
   updateOrderRawToggle();
+
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    activeMarketplace = detectMarketplace(tab?.url);
+  } catch (e) {
+    activeMarketplace = settingsCache.defaultMarketplace || "shopee";
+  }
+  updateExportInfo();
 };
 
 document.addEventListener("DOMContentLoaded", init);

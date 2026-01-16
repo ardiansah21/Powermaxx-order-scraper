@@ -121,7 +121,8 @@ input[type="url"] {
   outline: none;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="password"] {
   width: 100%;
   padding: 12px;
   border-radius: 12px;
@@ -131,7 +132,8 @@ input[type="text"] {
   outline: none;
 }
 
-input[type="text"]:focus {
+input[type="text"]:focus,
+input[type="password"]:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(158, 213, 192, 0.2);
 }
@@ -228,6 +230,32 @@ button:disabled {
 
 .panel-head small {
   display: block;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+.info-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #0f1724;
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.info-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.info-value {
+  font-weight: 700;
+  word-break: break-word;
 }
 
 .rendered {
