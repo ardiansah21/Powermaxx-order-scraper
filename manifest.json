@@ -6,12 +6,12 @@
   "author": "Ardiansah",
   "action": {
     "default_title": "Powermaxx Order Scraper",
-    "default_popup": "popup.html"
+    "default_popup": "src/popup/popup.html"
   },
   "permissions": ["scripting", "activeTab", "storage"],
   "host_permissions": [
     "https://seller.shopee.co.id/*",
     "https://*.shopee.co.id/*"
   ],
-  "options_page": "options.html"
+  "options_page": "src/options/options.html"
 }

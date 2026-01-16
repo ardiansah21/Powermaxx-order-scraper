@@ -1,6 +1,6 @@
 # Powermaxx Order Scraper
 
-Ekstensi Chrome (Manifest V3) untuk menarik data komponen pendapatan dan detail pesanan marketplace (Shopee/TikTok Shop).
+Ekstensi Chrome (Manifest V3) untuk mengambil data order dan income marketplace (Shopee/TikTok Shop) lalu mengirim ke API Powermaxx.
 
 Developer: Ardiansah / Arva.
 
@@ -12,43 +12,34 @@ Developer: Ardiansah / Arva.
 
 ## Cara pakai
 
-- Buka tab `seller.shopee.co.id` (sudah login) dan biarkan sebagai tab aktif, idealnya di halaman detail pesanan (`.../portal/sale/order/<order_id>`).
-- Panel Income (get_order_income_components): endpoint & payload bisa dibiarkan default (payload kosong = `{ order_id: <auto>, components: [2,3,4,5] }`). Jika diisi, payload dikirim persis seperti JSON dari DevTools.
-- Panel Order (get_one_order): endpoint GET, order_id otomatis dari URL tab (bisa diubah).
-- Panel Export API: isi Base URL + Bearer Token, lalu klik **Kirim ke API** untuk POST ke `/api/orders/import` dengan payload:
-  - `marketplace: "shopee"`
-  - `shopee_get_one_order_json: <full response get_one_order>`
-  - `shopee_get_order_income_components_json: <full response get_order_income_components>`
-- Klik **Ambil Data**. Income (POST) dan Order (GET) berjalan di tab aktif dengan `credentials: include`.
-- Hasil dapat dilihat di halaman viewer. Unduh JSON dilakukan di viewer.
-- Viewer menampilkan ringkasan berbasis `get_one_order`. JSON dan sheet disembunyikan default (bisa ditampilkan). Order Items ditampilkan lebih dulu.
+- Buka tab `seller.shopee.co.id` (sudah login) dan biarkan sebagai tab aktif.
+- Klik **Ambil Data** untuk mengambil `get_one_order` + `get_order_income_components`.
+- Klik **Kirim Data** untuk POST ke `/api/orders/import` (base URL + token diatur di Pengaturan).
+- Klik **Lihat Data** untuk membuka viewer (ringkasan, sheet, JSON).
 
 ## Pengaturan
 
-- Buka halaman **Pengaturan** dari tombol **Buka Pengaturan** di popup.
+- Klik ikon **Pengaturan** di popup untuk membuka halaman options.
 - Simpan Base URL + Bearer Token per marketplace (Shopee/TikTok).
 - Marketplace aktif dideteksi otomatis dari URL tab; jika tidak terdeteksi, pakai default marketplace di pengaturan.
 
 ## Catatan
 
-- Permintaan dikirim dengan `credentials: include`, jadi cookie sesi Anda ikut terkirim selama domain Shopee diizinkan di host permissions.
-- Endpoint bawaan:
-  - `https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components` (SPC_CDS & SPC_CDS_VER ditambahkan otomatis dari cookie/tab aktif).
-  - `https://seller.shopee.co.id/api/v3/order/get_one_order` untuk detail order.
+- Fetch berjalan di tab aktif dengan `credentials: include`, jadi cookie sesi Shopee ikut terkirim.
+- Endpoint bawaan Shopee:
+  - `https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components`
+  - `https://seller.shopee.co.id/api/v3/order/get_one_order`
 
-## Output sheet (viewer)
+## Output viewer
 
-- **Order Items (Sheet)**: output TSV siap tempel; header tampil di tabel, tombol **Copy Data** menyalin data tanpa header.
-- **Income Breakdown (Sheet)**: format long (kolom tetap, aman untuk lookup). Kolom:
-  - `order_id`, `order_sn`
-  - `level`: `breakdown`, `sub_breakdown`, atau `service_fee_infos`
-  - `parent_field_name`: nama parent (mis. `FEES_AND_CHARGES` atau `SERVICE_FEE`)
-  - `field_name`, `display_name`, `amount`
-- `amount` sudah dikonversi ke angka rupiah (dibagi 100000, tanpa simbol). Nilai negatif tetap memakai tanda `-`.
-- Jika `sub_breakdown.ext_info.seller_voucher_codes` berisi beberapa kode, `display_name` akan digabung dengan koma (contoh: `Voucher Toko yang ditanggung Penjual - POWE15K11, POWE20K11`).
+- Ringkasan berbasis `get_one_order` (Order SN ditampilkan paling besar).
+- **Order Items (Sheet)** dan **Income Breakdown (Sheet)** disembunyikan default; bisa ditampilkan.
+- JSON income/order disembunyikan default; bisa ditampilkan dan diunduh.
 
 ## Struktur singkat
 
-- `popup.html`, `popup.css`, `popup.js`: UI popup Powermaxx.
 - `manifest.json`: konfigurasi MV3 + permissions.
-- `data-contoh/`: contoh fetch dan hasil respon untuk acuan payload/format.
+- `src/popup/`: UI popup minimal (ambil/kirim + status).
+- `src/viewer/`: viewer untuk ringkasan, sheet, dan JSON.
+- `src/options/`: halaman pengaturan per marketplace.
+- `examples/shopee/`: contoh payload dan hasil respons.

@@ -631,7 +631,7 @@ const fetchData = async () => {
 };
 
 const openViewerPage = async () => {
-  const url = chrome.runtime.getURL("viewer.html");
+  const url = chrome.runtime.getURL("src/viewer/viewer.html");
   try {
     await chrome.tabs.create({ url });
   } catch (err) {

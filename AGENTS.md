@@ -24,6 +24,7 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 - 2025-01-16: Viewer menampilkan ringkasan berbasis get_one_order dan JSON default tersembunyi.
 - 2025-01-16: Viewer mengutamakan Order Items dan kedua sheet disembunyikan default (bisa ditampilkan).
 - 2025-01-16: Rebrand nama ekstensi menjadi Powermaxx Order Scraper.
+- 2025-01-17: Rapikan struktur folder ke `src/` dan `examples/`.
 
 ## Ringkasan proyek
 
@@ -36,32 +37,22 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 ## Struktur file utama
 
 - `manifest.json`: konfigurasi MV3, permissions, dan branding.
-- `popup.html`: UI utama (input endpoint/payload, tombol fetch, ringkasan, JSON raw, sheet output, toggle).
-- `popup.css`: tema Powermaxx (warna gelap lembut) dan layout komponen.
-- `popup.js`: logic fetch, parsing, rendering, sheet builder, dan storage untuk viewer.
-- `viewer.html` / `viewer.css` / `viewer.js`: halaman viewer untuk tabel sheet + JSON; sumber data dari `chrome.storage.local`.
-- `options.html` / `options.css` / `options.js`: halaman pengaturan untuk Base URL + token per marketplace.
-- Popup tidak lagi menampilkan sheet; hanya ringkasan dan JSON (default tersembunyi).
-- Popup tidak lagi menampilkan ringkasan/JSON; tampilan minimal dengan tombol utama.
-- Download JSON ada di viewer (income/order).
-- Popup menampilkan status + spinner + error copy.
-- Viewer: Order Items tampil lebih dulu; sheet dan JSON bisa ditoggle.
-- `data-contoh/`: contoh payload dan hasil respons untuk referensi.
+- `src/popup/`: UI popup minimal (ambil/kirim + status + error copy).
+- `src/viewer/`: viewer untuk ringkasan, sheet, dan JSON (toggle + download JSON).
+- `src/options/`: halaman pengaturan Base URL + token per marketplace.
+- `examples/shopee/`: contoh payload dan hasil respons.
 
 ## Alur data (ringkas)
 
 1. User klik **Ambil Data** di popup.
-2. `popup.js` menjalankan `pageFetcher` via `chrome.scripting.executeScript` di tab aktif.
+2. `src/popup/popup.js` menjalankan `pageFetcher` via `chrome.scripting.executeScript` di tab aktif.
 3. `pageFetcher`:
    - Ambil cookie `SPC_CDS` dan `SPC_CDS_VER` (fallback `2`).
    - Bangun URL income (POST) dan order (GET).
-   - Kirim income payload (default `{ order_id, components }` atau payload custom dari UI).
-   - Ambil order detail dengan `order_id` dari URL tab atau payload.
-4. Hasil income + order:
-   - Dirender ke ringkasan dan breakdown.
-   - Diubah ke format sheet (TSV) untuk tempel ke spreadsheet.
-   - Disimpan ke `chrome.storage.local` dengan key `viewerPayload`.
-5. `viewer.html` membaca `viewerPayload` dan menampilkan tabel + JSON raw.
+   - Kirim income payload (default `{ order_id, components }`).
+   - Ambil order detail dengan `order_id` dari URL tab.
+4. Hasil income + order disimpan ke `chrome.storage.local` dengan key `viewerPayload`.
+5. `src/viewer/viewer.js` membaca `viewerPayload` dan menampilkan ringkasan, sheet, dan JSON.
 
 ## Autentikasi Shopee
 
@@ -73,19 +64,18 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 
 ## Format output
 
-- Ringkasan menampilkan: order_id, order_sn, waktu dibuat (utama dari `get_one_order`), status, estimasi penghasilan.
-- Income breakdown + buyer breakdown dirender sebagai kartu.
-- JSON raw dipisahkan (Income JSON dan Order JSON) dengan tombol copy/download masing-masing.
-- Sheet output (TSV):
-  - Income: `buildIncomeSheet` menghasilkan format long (breakdown + sub_breakdown + service_fee_infos).
+- Viewer menampilkan ringkasan: order_sn (utama), order_id, waktu dibuat, status, total harga.
+- JSON raw (income/order) default tersembunyi, bisa ditampilkan dan diunduh.
+- Sheet output (TSV) default tersembunyi:
+  - Income: `buildIncomeSheet` menghasilkan format long (breakdown + sub_breakdown + ext_info).
   - Order: `buildOrderSheet` berisi item per baris.
 
 ## Panduan perubahan kode
 
 - Jika menambah endpoint baru:
-  - Tambahkan input endpoint/payload di UI bila perlu.
-  - Update logic di `pageFetcher` dan hasil render.
-  - Update README + `data-contoh/`.
+  - Tambahkan konfigurasi di `src/options/` bila perlu.
+  - Update logic di `pageFetcher` dan hasil render di viewer.
+  - Update README + `examples/`.
   - Tambahkan entri di Decision Log.
 - Jika mengubah UI/tema:
   - Jaga konsistensi warna, spacing, dan tombol.
@@ -93,9 +83,9 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 
 ## Checklist selesai perubahan
 
-- UI masih rapi dan dapat di-collapse.
+- UI masih rapi dan ringan.
 - Fetch tidak hardcode cookie.
-- JSON raw + sheet output masih bisa di-copy/download.
+- Viewer bisa menampilkan ringkasan + JSON + sheet.
 - README sudah diperbarui jika ada perubahan alur/endpoint.
 - Decision Log diperbarui.
 - Ingatkan user untuk `git push`.
@@ -110,3 +100,4 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 - 2025-01-16: Menghapus pengaturan dari popup dan menyederhanakan tampilan.
 - 2025-01-16: Menyembunyikan sheet di viewer secara default dan mengutamakan Order Items.
 - 2025-01-16: Rebrand ke Powermaxx Order Scraper.
+- 2025-01-17: Menata ulang struktur ke `src/` dan `examples/`.
