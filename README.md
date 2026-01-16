@@ -20,8 +20,8 @@ Developer: Ardiansah / Arva.
   - `shopee_get_one_order_json: <full response get_one_order>`
   - `shopee_get_order_income_components_json: <full response get_order_income_components>`
 - Klik **Ambil Data**. Income (POST) dan Order (GET) berjalan di tab aktif dengan `credentials: include`.
-- Hasil terpisah: Ringkasan + breakdown, Order Items (Sheet), Income Breakdown (Sheet), Income JSON (copy/download), Order JSON (copy/download). Semua bagian bisa di-collapse.
-- Tombol **Buka di Tab** membuka viewer halaman penuh untuk melihat data yang panjang dengan lebih nyaman.
+- Hasil dapat dilihat di halaman viewer. Unduh JSON dilakukan di viewer.
+- Viewer menampilkan ringkasan berbasis `get_one_order`. JSON dan sheet disembunyikan default (bisa ditampilkan). Order Items ditampilkan lebih dulu.
 
 ## Pengaturan
 
@@ -36,7 +36,7 @@ Developer: Ardiansah / Arva.
   - `https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components` (SPC_CDS & SPC_CDS_VER ditambahkan otomatis dari cookie/tab aktif).
   - `https://seller.shopee.co.id/api/v3/order/get_one_order` untuk detail order.
 
-## Output sheet (popup)
+## Output sheet (viewer)
 
 - **Order Items (Sheet)**: output TSV siap tempel; header tampil di tabel, tombol **Copy Data** menyalin data tanpa header.
 - **Income Breakdown (Sheet)**: format long (kolom tetap, aman untuk lookup). Kolom:

@@ -22,38 +22,20 @@ const DEFAULT_SETTINGS = {
 
 const fetchBtn = document.getElementById("fetchBtn");
 const statusEl = document.getElementById("status");
-const incomeEndpointInput = document.getElementById("incomeEndpoint");
-const orderEndpointInput = document.getElementById("orderEndpoint");
-const incomePayloadInput = document.getElementById("incomePayload");
-const resetIncomeBtn = document.getElementById("resetIncomeUrl");
-const resetOrderBtn = document.getElementById("resetOrderUrl");
-const toggleIncomeSettingsBtn = document.getElementById("toggleIncomeSettings");
-const toggleOrderSettingsBtn = document.getElementById("toggleOrderSettings");
-const incomeSettingsEl = document.getElementById("incomeSettings");
-const orderSettingsEl = document.getElementById("orderSettings");
-const exportMetaEl = document.getElementById("exportMeta");
-const exportBaseUrlTextEl = document.getElementById("exportBaseUrlText");
-const exportTokenTextEl = document.getElementById("exportTokenText");
 const sendExportBtn = document.getElementById("sendExportBtn");
 const openSettingsBtn = document.getElementById("openSettingsBtn");
-const toggleSummaryBtn = document.getElementById("toggleSummary");
-const toggleIncomeRawBtn = document.getElementById("toggleIncomeRaw");
-const toggleOrderRawBtn = document.getElementById("toggleOrderRaw");
-const copyIncomeBtn = document.getElementById("copyIncomeBtn");
-const downloadIncomeBtn = document.getElementById("downloadIncomeBtn");
-const copyOrderBtn = document.getElementById("copyOrderBtn");
-const downloadOrderBtn = document.getElementById("downloadOrderBtn");
-const copyIncomeSheetBtn = document.getElementById("copyIncomeSheetBtn");
-const copyOrderSheetBtn = document.getElementById("copyOrderSheetBtn");
 const openViewerBtn = document.getElementById("openViewerBtn");
-const renderedSection = document.getElementById("rendered");
-const sellerBreakdownEl = document.getElementById("sellerBreakdown");
-const buyerBreakdownEl = document.getElementById("buyerBreakdown");
-const orderSummaryEl = document.getElementById("orderSummary");
-const outputIncomeEl = document.getElementById("outputIncome");
-const outputOrderEl = document.getElementById("outputOrder");
-const incomeSheetTableEl = document.getElementById("incomeSheetTable");
-const orderSheetTableEl = document.getElementById("orderSheetTable");
+const statusSpinner = document.getElementById("statusSpinner");
+const errorBox = document.getElementById("errorBox");
+const errorTextEl = document.getElementById("errorText");
+const copyErrorBtn = document.getElementById("copyErrorBtn");
+const sellerBreakdownEl = null;
+const buyerBreakdownEl = null;
+const orderSummaryEl = null;
+const outputIncomeEl = null;
+const outputOrderEl = null;
+const incomeSheetTableEl = null;
+const orderSheetTableEl = null;
 
 let viewerPayloadCache = null;
 let settingsCache = DEFAULT_SETTINGS;
@@ -66,10 +48,7 @@ const setStatus = (message, tone = "info") => {
   if (tone === "error") statusEl.classList.add("error");
 };
 
-const setOutput = (incomeText, orderText) => {
-  outputIncomeEl.textContent = incomeText || "";
-  outputOrderEl.textContent = orderText || "";
-};
+const setOutput = () => {};
 
 const saveViewerPayload = (payload) => {
   viewerPayloadCache = payload;
@@ -131,11 +110,18 @@ const detectMarketplace = (url) => {
   return settingsCache.defaultMarketplace || "shopee";
 };
 
-const updateExportInfo = () => {
-  const cfg = settingsCache.marketplaces?.[activeMarketplace] || {};
-  exportMetaEl.textContent = `Marketplace: ${activeMarketplace}`;
-  exportBaseUrlTextEl.textContent = cfg.baseUrl || "-";
-  exportTokenTextEl.textContent = cfg.token ? "Tersimpan" : "Belum diatur";
+const setLoading = (isLoading) => {
+  statusSpinner.classList.toggle("hidden", !isLoading);
+};
+
+const setError = (message) => {
+  if (!message) {
+    errorBox.classList.add("hidden");
+    errorTextEl.textContent = "";
+    return;
+  }
+  errorBox.classList.remove("hidden");
+  errorTextEl.textContent = message;
 };
 
 const sendExportRequest = async () => {
@@ -144,20 +130,25 @@ const sendExportRequest = async () => {
   const token = (cfg.token || "").trim();
   if (!baseUrl) {
     setStatus("Base URL wajib diisi.", "error");
+    setError("Base URL belum diatur. Buka Pengaturan terlebih dahulu.");
     return;
   }
   if (!token) {
     setStatus("Bearer token wajib diisi.", "error");
+    setError("Bearer token belum diatur. Buka Pengaturan terlebih dahulu.");
     return;
   }
   if (!viewerPayloadCache?.orderRawJson || !viewerPayloadCache?.incomeRawJson) {
     setStatus("Data belum ada. Klik Ambil Data terlebih dahulu.", "error");
+    setError("Belum ada data yang bisa dikirim.");
     return;
   }
 
   const url = `${baseUrl}/api/orders/import`;
   sendExportBtn.disabled = true;
   setStatus("Mengirim data ke API...", "info");
+  setError("");
+  setLoading(true);
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -171,12 +162,16 @@ const sendExportRequest = async () => {
     if (response.ok) {
       setStatus(`Export OK ${response.status}`, "ok");
     } else {
-      setStatus(`Export gagal ${response.status}: ${response.statusText || "Error"}`, "error");
+      const message = `Export gagal ${response.status}: ${response.statusText || "Error"}`;
+      setStatus(message, "error");
+      setError(text || message);
     }
     console.info("Export response:", text);
   } catch (err) {
     setStatus(`Gagal mengirim: ${err.message}`, "error");
+    setError(err.message);
   } finally {
+    setLoading(false);
     sendExportBtn.disabled = false;
   }
 };
@@ -184,49 +179,6 @@ const sendExportRequest = async () => {
 const openOptionsPage = () => {
   if (!chrome?.runtime?.openOptionsPage) return;
   chrome.runtime.openOptionsPage();
-};
-
-const setSheetOutput = (sheet, tableEl) => {
-  const headers = sheet?.headers || [];
-  const rows = sheet?.rows || [];
-  renderSheetTable(tableEl, headers, rows);
-  if (tableEl) {
-    tableEl.dataset.copyText = sheet?.copy || "";
-  }
-};
-
-const renderSheetTable = (tableEl, headers = [], rows = []) => {
-  if (!tableEl) return;
-  const thead = tableEl.querySelector("thead") || tableEl.createTHead();
-  const tbody = tableEl.querySelector("tbody") || tableEl.createTBody();
-  thead.innerHTML = "";
-  tbody.innerHTML = "";
-
-  if (!headers.length) {
-    tableEl.classList.remove("multi-head");
-    return;
-  }
-  const headerRows = Array.isArray(headers[0]) ? headers : [headers];
-  tableEl.classList.toggle("multi-head", headerRows.length > 1);
-  headerRows.forEach((row) => {
-    const headerRow = document.createElement("tr");
-    row.forEach((label) => {
-      const th = document.createElement("th");
-      th.textContent = label;
-      headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-  });
-
-  rows.forEach((row) => {
-    const tr = document.createElement("tr");
-    row.forEach((cell) => {
-      const td = document.createElement("td");
-      td.textContent = cell;
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
 };
 
 const prettify = (text) => {
@@ -426,86 +378,7 @@ const buildOrderSheet = (orderData) => {
   return { headers, rows, copy };
 };
 
-const clearRendered = () => {
-  sellerBreakdownEl.innerHTML = "";
-  buyerBreakdownEl.innerHTML = "";
-  orderSummaryEl.innerHTML = "";
-};
-
-const renderSummary = (incomeData, orderData) => {
-  clearRendered();
-  if (!incomeData && !orderData) return;
-  const orderInfo = incomeData?.order_info || orderData || {};
-  const createTs =
-    orderData?.create_time ||
-    incomeData?.create_time ||
-    orderInfo.create_time ||
-    orderData?.status_info?.status_description?.description_timestamp_list?.[0]?.timestamp;
-  const breakdown = incomeData?.seller_income_breakdown?.breakdown || [];
-  const escrow = breakdown.find(
-    (b) => b.field_name === "ESCROW_AMOUNT" || b.field_id === 250
-  );
-
-  const createdAt = formatLocalDateTime(createTs) || "-";
-
-  const pills = [
-    { label: "Order ID", value: orderInfo.order_id || "-" },
-    { label: "Order SN", value: orderInfo.order_sn || "-" },
-    { label: "Dibuat", value: createdAt },
-    { label: "Status", value: orderInfo.status ?? "-" },
-    {
-      label: "Estimasi Total Penghasilan",
-      value: escrow ? formatAmount(escrow.amount) : "-",
-      tone: "positive"
-    }
-  ];
-
-  pills.forEach((pill) => {
-    const div = document.createElement("div");
-    div.className = "pill";
-    const valueClass =
-      pill.tone === "positive" ? "value positive" : pill.tone === "negative" ? "value negative" : "value";
-    div.innerHTML = `<div class="label">${pill.label}</div><div class="${valueClass}">${pill.value}</div>`;
-    orderSummaryEl.appendChild(div);
-  });
-};
-
-const renderBreakdown = (items = [], targetEl) => {
-  targetEl.innerHTML = "";
-  items.forEach((item) => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const amountClass = item.amount < 0 ? "amount negative" : "amount positive";
-    card.innerHTML = `
-      <div class="row">
-        <div>
-          <div class="title">${item.display_name || item.field_name || "-"}</div>
-          <div class="muted">${item.field_name || ""}</div>
-        </div>
-        <div class="${amountClass}">${formatAmount(item.amount)}</div>
-      </div>
-    `;
-
-    if (Array.isArray(item.sub_breakdown) && item.sub_breakdown.length) {
-      const ul = document.createElement("div");
-      ul.className = "sub-list";
-      item.sub_breakdown.forEach((sub) => {
-        const row = document.createElement("div");
-        row.className = "sub-item";
-        const subAmountClass = sub.amount < 0 ? "amount negative" : "amount positive";
-        row.innerHTML = `
-          <span class="name">${sub.display_name || sub.field_name || "-"}</span>
-          <span class="${subAmountClass}">${formatAmount(sub.amount)}</span>
-        `;
-        ul.appendChild(row);
-      });
-      card.appendChild(ul);
-    }
-
-    targetEl.appendChild(card);
-  });
-};
+const clearRendered = () => {};
 
 // Jalankan income POST dan order GET di dalam tab aktif agar cookie ikut.
 const pageFetcher = async (
@@ -649,36 +522,36 @@ const pageFetcher = async (
 
 const fetchData = async () => {
   setStatus("Mengambil data (menggunakan cookie/tab aktif)...", "info");
+  setError("");
+  setLoading(true);
   setOutput("", "");
-  setSheetOutput(null, orderSheetTableEl);
-  setSheetOutput(null, incomeSheetTableEl);
   clearRendered();
   fetchBtn.disabled = true;
+  openViewerBtn.disabled = true;
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) {
     setStatus("Tidak ada tab aktif ditemukan.", "error");
+    setError("Tidak ada tab aktif. Buka halaman seller lalu coba lagi.");
     fetchBtn.disabled = false;
+    openViewerBtn.disabled = false;
+    setLoading(false);
     return;
   }
   activeMarketplace = detectMarketplace(tab.url);
-  updateExportInfo();
 
   if (activeMarketplace !== "shopee") {
     setStatus("Fetch hanya tersedia untuk Shopee saat ini.", "error");
+    setError("Marketplace aktif bukan Shopee.");
     fetchBtn.disabled = false;
+    openViewerBtn.disabled = false;
+    setLoading(false);
     return;
   }
   const incomeCfg = settingsCache.marketplaces?.shopee || {};
-  const incomeUrl =
-    (incomeEndpointInput.value || "").trim() ||
-    incomeCfg.incomeEndpoint ||
-    DEFAULT_INCOME_ENDPOINT;
-  const orderUrl =
-    (orderEndpointInput.value || "").trim() ||
-    incomeCfg.orderEndpoint ||
-    DEFAULT_ORDER_ENDPOINT;
-  const bodyOverride = (incomePayloadInput.value || "").trim();
+  const incomeUrl = incomeCfg.incomeEndpoint || DEFAULT_INCOME_ENDPOINT;
+  const orderUrl = incomeCfg.orderEndpoint || DEFAULT_ORDER_ENDPOINT;
+  const bodyOverride = "";
 
   try {
     const [execResult] = await chrome.scripting.executeScript({
@@ -689,10 +562,14 @@ const fetchData = async () => {
     const result = execResult?.result;
     if (!result) {
       setStatus("Tidak ada hasil dari tab (mungkin diblokir CSP atau error lain).", "error");
+      setError("Eksekusi script di tab gagal. Coba refresh halaman seller.");
+      openViewerBtn.disabled = false;
       return;
     }
     if (result.error) {
       setStatus(`Gagal di tab: ${result.error}`, "error");
+      setError(result.error);
+      openViewerBtn.disabled = false;
       return;
     }
 
@@ -716,15 +593,7 @@ const fetchData = async () => {
     }
     const orderSheet = buildOrderSheet(parsedOrder?.data);
     const incomeSheet = buildIncomeSheet(parsedIncome?.data);
-    setSheetOutput(orderSheet, orderSheetTableEl);
-    setSheetOutput(incomeSheet, incomeSheetTableEl);
-    if (parsedIncome?.data) {
-      renderSummary(parsedIncome.data, parsedOrder?.data);
-      renderBreakdown(parsedIncome.data.seller_income_breakdown?.breakdown, sellerBreakdownEl);
-      renderBreakdown(parsedIncome.data.buyer_payment_breakdown?.breakdown, buyerBreakdownEl);
-    }
-
-    const orderSn = parsedIncome?.data?.order_info?.order_sn || parsedOrder?.data?.order_sn || "";
+    const orderSn = parsedOrder?.data?.order_sn || parsedIncome?.data?.order_info?.order_sn || "";
     saveViewerPayload({
       updatedAt: Date.now(),
       orderId: result.orderId || "",
@@ -742,64 +611,22 @@ const fetchData = async () => {
 
     if (incomeOk) {
       setStatus(
-        `Income OK ${result.income.status} (order ${result.orderId}) | Order ${orderOk ? "OK" : "ERR"} ${result.order?.status || 0}`,
+        `Income OK ${result.income.status} | Order ${orderOk ? "OK" : "ERR"} ${result.order?.status || 0}`,
         "ok"
       );
     } else {
-      setStatus(
-        `Income error ${result.income?.status || 0} (${result.income?.statusText || "Permintaan gagal"}) — cek login/parameter`,
-        "error"
-      );
+      const message = `Income error ${result.income?.status || 0} (${result.income?.statusText || "Permintaan gagal"})`;
+      setStatus(message, "error");
+      setError(message);
     }
+    openViewerBtn.disabled = false;
   } catch (err) {
     setStatus(`Gagal mengambil data: ${err.message}`, "error");
+    setError(err.message);
     setOutput(String(err), "");
   } finally {
     fetchBtn.disabled = false;
-  }
-};
-
-const copyIncomeOutput = async () => {
-  const text = outputIncomeEl.textContent.trim();
-  if (!text) return;
-  try {
-    await navigator.clipboard.writeText(text);
-    setStatus("Income JSON sudah dicopy", "ok");
-  } catch (err) {
-    setStatus(`Tidak bisa copy income: ${err.message}`, "error");
-  }
-};
-
-const copyOrderOutput = async () => {
-  const text = outputOrderEl.textContent.trim();
-  if (!text) return;
-  try {
-    await navigator.clipboard.writeText(text);
-    setStatus("Order JSON sudah dicopy", "ok");
-  } catch (err) {
-    setStatus(`Tidak bisa copy order: ${err.message}`, "error");
-  }
-};
-
-const copyOrderSheetOutput = async () => {
-  const text = (orderSheetTableEl?.dataset.copyText || "").trim();
-  if (!text) return;
-  try {
-    await navigator.clipboard.writeText(text);
-    setStatus("Order sheet data sudah dicopy", "ok");
-  } catch (err) {
-    setStatus(`Tidak bisa copy order sheet data: ${err.message}`, "error");
-  }
-};
-
-const copyIncomeSheetOutput = async () => {
-  const text = (incomeSheetTableEl?.dataset.copyText || "").trim();
-  if (!text) return;
-  try {
-    await navigator.clipboard.writeText(text);
-    setStatus("Income sheet data sudah dicopy", "ok");
-  } catch (err) {
-    setStatus(`Tidak bisa copy income sheet data: ${err.message}`, "error");
+    setLoading(false);
   }
 };
 
@@ -812,120 +639,30 @@ const openViewerPage = async () => {
   }
 };
 
-const downloadIncomeOutput = () => {
-  const text = outputIncomeEl.textContent;
-  if (!text) return;
-  const blob = new Blob([text], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "income.json";
-  link.click();
-  URL.revokeObjectURL(url);
-  setStatus("Income JSON siap diunduh", "ok");
-};
-
-const downloadOrderOutput = () => {
-  const text = outputOrderEl.textContent;
-  if (!text) return;
-  const blob = new Blob([text], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "order.json";
-  link.click();
-  URL.revokeObjectURL(url);
-  setStatus("Order JSON siap diunduh", "ok");
-};
-
 const init = async () => {
   settingsCache = await loadSettings();
-  const shopeeCfg = settingsCache.marketplaces?.shopee || {};
-  incomeEndpointInput.value = shopeeCfg.incomeEndpoint || DEFAULT_INCOME_ENDPOINT;
-  orderEndpointInput.value = shopeeCfg.orderEndpoint || DEFAULT_ORDER_ENDPOINT;
-  incomePayloadInput.value = "";
   setStatus("Belum ada permintaan.");
+  setError("");
+  setLoading(false);
   setOutput("", "");
-  setSheetOutput(null, orderSheetTableEl);
-  setSheetOutput(null, incomeSheetTableEl);
   clearRendered();
 
   fetchBtn.addEventListener("click", fetchData);
-  resetIncomeBtn.addEventListener("click", () => {
-    incomeEndpointInput.value = DEFAULT_INCOME_ENDPOINT;
-  });
-  resetOrderBtn.addEventListener("click", () => {
-    orderEndpointInput.value = DEFAULT_ORDER_ENDPOINT;
-  });
-  incomeEndpointInput.addEventListener("keydown", (evt) => {
-    if (evt.key === "Enter" && (evt.metaKey || evt.ctrlKey)) fetchData();
-  });
-  orderEndpointInput.addEventListener("keydown", (evt) => {
-    if (evt.key === "Enter" && (evt.metaKey || evt.ctrlKey)) fetchData();
-  });
-
-  copyIncomeBtn.addEventListener("click", copyIncomeOutput);
-  downloadIncomeBtn.addEventListener("click", downloadIncomeOutput);
-  copyOrderBtn.addEventListener("click", copyOrderOutput);
-  downloadOrderBtn.addEventListener("click", downloadOrderOutput);
-  copyOrderSheetBtn.addEventListener("click", copyOrderSheetOutput);
-  copyIncomeSheetBtn.addEventListener("click", copyIncomeSheetOutput);
   if (openViewerBtn) openViewerBtn.addEventListener("click", openViewerPage);
   if (sendExportBtn) sendExportBtn.addEventListener("click", sendExportRequest);
   if (openSettingsBtn) openSettingsBtn.addEventListener("click", openOptionsPage);
-
-  let incomeSettingsOpen = false;
-  let orderSettingsOpen = false;
-  const updateIncomeSettings = () => {
-    incomeSettingsEl.classList.toggle("open", incomeSettingsOpen);
-    toggleIncomeSettingsBtn.textContent = incomeSettingsOpen ? "Sembunyikan" : "Tampilkan";
-  };
-  const updateOrderSettings = () => {
-    orderSettingsEl.classList.toggle("open", orderSettingsOpen);
-    toggleOrderSettingsBtn.textContent = orderSettingsOpen ? "Sembunyikan" : "Tampilkan";
-  };
-  toggleIncomeSettingsBtn.addEventListener("click", () => {
-    incomeSettingsOpen = !incomeSettingsOpen;
-    updateIncomeSettings();
-  });
-  toggleOrderSettingsBtn.addEventListener("click", () => {
-    orderSettingsOpen = !orderSettingsOpen;
-    updateOrderSettings();
-  });
-  updateIncomeSettings();
-  updateOrderSettings();
-
-  let summaryOpen = true;
-  const updateSummaryToggle = () => {
-    renderedSection.classList.toggle("hidden", !summaryOpen);
-    toggleSummaryBtn.textContent = summaryOpen ? "Sembunyikan Ringkasan" : "Tampilkan Ringkasan";
-  };
-  toggleSummaryBtn.addEventListener("click", () => {
-    summaryOpen = !summaryOpen;
-    updateSummaryToggle();
-  });
-  updateSummaryToggle();
-
-  let incomeRawOpen = true;
-  let orderRawOpen = true;
-  const updateIncomeRawToggle = () => {
-    outputIncomeEl.classList.toggle("hidden", !incomeRawOpen);
-    toggleIncomeRawBtn.textContent = incomeRawOpen ? "Sembunyikan" : "Tampilkan";
-  };
-  const updateOrderRawToggle = () => {
-    outputOrderEl.classList.toggle("hidden", !orderRawOpen);
-    toggleOrderRawBtn.textContent = orderRawOpen ? "Sembunyikan" : "Tampilkan";
-  };
-  toggleIncomeRawBtn.addEventListener("click", () => {
-    incomeRawOpen = !incomeRawOpen;
-    updateIncomeRawToggle();
-  });
-  toggleOrderRawBtn.addEventListener("click", () => {
-    orderRawOpen = !orderRawOpen;
-    updateOrderRawToggle();
-  });
-  updateIncomeRawToggle();
-  updateOrderRawToggle();
+  if (copyErrorBtn) {
+    copyErrorBtn.addEventListener("click", async () => {
+      const text = errorTextEl.textContent.trim();
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus("Error dicopy.", "ok");
+      } catch (err) {
+        setStatus(`Gagal copy error: ${err.message}`, "error");
+      }
+    });
+  }
 
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -933,7 +670,8 @@ const init = async () => {
   } catch (e) {
     activeMarketplace = settingsCache.defaultMarketplace || "shopee";
   }
-  updateExportInfo();
+  openViewerBtn.disabled = true;
+  setStatus("Siap digunakan.", "ok");
 };
 
 document.addEventListener("DOMContentLoaded", init);

@@ -8,169 +8,30 @@
 </head>
 <body>
   <header class="hero">
-    <div class="title">
+    <div class="header-row">
       <h1>Arva Shopee Fetcher</h1>
-      <p>Ambil income & order detail langsung dari tab seller.</p>
+      <button id="openSettingsBtn" class="icon-btn" aria-label="Pengaturan" title="Pengaturan">⚙</button>
     </div>
-    <button id="fetchBtn" class="primary">Ambil Data</button>
+    <p>Ambil data dan kirim ke API.</p>
   </header>
 
-  <section class="panel collapse" id="incomePanel">
-    <div class="collapse-head">
-      <div>
-        <h2>Income Request (get_order_income_components)</h2>
-        <p>Biarkan default; buka jika endpoint/payload berubah.</p>
-      </div>
-      <button id="toggleIncomeSettings" class="ghost small">Tampilkan</button>
-    </div>
-    <div class="collapse-body" id="incomeSettings">
-      <label for="incomeEndpoint">Endpoint income (SPC_CDS & SPC_CDS_VER otomatis)</label>
-      <div class="input-row">
-        <input id="incomeEndpoint" type="url" spellcheck="false">
-        <button id="resetIncomeUrl" class="ghost" title="Kembalikan URL awal">Reset</button>
-      </div>
-      <small>Tab aktif harus seller.shopee.co.id dan sudah login; cookie sesi ikut.</small>
-
-      <label for="incomePayload">Request Payload (JSON)</label>
-      <textarea
-        id="incomePayload"
-        rows="4"
-        spellcheck="false"
-        placeholder='Kosongkan untuk pakai payload default {"order_id": <auto dari URL tab>, "components": [2,3,4,5]}.'></textarea>
-      <small>Tempel payload persis dari DevTools > Network jika berubah.</small>
+  <section class="panel compact">
+    <div class="actions actions-wrap">
+      <button id="fetchBtn" class="primary">Ambil Data</button>
+      <button id="sendExportBtn" class="ghost">Kirim Data</button>
+      <button id="openViewerBtn" class="ghost">Lihat Data</button>
     </div>
   </section>
 
-  <section class="panel collapse" id="orderPanel">
-    <div class="collapse-head">
-      <div>
-        <h2>Order Request (get_one_order)</h2>
-        <p>Endpoint GET; order_id diisi otomatis dari URL tab.</p>
-      </div>
-      <button id="toggleOrderSettings" class="ghost small">Tampilkan</button>
+  <section class="panel status-panel">
+    <div class="status-row">
+      <div class="status" id="status">Belum ada permintaan.</div>
+      <div id="statusSpinner" class="spinner hidden" aria-hidden="true"></div>
     </div>
-    <div class="collapse-body" id="orderSettings">
-      <label for="orderEndpoint">Endpoint order (GET)</label>
-      <div class="input-row">
-        <input id="orderEndpoint" type="url" spellcheck="false">
-        <button id="resetOrderUrl" class="ghost" title="Kembalikan URL awal">Reset</button>
-      </div>
-      <small>order_id otomatis di query dari path tab aktif; ganti jika perlu.</small>
+    <div id="errorBox" class="error-box hidden">
+      <div class="error-text" id="errorText"></div>
+      <button id="copyErrorBtn" class="ghost small" title="Copy error">Copy</button>
     </div>
-  </section>
-
-  <section class="panel">
-    <div class="status" id="status">Belum ada permintaan.</div>
-  </section>
-
-  <section class="panel">
-    <div class="panel-head">
-      <div>
-        <strong>Pengiriman API</strong>
-        <small id="exportMeta">Marketplace: -</small>
-      </div>
-      <div class="actions actions-wrap">
-        <button id="openSettingsBtn" class="ghost small">Buka Pengaturan</button>
-        <button id="sendExportBtn" class="primary">Kirim ke API</button>
-      </div>
-    </div>
-    <div class="info-grid">
-      <div class="info-card">
-        <div class="info-label">Base URL</div>
-        <div id="exportBaseUrlText" class="info-value">-</div>
-      </div>
-      <div class="info-card">
-        <div class="info-label">Token</div>
-        <div id="exportTokenText" class="info-value">Belum diatur</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel output">
-    <div class="panel-head">
-      <div>
-        <strong>Hasil</strong>
-        <small>Ringkasan + JSON</small>
-      </div>
-      <div class="actions actions-wrap">
-        <button id="toggleSummary" class="ghost small">Sembunyikan Ringkasan</button>
-        <button id="openViewerBtn" class="ghost small">Buka di Tab</button>
-      </div>
-    </div>
-    <div id="rendered" class="rendered">
-      <div class="render-head">Ringkasan</div>
-      <div id="orderSummary" class="summary"></div>
-      <div class="render-head">Seller Income Breakdown</div>
-      <div id="sellerBreakdown" class="list"></div>
-      <div class="render-head">Buyer Payment Breakdown</div>
-      <div id="buyerBreakdown" class="list"></div>
-    </div>
-  </section>
-
-  <section class="panel output">
-    <div class="panel-head">
-      <div>
-        <strong>Order Items (Sheet)</strong>
-        <small>TSV siap tempel; header tampil, copy hanya data</small>
-      </div>
-      <div class="actions actions-wrap">
-        <button id="copyOrderSheetBtn" class="ghost">Copy Data</button>
-      </div>
-    </div>
-    <div class="sheet-table-wrap" aria-live="polite">
-      <table id="orderSheetTable" class="sheet-table">
-        <thead></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="panel output">
-    <div class="panel-head">
-      <div>
-        <strong>Income Breakdown (Sheet)</strong>
-        <small>TSV siap tempel; header tampil, copy hanya data</small>
-      </div>
-      <div class="actions actions-wrap">
-        <button id="copyIncomeSheetBtn" class="ghost">Copy Data</button>
-      </div>
-    </div>
-    <div class="sheet-table-wrap" aria-live="polite">
-      <table id="incomeSheetTable" class="sheet-table">
-        <thead></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="panel output">
-    <div class="panel-head">
-      <div>
-        <strong>Income JSON</strong>
-        <small>Raw get_order_income_components</small>
-      </div>
-      <div class="actions actions-wrap">
-        <button id="toggleIncomeRaw" class="ghost small">Sembunyikan</button>
-        <button id="copyIncomeBtn" class="ghost">Copy</button>
-        <button id="downloadIncomeBtn" class="ghost">Download</button>
-      </div>
-    </div>
-    <pre id="outputIncome" aria-live="polite"></pre>
-  </section>
-
-  <section class="panel output">
-    <div class="panel-head">
-      <div>
-        <strong>Order JSON</strong>
-        <small>Raw get_one_order</small>
-      </div>
-      <div class="actions actions-wrap">
-        <button id="toggleOrderRaw" class="ghost small">Sembunyikan</button>
-        <button id="copyOrderBtn" class="ghost">Copy</button>
-        <button id="downloadOrderBtn" class="ghost">Download</button>
-      </div>
-    </div>
-    <pre id="outputOrder" aria-live="polite"></pre>
   </section>
 
   <script src="popup.js"></script>

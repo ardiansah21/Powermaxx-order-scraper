@@ -9,7 +9,7 @@
 <body>
   <header class="hero">
     <div class="title">
-      <h1>Arva Shopee Fetcher - Viewer</h1>
+      <h1 id="orderSnTitle">Order SN -</h1>
       <p id="meta">Belum ada data.</p>
     </div>
     <div class="actions actions-wrap">
@@ -21,22 +21,17 @@
     <div class="status" id="status">Belum ada data.</div>
   </section>
 
-  <section class="panel output">
+  <section class="panel">
     <div class="panel-head">
       <div>
-        <strong>Income Breakdown (Sheet)</strong>
-        <small>Format long, aman untuk lookup</small>
+        <strong>Ringkasan</strong>
+        <small>Prioritas data get_one_order</small>
       </div>
       <div class="actions actions-wrap">
-        <button id="copyIncomeSheetBtn" class="ghost">Copy Data</button>
+        <button id="toggleSummaryBtn" class="ghost">Sembunyikan</button>
       </div>
     </div>
-    <div class="sheet-table-wrap" aria-live="polite">
-      <table id="incomeSheetTable" class="sheet-table">
-        <thead></thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <div id="summaryGrid" class="summary-grid"></div>
   </section>
 
   <section class="panel output">
@@ -46,11 +41,31 @@
         <small>TSV siap tempel</small>
       </div>
       <div class="actions actions-wrap">
+        <button id="toggleOrderSheetBtn" class="ghost">Tampilkan</button>
         <button id="copyOrderSheetBtn" class="ghost">Copy Data</button>
       </div>
     </div>
-    <div class="sheet-table-wrap" aria-live="polite">
+    <div id="orderSheetWrap" class="sheet-table-wrap hidden" aria-live="polite">
       <table id="orderSheetTable" class="sheet-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel output">
+    <div class="panel-head">
+      <div>
+        <strong>Income Breakdown (Sheet)</strong>
+        <small>Format long, aman untuk lookup</small>
+      </div>
+      <div class="actions actions-wrap">
+        <button id="toggleIncomeSheetBtn" class="ghost">Tampilkan</button>
+        <button id="copyIncomeSheetBtn" class="ghost">Copy Data</button>
+      </div>
+    </div>
+    <div id="incomeSheetWrap" class="sheet-table-wrap hidden" aria-live="polite">
+      <table id="incomeSheetTable" class="sheet-table">
         <thead></thead>
         <tbody></tbody>
       </table>
@@ -64,10 +79,12 @@
         <small>Raw get_order_income_components</small>
       </div>
       <div class="actions actions-wrap">
+        <button id="toggleIncomeJsonBtn" class="ghost">Tampilkan</button>
+        <button id="downloadIncomeJsonBtn" class="ghost">Download</button>
         <button id="copyIncomeJsonBtn" class="ghost">Copy</button>
       </div>
     </div>
-    <pre id="incomeJson" class="json-box"></pre>
+    <pre id="incomeJson" class="json-box hidden"></pre>
   </section>
 
   <section class="panel output">
@@ -77,10 +94,12 @@
         <small>Raw get_one_order</small>
       </div>
       <div class="actions actions-wrap">
+        <button id="toggleOrderJsonBtn" class="ghost">Tampilkan</button>
+        <button id="downloadOrderJsonBtn" class="ghost">Download</button>
         <button id="copyOrderJsonBtn" class="ghost">Copy</button>
       </div>
     </div>
-    <pre id="orderJson" class="json-box"></pre>
+    <pre id="orderJson" class="json-box hidden"></pre>
   </section>
 
   <script src="viewer.js"></script>

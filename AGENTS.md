@@ -17,6 +17,12 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 - 2025-01-13: Default base URL export diset ke https://powermaxx.test dan token ditampilkan (input text).
 - 2025-01-13: Format payload export diubah ke shopee_get_one_order_json + shopee_get_order_income_components_json.
 - 2025-01-16: Menambahkan halaman pengaturan (options page) dengan konfigurasi per marketplace dan auto-detect dari URL tab.
+- 2025-01-16: Pengaturan dihapus dari popup; sheet dipindah hanya ke viewer; ringkasan/JSON default tersembunyi.
+- 2025-01-16: Popup disederhanakan: hanya ambil data, kirim data, buka pengaturan, buka viewer, dan download JSON.
+- 2025-01-16: Download JSON dipindah ke halaman viewer; popup hanya tombol ambil/kirim + status.
+- 2025-01-16: Popup dibuat sangat minimal dengan status animasi dan error box yang bisa dicopy.
+- 2025-01-16: Viewer menampilkan ringkasan berbasis get_one_order dan JSON default tersembunyi.
+- 2025-01-16: Viewer mengutamakan Order Items dan kedua sheet disembunyikan default (bisa ditampilkan).
 
 ## Ringkasan proyek
 
@@ -34,6 +40,11 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 - `popup.js`: logic fetch, parsing, rendering, sheet builder, dan storage untuk viewer.
 - `viewer.html` / `viewer.css` / `viewer.js`: halaman viewer untuk tabel sheet + JSON; sumber data dari `chrome.storage.local`.
 - `options.html` / `options.css` / `options.js`: halaman pengaturan untuk Base URL + token per marketplace.
+- Popup tidak lagi menampilkan sheet; hanya ringkasan dan JSON (default tersembunyi).
+- Popup tidak lagi menampilkan ringkasan/JSON; tampilan minimal dengan tombol utama.
+- Download JSON ada di viewer (income/order).
+- Popup menampilkan status + spinner + error copy.
+- Viewer: Order Items tampil lebih dulu; sheet dan JSON bisa ditoggle.
 - `data-contoh/`: contoh payload dan hasil respons untuk referensi.
 
 ## Alur data (ringkas)
@@ -95,3 +106,5 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 - 2025-01-13: Default base URL export ditetapkan ke https://powermaxx.test dan token tidak disembunyikan.
 - 2025-01-13: Payload export diganti sesuai format baru (dua field JSON Shopee).
 - 2025-01-16: Menambahkan options page untuk konfigurasi Shopee/TikTok dan auto-detect marketplace.
+- 2025-01-16: Menghapus pengaturan dari popup dan menyederhanakan tampilan.
+- 2025-01-16: Menyembunyikan sheet di viewer secara default dan mengutamakan Order Items.
