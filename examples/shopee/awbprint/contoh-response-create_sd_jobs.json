@@ -1,0 +1,16 @@
+{
+    "code": 0,
+    "data": {
+        "list": [
+            {
+                "job_id": "SDK0001_46c222325a3a650eba38fe89df410263",
+                "job_name": "Label Pengiriman.Reguler*1.pdf",
+                "job_status": 5,
+                "job_type": 1,
+                "is_first_time": 0
+            }
+        ]
+    },
+    "message": "success",
+    "user_message": "success"
+}

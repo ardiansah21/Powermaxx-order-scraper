@@ -1,0 +1,70 @@
+{
+    "code": 0,
+    "data": {
+        "order_info": {
+            "order_id": 222685295288645,
+            "split_up": 0,
+            "package_list": [
+                {
+                    "package_number": "OFG222685295207109",
+                    "parcel_no": 1,
+                    "channel_id": 80033,
+                    "items": [
+                        {
+                            "group_id": "0",
+                            "model_id": 201208828163,
+                            "order_item_id": 21710712117,
+                            "virtual_item_id": 0,
+                            "virtual_model_id": 0,
+                            "line_item_id": "222685295275910",
+                            "index": 0,
+                            "show_rr_tag": false,
+                            "rr_tag_qty": 1,
+                            "show_cancellation_tag": false,
+                            "cancellation_tag_qty": 1,
+                            "is_prescription_item": false
+                        }
+                    ],
+                    "seller_remark": "",
+                    "status": 1,
+                    "total_price": 164545500000,
+                    "allocating_status": 0,
+                    "auto_cancel_layer2": 1769273999,
+                    "consignment_no": "ID2623091108333",
+                    "first_mile_tn": "",
+                    "logistics_flag": 12,
+                    "package_logistics_status": 1,
+                    "plp_number": "",
+                    "shipping_method": 80033,
+                    "shipping_status": 3,
+                    "third_party_tn": "SHPE26012187F980025445",
+                    "tracking_info": [
+                        {
+                            "id": 191958881,
+                            "ctime": 1768986265,
+                            "description": "Pengirim telah mengatur pengiriman. Menunggu paket diserahkan ke pihak jasa kirim.",
+                            "flag": 14,
+                            "logid": 1
+                        }
+                    ],
+                    "checkout_carrier_name": "Reguler",
+                    "checkout_channel_id": 8003,
+                    "fulfillment_channel_id": 80033,
+                    "fulfillment_carrier_name": "Reguler",
+                    "fulfillment_shipping_method": 80033,
+                    "is_prescription_order": false,
+                    "prescription_check_status": 0,
+                    "prescription_images": null,
+                    "code": 0,
+                    "transify_key": ""
+                }
+            ],
+            "order_action": {
+                "can_split": 0,
+                "can_unsplit": 0
+            }
+        }
+    },
+    "message": "success",
+    "user_message": "success"
+}
