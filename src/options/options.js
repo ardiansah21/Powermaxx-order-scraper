@@ -2,6 +2,17 @@ const DEFAULT_INCOME_ENDPOINT =
   "https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components";
 const DEFAULT_ORDER_ENDPOINT =
   "https://seller.shopee.co.id/api/v3/order/get_one_order";
+const DEFAULT_AWB_PACKAGE_ENDPOINT =
+  "https://seller.shopee.co.id/api/v3/order/get_package";
+const DEFAULT_AWB_CREATE_JOB_ENDPOINT =
+  "https://seller.shopee.co.id/api/v3/logistics/create_sd_jobs";
+const DEFAULT_AWB_DOWNLOAD_JOB_ENDPOINT =
+  "https://seller.shopee.co.id/api/v3/logistics/download_sd_job";
+const DEFAULT_AWB_REGION_ID = "ID";
+const DEFAULT_AWB_ASYNC_VERSION = "0.2";
+const DEFAULT_AWB_FILE_TYPE = "THERMAL_PDF";
+const DEFAULT_AWB_FILE_NAME = "Label Pengiriman";
+const DEFAULT_AWB_FILE_CONTENTS = "3";
 const SETTINGS_KEY = "arvaSettings";
 
 const DEFAULT_SETTINGS = {
@@ -11,7 +22,17 @@ const DEFAULT_SETTINGS = {
       baseUrl: "https://powermaxx.test",
       token: "",
       incomeEndpoint: DEFAULT_INCOME_ENDPOINT,
-      orderEndpoint: DEFAULT_ORDER_ENDPOINT
+      orderEndpoint: DEFAULT_ORDER_ENDPOINT,
+      awb: {
+        getPackageEndpoint: DEFAULT_AWB_PACKAGE_ENDPOINT,
+        createJobEndpoint: DEFAULT_AWB_CREATE_JOB_ENDPOINT,
+        downloadJobEndpoint: DEFAULT_AWB_DOWNLOAD_JOB_ENDPOINT,
+        regionId: DEFAULT_AWB_REGION_ID,
+        asyncSdVersion: DEFAULT_AWB_ASYNC_VERSION,
+        fileType: DEFAULT_AWB_FILE_TYPE,
+        fileName: DEFAULT_AWB_FILE_NAME,
+        fileContents: DEFAULT_AWB_FILE_CONTENTS
+      }
     },
     tiktok: {
       baseUrl: "https://powermaxx.test",
@@ -27,6 +48,14 @@ const shopeeBaseUrlEl = document.getElementById("shopeeBaseUrl");
 const shopeeTokenEl = document.getElementById("shopeeToken");
 const shopeeIncomeEndpointEl = document.getElementById("shopeeIncomeEndpoint");
 const shopeeOrderEndpointEl = document.getElementById("shopeeOrderEndpoint");
+const shopeeAwbPackageEndpointEl = document.getElementById("shopeeAwbPackageEndpoint");
+const shopeeAwbCreateJobEndpointEl = document.getElementById("shopeeAwbCreateJobEndpoint");
+const shopeeAwbDownloadJobEndpointEl = document.getElementById("shopeeAwbDownloadJobEndpoint");
+const shopeeAwbRegionIdEl = document.getElementById("shopeeAwbRegionId");
+const shopeeAwbAsyncVersionEl = document.getElementById("shopeeAwbAsyncVersion");
+const shopeeAwbFileTypeEl = document.getElementById("shopeeAwbFileType");
+const shopeeAwbFileNameEl = document.getElementById("shopeeAwbFileName");
+const shopeeAwbFileContentsEl = document.getElementById("shopeeAwbFileContents");
 const tiktokBaseUrlEl = document.getElementById("tiktokBaseUrl");
 const tiktokTokenEl = document.getElementById("tiktokToken");
 
@@ -46,12 +75,23 @@ const loadSettings = async () => {
     storage.get([SETTINGS_KEY], (result) => {
       const stored = result?.[SETTINGS_KEY];
       if (!stored) return resolve(DEFAULT_SETTINGS);
+      const storedMarketplaces = stored.marketplaces || {};
       resolve({
         ...DEFAULT_SETTINGS,
         ...stored,
         marketplaces: {
-          ...DEFAULT_SETTINGS.marketplaces,
-          ...(stored.marketplaces || {})
+          shopee: {
+            ...DEFAULT_SETTINGS.marketplaces.shopee,
+            ...(storedMarketplaces.shopee || {}),
+            awb: {
+              ...DEFAULT_SETTINGS.marketplaces.shopee.awb,
+              ...(storedMarketplaces.shopee?.awb || {})
+            }
+          },
+          tiktok: {
+            ...DEFAULT_SETTINGS.marketplaces.tiktok,
+            ...(storedMarketplaces.tiktok || {})
+          }
         }
       });
     });
@@ -74,6 +114,20 @@ const fillForm = (settings) => {
     settings.marketplaces?.shopee?.incomeEndpoint || DEFAULT_INCOME_ENDPOINT;
   shopeeOrderEndpointEl.value =
     settings.marketplaces?.shopee?.orderEndpoint || DEFAULT_ORDER_ENDPOINT;
+  const awbSettings = settings.marketplaces?.shopee?.awb || {};
+  shopeeAwbPackageEndpointEl.value =
+    awbSettings.getPackageEndpoint || DEFAULT_AWB_PACKAGE_ENDPOINT;
+  shopeeAwbCreateJobEndpointEl.value =
+    awbSettings.createJobEndpoint || DEFAULT_AWB_CREATE_JOB_ENDPOINT;
+  shopeeAwbDownloadJobEndpointEl.value =
+    awbSettings.downloadJobEndpoint || DEFAULT_AWB_DOWNLOAD_JOB_ENDPOINT;
+  shopeeAwbRegionIdEl.value = awbSettings.regionId || DEFAULT_AWB_REGION_ID;
+  shopeeAwbAsyncVersionEl.value =
+    awbSettings.asyncSdVersion || DEFAULT_AWB_ASYNC_VERSION;
+  shopeeAwbFileTypeEl.value = awbSettings.fileType || DEFAULT_AWB_FILE_TYPE;
+  shopeeAwbFileNameEl.value = awbSettings.fileName || DEFAULT_AWB_FILE_NAME;
+  shopeeAwbFileContentsEl.value =
+    awbSettings.fileContents || DEFAULT_AWB_FILE_CONTENTS;
   tiktokBaseUrlEl.value = settings.marketplaces?.tiktok?.baseUrl || "";
   tiktokTokenEl.value = settings.marketplaces?.tiktok?.token || "";
 };
@@ -85,7 +139,22 @@ const collectForm = () => ({
       baseUrl: shopeeBaseUrlEl.value.trim(),
       token: shopeeTokenEl.value.trim(),
       incomeEndpoint: shopeeIncomeEndpointEl.value.trim() || DEFAULT_INCOME_ENDPOINT,
-      orderEndpoint: shopeeOrderEndpointEl.value.trim() || DEFAULT_ORDER_ENDPOINT
+      orderEndpoint: shopeeOrderEndpointEl.value.trim() || DEFAULT_ORDER_ENDPOINT,
+      awb: {
+        getPackageEndpoint:
+          shopeeAwbPackageEndpointEl.value.trim() || DEFAULT_AWB_PACKAGE_ENDPOINT,
+        createJobEndpoint:
+          shopeeAwbCreateJobEndpointEl.value.trim() || DEFAULT_AWB_CREATE_JOB_ENDPOINT,
+        downloadJobEndpoint:
+          shopeeAwbDownloadJobEndpointEl.value.trim() || DEFAULT_AWB_DOWNLOAD_JOB_ENDPOINT,
+        regionId: shopeeAwbRegionIdEl.value.trim() || DEFAULT_AWB_REGION_ID,
+        asyncSdVersion:
+          shopeeAwbAsyncVersionEl.value.trim() || DEFAULT_AWB_ASYNC_VERSION,
+        fileType: shopeeAwbFileTypeEl.value.trim() || DEFAULT_AWB_FILE_TYPE,
+        fileName: shopeeAwbFileNameEl.value.trim() || DEFAULT_AWB_FILE_NAME,
+        fileContents:
+          shopeeAwbFileContentsEl.value.trim() || DEFAULT_AWB_FILE_CONTENTS
+      }
     },
     tiktok: {
       baseUrl: tiktokBaseUrlEl.value.trim(),

@@ -25,12 +25,16 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 - 2025-01-16: Viewer mengutamakan Order Items dan kedua sheet disembunyikan default (bisa ditampilkan).
 - 2025-01-16: Rebrand nama ekstensi menjadi Powermaxx Order Scraper.
 - 2025-01-17: Rapikan struktur folder ke `src/` dan `examples/`.
+- 2025-01-17: Menambahkan download AWB Shopee (get_package -> create_sd_jobs -> download_sd_job) dan pengaturannya.
+- 2025-01-17: Format nama file AWB: YYYYMMDD-HHmm_SHOPEE_{order_sn}.pdf (waktu lokal).
+- 2025-01-17: Menambahkan tombol Ambil + Kirim untuk fetch dan export sekaligus.
 
 ## Ringkasan proyek
 
 Ekstensi Chrome MV3 untuk `seller.shopee.co.id` yang mengambil:
 - Income breakdown (POST `get_order_income_components`).
 - Order detail (GET `get_one_order`).
+- AWB/label pengiriman (GET `get_package` -> POST `create_sd_jobs` -> GET `download_sd_job`).
 
 Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`credentials: include`).
 
@@ -53,6 +57,12 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
    - Ambil order detail dengan `order_id` dari URL tab.
 4. Hasil income + order disimpan ke `chrome.storage.local` dengan key `viewerPayload`.
 5. `src/viewer/viewer.js` membaca `viewerPayload` dan menampilkan ringkasan, sheet, dan JSON.
+
+Alur AWB (ringkas):
+
+1. User klik **Download AWB** di popup.
+2. `pageFetcherAwb` memanggil `get_one_order` untuk `shop_id`, lalu `get_package`.
+3. Buat job via `create_sd_jobs` dan unduh PDF via `download_sd_job` (fallback buka `awbprint`).
 
 ## Autentikasi Shopee
 
@@ -85,6 +95,7 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 
 - UI masih rapi dan ringan.
 - Fetch tidak hardcode cookie.
+- Download AWB Shopee berjalan (get_package -> create_sd_jobs -> download_sd_job).
 - Viewer bisa menampilkan ringkasan + JSON + sheet.
 - README sudah diperbarui jika ada perubahan alur/endpoint.
 - Decision Log diperbarui.
@@ -101,3 +112,6 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 - 2025-01-16: Menyembunyikan sheet di viewer secara default dan mengutamakan Order Items.
 - 2025-01-16: Rebrand ke Powermaxx Order Scraper.
 - 2025-01-17: Menata ulang struktur ke `src/` dan `examples/`.
+- 2025-01-17: Menambahkan alur download AWB Shopee + pengaturan endpoint/file.
+- 2025-01-17: Menetapkan format nama file AWB dengan tanggal + Order SN.
+- 2025-01-17: Menambahkan tombol Ambil + Kirim di popup.

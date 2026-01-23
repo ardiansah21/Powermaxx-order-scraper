@@ -34,6 +34,14 @@ h2 {
   font-size: 18px;
 }
 
+.section-title {
+  margin-top: 6px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 p {
   margin: 6px 0 0;
   color: var(--muted);

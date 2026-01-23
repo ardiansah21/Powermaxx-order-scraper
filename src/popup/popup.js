@@ -2,6 +2,17 @@ const DEFAULT_INCOME_ENDPOINT =
   "https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components";
 const DEFAULT_ORDER_ENDPOINT =
   "https://seller.shopee.co.id/api/v3/order/get_one_order";
+const DEFAULT_AWB_PACKAGE_ENDPOINT =
+  "https://seller.shopee.co.id/api/v3/order/get_package";
+const DEFAULT_AWB_CREATE_JOB_ENDPOINT =
+  "https://seller.shopee.co.id/api/v3/logistics/create_sd_jobs";
+const DEFAULT_AWB_DOWNLOAD_JOB_ENDPOINT =
+  "https://seller.shopee.co.id/api/v3/logistics/download_sd_job";
+const DEFAULT_AWB_REGION_ID = "ID";
+const DEFAULT_AWB_ASYNC_VERSION = "0.2";
+const DEFAULT_AWB_FILE_TYPE = "THERMAL_PDF";
+const DEFAULT_AWB_FILE_NAME = "Label Pengiriman";
+const DEFAULT_AWB_FILE_CONTENTS = "3";
 const DEFAULT_COMPONENTS = "2,3,4,5";
 const SETTINGS_KEY = "arvaSettings";
 const DEFAULT_SETTINGS = {
@@ -11,7 +22,17 @@ const DEFAULT_SETTINGS = {
       baseUrl: "https://powermaxx.test",
       token: "",
       incomeEndpoint: DEFAULT_INCOME_ENDPOINT,
-      orderEndpoint: DEFAULT_ORDER_ENDPOINT
+      orderEndpoint: DEFAULT_ORDER_ENDPOINT,
+      awb: {
+        getPackageEndpoint: DEFAULT_AWB_PACKAGE_ENDPOINT,
+        createJobEndpoint: DEFAULT_AWB_CREATE_JOB_ENDPOINT,
+        downloadJobEndpoint: DEFAULT_AWB_DOWNLOAD_JOB_ENDPOINT,
+        regionId: DEFAULT_AWB_REGION_ID,
+        asyncSdVersion: DEFAULT_AWB_ASYNC_VERSION,
+        fileType: DEFAULT_AWB_FILE_TYPE,
+        fileName: DEFAULT_AWB_FILE_NAME,
+        fileContents: DEFAULT_AWB_FILE_CONTENTS
+      }
     },
     tiktok: {
       baseUrl: "https://powermaxx.test",
@@ -23,6 +44,8 @@ const DEFAULT_SETTINGS = {
 const fetchBtn = document.getElementById("fetchBtn");
 const statusEl = document.getElementById("status");
 const sendExportBtn = document.getElementById("sendExportBtn");
+const fetchSendBtn = document.getElementById("fetchSendBtn");
+const downloadAwbBtn = document.getElementById("downloadAwbBtn");
 const openSettingsBtn = document.getElementById("openSettingsBtn");
 const openViewerBtn = document.getElementById("openViewerBtn");
 const statusSpinner = document.getElementById("statusSpinner");
@@ -77,12 +100,23 @@ const loadSettings = async () => {
     storage.get([SETTINGS_KEY], (result) => {
       const stored = result?.[SETTINGS_KEY];
       if (!stored) return resolve(DEFAULT_SETTINGS);
+      const storedMarketplaces = stored.marketplaces || {};
       resolve({
         ...DEFAULT_SETTINGS,
         ...stored,
         marketplaces: {
-          ...DEFAULT_SETTINGS.marketplaces,
-          ...(stored.marketplaces || {})
+          shopee: {
+            ...DEFAULT_SETTINGS.marketplaces.shopee,
+            ...(storedMarketplaces.shopee || {}),
+            awb: {
+              ...DEFAULT_SETTINGS.marketplaces.shopee.awb,
+              ...(storedMarketplaces.shopee?.awb || {})
+            }
+          },
+          tiktok: {
+            ...DEFAULT_SETTINGS.marketplaces.tiktok,
+            ...(storedMarketplaces.tiktok || {})
+          }
         }
       });
     });
@@ -520,7 +554,307 @@ const pageFetcher = async (
   }
 };
 
+const pageFetcherAwb = async (
+  packageBase,
+  createBase,
+  downloadBase,
+  orderBase,
+  awbOptions
+) => {
+  try {
+    const pickCookie = (name) => {
+      const pair = document.cookie
+        .split(";")
+        .map((c) => c.trim())
+        .find((c) => c.startsWith(`${name}=`));
+      if (!pair) return "";
+      const raw = pair.slice(pair.indexOf("=") + 1);
+      try {
+        return decodeURIComponent(raw);
+      } catch (e) {
+        return raw;
+      }
+    };
+
+    const safeJsonParse = (raw) => {
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const ensureParams = (url) => {
+      const cdsCookie = pickCookie("SPC_CDS");
+      const cdsVerCookie = pickCookie("SPC_CDS_VER");
+      if (!url.searchParams.get("SPC_CDS") && cdsCookie) {
+        url.searchParams.set("SPC_CDS", cdsCookie);
+      }
+      if (!url.searchParams.get("SPC_CDS_VER")) {
+        if (cdsVerCookie) {
+          url.searchParams.set("SPC_CDS_VER", cdsVerCookie);
+        } else {
+          url.searchParams.set("SPC_CDS_VER", "2");
+        }
+      }
+    };
+
+    const parseOrderId = () => {
+      const match = location.pathname.match(/order\/([0-9]+)/);
+      return match ? match[1] : "";
+    };
+
+    const orderId = parseOrderId();
+    if (!orderId) {
+      return { error: "Order ID tidak ditemukan (buka halaman order)" };
+    }
+
+    const packageUrl = new URL(packageBase);
+    ensureParams(packageUrl);
+    packageUrl.searchParams.set("order_id", orderId);
+
+    const orderUrl = new URL(orderBase || "https://seller.shopee.co.id/api/v3/order/get_one_order");
+    ensureParams(orderUrl);
+    orderUrl.searchParams.set("order_id", orderId);
+
+    const orderResp = await fetch(orderUrl.toString(), {
+      method: "GET",
+      headers: { accept: "application/json, text/plain, */*" },
+      credentials: "include"
+    });
+    const orderText = await orderResp.text();
+    const orderJson = safeJsonParse(orderText);
+    if (!orderResp.ok || orderJson?.code !== 0) {
+      return {
+        error: `Get order gagal ${orderResp.status}`,
+        detail: orderText,
+        step: "get_order"
+      };
+    }
+
+    const orderSn = orderJson?.data?.order_sn || "";
+    const formatTimestamp = () => {
+      const now = new Date();
+      const pad = (num) => String(num).padStart(2, "0");
+      return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(
+        now.getHours()
+      )}${pad(now.getMinutes())}`;
+    };
+    const sanitizeFilePart = (value) =>
+      String(value || "").replace(/[^a-zA-Z0-9_-]+/g, "");
+    const safeOrderSn = sanitizeFilePart(orderSn) || sanitizeFilePart(orderId) || "order";
+    const downloadFileName = `${formatTimestamp()}_SHOPEE_${safeOrderSn}.pdf`;
+    const customBaseName = String(awbOptions?.fileName || "").trim();
+    const createFileName = customBaseName || downloadFileName.replace(/\.pdf$/i, "");
+
+    const shopId = orderJson?.data?.shop_id;
+    if (!shopId) {
+      return {
+        error: "shop_id tidak ditemukan",
+        detail: orderText,
+        step: "get_order"
+      };
+    }
+
+    const packageResp = await fetch(packageUrl.toString(), {
+      method: "GET",
+      headers: { accept: "application/json, text/plain, */*" },
+      credentials: "include"
+    });
+    const packageText = await packageResp.text();
+    const packageJson = safeJsonParse(packageText);
+    if (!packageResp.ok || packageJson?.code !== 0) {
+      return {
+        error: `Get package gagal ${packageResp.status}`,
+        detail: packageText,
+        step: "get_package"
+      };
+    }
+
+    const orderInfo = packageJson?.data?.order_info;
+    const packages = Array.isArray(orderInfo?.package_list)
+      ? orderInfo.package_list
+      : [];
+    if (!packages.length) {
+      return { error: "Package list kosong", detail: packageText, step: "get_package" };
+    }
+
+    const orderIdValue = Number(orderId);
+    const orderIdPayload = Number.isFinite(orderIdValue) ? orderIdValue : orderId;
+    const groupMap = new Map();
+
+    packages.forEach((pkg) => {
+      const groupRaw = pkg?.items?.[0]?.group_id ?? pkg?.group_id ?? 0;
+      const groupNum = Number(groupRaw);
+      const groupId = Number.isFinite(groupNum) ? groupNum : 0;
+      if (!groupMap.has(groupId)) {
+        groupMap.set(groupId, {
+          primary_package_number: pkg?.package_number ?? "",
+          group_shipment_id: groupId,
+          package_list: []
+        });
+      }
+      const group = groupMap.get(groupId);
+      group.package_list.push({
+        order_id: orderIdPayload,
+        package_number: pkg?.package_number ?? ""
+      });
+    });
+
+    const groupList = Array.from(groupMap.values()).filter(
+      (group) => group.primary_package_number
+    );
+    if (!groupList.length) {
+      return { error: "Group list kosong", detail: packageText, step: "group_list" };
+    }
+
+    const channelId =
+      packages[0]?.channel_id ??
+      packages[0]?.fulfillment_channel_id ??
+      packages[0]?.shipping_method ??
+      orderJson?.data?.fulfillment_channel_id ??
+      orderJson?.data?.checkout_channel_id ??
+      0;
+    if (!channelId) {
+      return { error: "channel_id tidak ditemukan", detail: packageText, step: "group_list" };
+    }
+
+    const regionId = (awbOptions?.regionId || orderJson?.data?.seller_address?.country || "ID").trim();
+    const parseFileContents = (raw) => {
+      const items = String(raw || "")
+        .split(",")
+        .map((part) => Number(part.trim()))
+        .filter((num) => Number.isFinite(num));
+      return items.length ? items : [3];
+    };
+
+    const createUrl = new URL(createBase);
+    ensureParams(createUrl);
+    const asyncVersion = String(awbOptions?.asyncSdVersion || "").trim();
+    if (asyncVersion) {
+      createUrl.searchParams.set("async_sd_version", asyncVersion);
+    }
+
+    const createBody = {
+      group_list: groupList,
+      region_id: regionId,
+      shop_id: shopId,
+      channel_id: channelId,
+      generate_file_details: [
+        {
+          file_type: awbOptions?.fileType || "THERMAL_PDF",
+          file_name: createFileName,
+          file_contents: parseFileContents(awbOptions?.fileContents || "3")
+        }
+      ],
+      record_generate_schema: false
+    };
+
+    const createResp = await fetch(createUrl.toString(), {
+      method: "POST",
+      headers: {
+        "content-type": "application/json;charset=UTF-8",
+        accept: "application/json, text/plain, */*"
+      },
+      credentials: "include",
+      body: JSON.stringify(createBody)
+    });
+    const createText = await createResp.text();
+    const createJson = safeJsonParse(createText);
+    if (!createResp.ok || createJson?.code !== 0) {
+      return {
+        error: `Create SD job gagal ${createResp.status}`,
+        detail: createText,
+        step: "create_job"
+      };
+    }
+
+    const job = createJson?.data?.list?.[0];
+    if (!job?.job_id) {
+      return { error: "job_id tidak ditemukan", detail: createText, step: "create_job" };
+    }
+
+    const jobId = job.job_id;
+    const isFirstTime = job?.is_first_time ?? 0;
+
+    const downloadUrl = new URL(downloadBase);
+    ensureParams(downloadUrl);
+    downloadUrl.searchParams.set("job_id", jobId);
+    downloadUrl.searchParams.set("is_first_time", String(isFirstTime));
+
+    const printUrl = new URL("https://seller.shopee.co.id/awbprint");
+    printUrl.searchParams.set("job_id", jobId);
+    printUrl.searchParams.set("shop_id", String(shopId));
+    printUrl.searchParams.set("first_time", String(isFirstTime));
+
+    const downloadResp = await fetch(downloadUrl.toString(), {
+      method: "GET",
+      headers: { accept: "application/pdf, application/json, */*" },
+      credentials: "include"
+    });
+
+    const contentType = downloadResp.headers.get("content-type") || "";
+    if (
+      downloadResp.ok &&
+      (contentType.includes("pdf") ||
+        contentType.includes("force-download") ||
+        contentType.includes("octet-stream"))
+    ) {
+      const blob = await downloadResp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const fileName = downloadFileName;
+      const anchor = document.createElement("a");
+      anchor.href = blobUrl;
+      anchor.download = fileName;
+      anchor.style.display = "none";
+      document.body.appendChild(anchor);
+      anchor.click();
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+        anchor.remove();
+      }, 1000);
+      return {
+        ok: true,
+        downloaded: true,
+        fileName,
+        jobId,
+        printUrl: printUrl.toString()
+      };
+    }
+
+    const downloadText = await downloadResp.text();
+    const downloadJson = safeJsonParse(downloadText);
+    const downloadDataUrl =
+      downloadJson?.data?.url ||
+      downloadJson?.data?.download_url ||
+      downloadJson?.data?.file_url;
+
+    if (downloadResp.ok && downloadDataUrl) {
+      return {
+        ok: true,
+        downloaded: false,
+        openUrl: downloadDataUrl,
+        fileName: downloadFileName,
+        jobId,
+        printUrl: printUrl.toString()
+      };
+    }
+
+    return {
+      error: `Download gagal ${downloadResp.status}`,
+      detail: downloadText || downloadResp.statusText,
+      step: "download",
+      downloadUrl: downloadUrl.toString(),
+      printUrl: printUrl.toString(),
+      jobId
+    };
+  } catch (e) {
+    return { error: e.message, step: "unknown" };
+  }
+};
+
 const fetchData = async () => {
+  let success = false;
   setStatus("Mengambil data (menggunakan cookie/tab aktif)...", "info");
   setError("");
   setLoading(true);
@@ -536,7 +870,7 @@ const fetchData = async () => {
     fetchBtn.disabled = false;
     openViewerBtn.disabled = false;
     setLoading(false);
-    return;
+    return false;
   }
   activeMarketplace = detectMarketplace(tab.url);
 
@@ -546,7 +880,7 @@ const fetchData = async () => {
     fetchBtn.disabled = false;
     openViewerBtn.disabled = false;
     setLoading(false);
-    return;
+    return false;
   }
   const incomeCfg = settingsCache.marketplaces?.shopee || {};
   const incomeUrl = incomeCfg.incomeEndpoint || DEFAULT_INCOME_ENDPOINT;
@@ -564,13 +898,13 @@ const fetchData = async () => {
       setStatus("Tidak ada hasil dari tab (mungkin diblokir CSP atau error lain).", "error");
       setError("Eksekusi script di tab gagal. Coba refresh halaman seller.");
       openViewerBtn.disabled = false;
-      return;
+      return false;
     }
     if (result.error) {
       setStatus(`Gagal di tab: ${result.error}`, "error");
       setError(result.error);
       openViewerBtn.disabled = false;
-      return;
+      return false;
     }
 
     const incomeRaw = result.income?.body || "";
@@ -620,12 +954,110 @@ const fetchData = async () => {
       setError(message);
     }
     openViewerBtn.disabled = false;
+    success = Boolean(incomeOk && orderOk && parsedIncome && parsedOrder);
   } catch (err) {
     setStatus(`Gagal mengambil data: ${err.message}`, "error");
     setError(err.message);
     setOutput(String(err), "");
   } finally {
     fetchBtn.disabled = false;
+    setLoading(false);
+  }
+
+  return success;
+};
+
+const fetchAndSend = async () => {
+  if (fetchSendBtn) fetchSendBtn.disabled = true;
+  const ok = await fetchData();
+  if (ok) {
+    await sendExportRequest();
+  }
+  if (fetchSendBtn) fetchSendBtn.disabled = false;
+};
+
+const downloadAwb = async () => {
+  setStatus("Menyiapkan AWB...", "info");
+  setError("");
+  setLoading(true);
+  if (downloadAwbBtn) downloadAwbBtn.disabled = true;
+
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id) {
+      setStatus("Tidak ada tab aktif ditemukan.", "error");
+      setError("Tidak ada tab aktif. Buka halaman seller lalu coba lagi.");
+      return;
+    }
+
+    activeMarketplace = detectMarketplace(tab.url);
+    if (activeMarketplace !== "shopee") {
+      setStatus("AWB hanya tersedia untuk Shopee.", "error");
+      setError("Marketplace aktif bukan Shopee.");
+      return;
+    }
+
+    const shopeeCfg = settingsCache.marketplaces?.shopee || {};
+    const awbCfg = shopeeCfg.awb || {};
+    const packageUrl = awbCfg.getPackageEndpoint || DEFAULT_AWB_PACKAGE_ENDPOINT;
+    const createUrl = awbCfg.createJobEndpoint || DEFAULT_AWB_CREATE_JOB_ENDPOINT;
+    const downloadUrl = awbCfg.downloadJobEndpoint || DEFAULT_AWB_DOWNLOAD_JOB_ENDPOINT;
+    const orderUrl = shopeeCfg.orderEndpoint || DEFAULT_ORDER_ENDPOINT;
+    const awbOptions = {
+      regionId: awbCfg.regionId || DEFAULT_AWB_REGION_ID,
+      asyncSdVersion: awbCfg.asyncSdVersion || DEFAULT_AWB_ASYNC_VERSION,
+      fileType: awbCfg.fileType || DEFAULT_AWB_FILE_TYPE,
+      fileName: awbCfg.fileName || DEFAULT_AWB_FILE_NAME,
+      fileContents: awbCfg.fileContents || DEFAULT_AWB_FILE_CONTENTS
+    };
+
+    const [execResult] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: pageFetcherAwb,
+      args: [packageUrl, createUrl, downloadUrl, orderUrl, awbOptions]
+    });
+    const result = execResult?.result;
+
+    if (!result) {
+      setStatus("Tidak ada hasil dari tab (mungkin diblokir CSP atau error lain).", "error");
+      setError("Eksekusi script di tab gagal. Coba refresh halaman seller.");
+      return;
+    }
+
+    if (result.error) {
+      setStatus(`Gagal download AWB: ${result.error}`, "error");
+      setError([result.error, result.detail].filter(Boolean).join("\n"));
+      if (result.step === "download" && result.printUrl) {
+        await chrome.tabs.create({ url: result.printUrl });
+      }
+      return;
+    }
+
+    if (result.openUrl) {
+      const label = result.fileName ? ` (${result.fileName})` : "";
+      setStatus(`AWB siap${label}, membuka file...`, "ok");
+      await chrome.tabs.create({ url: result.openUrl });
+      return;
+    }
+
+    if (result.downloaded) {
+      setStatus(`AWB diunduh: ${result.fileName || "PDF"}`, "ok");
+      return;
+    }
+
+    if (result.printUrl) {
+      const label = result.fileName ? ` (${result.fileName})` : "";
+      setStatus(`AWB siap${label}, membuka halaman AWB...`, "ok");
+      await chrome.tabs.create({ url: result.printUrl });
+      return;
+    }
+
+    setStatus("AWB selesai diproses.", "ok");
+  } catch (err) {
+    setStatus(`Gagal memproses AWB: ${err.message}`, "error");
+    setError(err.message);
+  } finally {
+    if (downloadAwbBtn) downloadAwbBtn.disabled = false;
     setLoading(false);
   }
 };
@@ -648,6 +1080,8 @@ const init = async () => {
   clearRendered();
 
   fetchBtn.addEventListener("click", fetchData);
+  if (fetchSendBtn) fetchSendBtn.addEventListener("click", fetchAndSend);
+  if (downloadAwbBtn) downloadAwbBtn.addEventListener("click", downloadAwb);
   if (openViewerBtn) openViewerBtn.addEventListener("click", openViewerPage);
   if (sendExportBtn) sendExportBtn.addEventListener("click", sendExportRequest);
   if (openSettingsBtn) openSettingsBtn.addEventListener("click", openOptionsPage);
