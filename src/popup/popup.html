@@ -15,26 +15,76 @@
     <p>Ambil data dan kirim ke API.</p>
   </header>
 
-  <section class="panel compact">
-    <div class="actions actions-wrap">
-      <button id="fetchBtn" class="primary">Ambil Data</button>
-      <button id="fetchSendBtn" class="ghost">Ambil + Kirim</button>
-      <button id="sendExportBtn" class="ghost">Kirim Data</button>
-      <button id="downloadAwbBtn" class="ghost">Download AWB</button>
-      <button id="openViewerBtn" class="ghost">Lihat Data</button>
+  <section class="panel status-panel">
+    <div class="status-card" id="statusCard">
+      <div class="status-icon" id="statusIcon">•</div>
+      <div class="status-text" id="status">Belum ada permintaan.</div>
+      <div id="statusSpinner" class="spinner hidden" aria-hidden="true"></div>
+    </div>
+    <details id="errorDetails" class="error-details hidden">
+      <summary>Detail error</summary>
+      <div class="error-box">
+        <div class="error-text" id="errorText"></div>
+        <button id="copyErrorBtn" class="ghost small" title="Copy error">Copy</button>
+      </div>
+    </details>
+  </section>
+
+  <section id="loginView" class="panel login-panel">
+    <div class="panel-head">
+      <div>
+        <h2>Login</h2>
+        <small>Base URL diambil dari Pengaturan.</small>
+      </div>
+    </div>
+
+    <label for="authEmail">Email</label>
+    <input id="authEmail" type="email" spellcheck="false" placeholder="nama@email.com">
+
+    <label for="authPassword">Password</label>
+    <input id="authPassword" type="password" spellcheck="false" placeholder="Password">
+    <small>Password tidak disimpan.</small>
+
+    <label for="authDeviceName">Device Name</label>
+    <input id="authDeviceName" type="text" spellcheck="false" placeholder="powermaxx-extension">
+
+    <div class="actions login-actions">
+      <button id="loginBtn" class="primary">Login</button>
     </div>
   </section>
 
-  <section class="panel status-panel">
-    <div class="status-row">
-      <div class="status" id="status">Belum ada permintaan.</div>
-      <div id="statusSpinner" class="spinner hidden" aria-hidden="true"></div>
-    </div>
-    <div id="errorBox" class="error-box hidden">
-      <div class="error-text" id="errorText"></div>
-      <button id="copyErrorBtn" class="ghost small" title="Copy error">Copy</button>
-    </div>
-  </section>
+  <div id="mainView" class="view hidden">
+    <section class="panel">
+      <details class="profile-menu" id="profileMenu">
+        <summary class="profile-card" id="profileCard">
+          <div class="profile-info">
+            <div class="profile-name" id="profileName">-</div>
+            <div class="profile-email" id="profileEmail">-</div>
+          </div>
+          <span class="profile-chevron" aria-hidden="true">▾</span>
+        </summary>
+        <div class="profile-actions">
+          <button id="logoutBtn" class="ghost small">Logout</button>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel compact">
+      <div class="actions-primary">
+        <button id="fetchSendBtn" class="primary">Ambil + Kirim</button>
+        <button id="downloadAwbBtn" class="ghost">Download AWB</button>
+      </div>
+      <details class="actions-more">
+        <summary>Aksi lainnya</summary>
+        <div class="actions-secondary">
+          <button id="fetchBtn" class="ghost">Ambil Data</button>
+          <button id="sendExportBtn" class="ghost">Kirim Data</button>
+          <button id="openViewerBtn" class="ghost">Lihat Data</button>
+        </div>
+      </details>
+    </section>
+  </div>
+
 
   <script src="popup.js"></script>
 </body>

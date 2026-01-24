@@ -13,22 +13,23 @@ Developer: Ardiansah / Arva.
 ## Cara pakai
 
 - Buka tab `seller.shopee.co.id` (sudah login) dan biarkan sebagai tab aktif.
-- Klik **Ambil Data** untuk mengambil `get_one_order` + `get_order_income_components`.
-- Klik **Ambil + Kirim** untuk mengambil data lalu langsung POST ke `/api/orders/import`.
-- Klik **Kirim Data** untuk POST ke `/api/orders/import` (base URL + token diatur di Pengaturan).
-- Klik **Download AWB** untuk membuat dan mengunduh label pengiriman (Shopee).
-- Klik **Lihat Data** untuk membuka viewer (ringkasan, sheet, JSON).
+- Saat popup dibuka, tampil layar login (Base URL diambil dari Pengaturan).
+- Login di popup menggunakan **/api/login** agar token global tersimpan.
+- Aksi utama: **Ambil + Kirim** (ambil data lalu POST ke `/api/orders/import`).
+- **Download AWB**, **Ambil Data**, **Kirim Data**, dan **Lihat Data** ada di menu **Aksi lainnya**.
+- Logout ada di menu profil (klik kartu profil).
 
 ## Pengaturan
 
 - Klik ikon **Pengaturan** di popup untuk membuka halaman options.
-- Simpan Base URL + Bearer Token per marketplace (Shopee/TikTok).
+- Atur Base URL API per marketplace (Shopee/TikTok) untuk kebutuhan export.
 - Atur endpoint AWB Shopee (get_package, create_sd_jobs, download_sd_job) + opsi file label.
 - Marketplace aktif dideteksi otomatis dari URL tab; jika tidak terdeteksi, pakai default marketplace di pengaturan.
 
 ## Catatan
 
 - Fetch berjalan di tab aktif dengan `credentials: include`, jadi cookie sesi Shopee ikut terkirim.
+- Token API didapat dari `/api/login` di popup, disimpan di storage, dan dipakai di semua request export.
 - Download AWB membutuhkan tab order detail (URL mengandung `/order/<order_id>`).
 - Nama file AWB otomatis: `YYYYMMDD-HHmm_SHOPEE_{order_sn}.pdf` (waktu lokal).
 - Endpoint bawaan Shopee:
@@ -47,7 +48,7 @@ Developer: Ardiansah / Arva.
 ## Struktur singkat
 
 - `manifest.json`: konfigurasi MV3 + permissions.
-- `src/popup/`: UI popup minimal (ambil/kirim + status).
+- `src/popup/`: UI popup (login view -> main view, status di atas, aksi utama + menu aksi lainnya).
 - `src/viewer/`: viewer untuk ringkasan, sheet, dan JSON.
 - `src/options/`: halaman pengaturan per marketplace.
 - `examples/shopee/`: contoh payload dan hasil respons.

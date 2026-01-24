@@ -28,6 +28,16 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 - 2025-01-17: Menambahkan download AWB Shopee (get_package -> create_sd_jobs -> download_sd_job) dan pengaturannya.
 - 2025-01-17: Format nama file AWB: YYYYMMDD-HHmm_SHOPEE_{order_sn}.pdf (waktu lokal).
 - 2025-01-17: Menambahkan tombol Ambil + Kirim untuk fetch dan export sekaligus.
+- 2025-01-17: Autentikasi token global via /api/login + tampil profil di options.
+- 2025-01-17: Login token dipindah ke popup; options fokus ke pengaturan marketplace.
+- 2025-01-17: Popup pakai layar login terpisah dan tampilan utama muncul setelah login (Base URL tetap di Pengaturan).
+- 2025-01-17: Refresh UI popup ke gaya app standar dark (login view + main view lebih rapi).
+- 2025-01-17: Popup dibuat lebih minimal dengan aksi utama saja + detail aksi lainnya (status UX ditingkatkan).
+- 2025-01-17: Download AWB dijadikan aksi utama di popup dan token API disembunyikan.
+- 2025-01-17: Aksi utama popup sekarang Ambil + Kirim; Download AWB pindah ke aksi sekunder.
+- 2025-01-17: Info session disederhanakan; logout dipindah ke menu profil.
+- 2025-01-17: UI halaman pengaturan dirapikan dengan card center dan layout lebih fokus.
+- 2025-01-17: Panel status/notifikasi dipindah ke bagian paling atas popup.
 
 ## Ringkasan proyek
 
@@ -35,28 +45,30 @@ Ekstensi Chrome MV3 untuk `seller.shopee.co.id` yang mengambil:
 - Income breakdown (POST `get_order_income_components`).
 - Order detail (GET `get_one_order`).
 - AWB/label pengiriman (GET `get_package` -> POST `create_sd_jobs` -> GET `download_sd_job`).
+- Login token global via `/api/login` untuk export API.
 
 Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`credentials: include`).
 
 ## Struktur file utama
 
 - `manifest.json`: konfigurasi MV3, permissions, dan branding.
-- `src/popup/`: UI popup minimal (ambil/kirim + status + error copy).
+- `src/popup/`: UI popup (login view -> main view, ambil/kirim, status, dan error copy).
 - `src/viewer/`: viewer untuk ringkasan, sheet, dan JSON (toggle + download JSON).
-- `src/options/`: halaman pengaturan Base URL + token per marketplace.
+- `src/options/`: halaman pengaturan Base URL + endpoint per marketplace.
 - `examples/shopee/`: contoh payload dan hasil respons.
 
 ## Alur data (ringkas)
 
-1. User klik **Ambil Data** di popup.
-2. `src/popup/popup.js` menjalankan `pageFetcher` via `chrome.scripting.executeScript` di tab aktif.
-3. `pageFetcher`:
+1. User login di popup (token global via `/api/login`).
+2. User klik **Ambil Data** di popup.
+3. `src/popup/popup.js` menjalankan `pageFetcher` via `chrome.scripting.executeScript` di tab aktif.
+4. `pageFetcher`:
    - Ambil cookie `SPC_CDS` dan `SPC_CDS_VER` (fallback `2`).
    - Bangun URL income (POST) dan order (GET).
    - Kirim income payload (default `{ order_id, components }`).
    - Ambil order detail dengan `order_id` dari URL tab.
-4. Hasil income + order disimpan ke `chrome.storage.local` dengan key `viewerPayload`.
-5. `src/viewer/viewer.js` membaca `viewerPayload` dan menampilkan ringkasan, sheet, dan JSON.
+5. Hasil income + order disimpan ke `chrome.storage.local` dengan key `viewerPayload`.
+6. `src/viewer/viewer.js` membaca `viewerPayload` dan menampilkan ringkasan, sheet, dan JSON.
 
 Alur AWB (ringkas):
 
@@ -115,3 +127,13 @@ Alur AWB (ringkas):
 - 2025-01-17: Menambahkan alur download AWB Shopee + pengaturan endpoint/file.
 - 2025-01-17: Menetapkan format nama file AWB dengan tanggal + Order SN.
 - 2025-01-17: Menambahkan tombol Ambil + Kirim di popup.
+- 2025-01-17: Menambahkan login token global + profil di options.
+- 2025-01-17: Memindahkan login token ke popup dan menyederhanakan options.
+- 2025-01-17: Popup menampilkan layar login terlebih dahulu, lalu main view setelah login; Base URL tetap di pengaturan.
+- 2025-01-17: UI popup dirapikan dengan layout standar app dark tanpa mengubah alur login.
+- 2025-01-17: UI popup disederhanakan (aksi utama + detail) dan status/error dibuat lebih informatif.
+- 2025-01-17: Aksi utama popup diganti ke Download AWB; input token API tidak ditampilkan.
+- 2025-01-17: Aksi utama popup diubah ke Ambil + Kirim; Download AWB jadi aksi sekunder.
+- 2025-01-17: UI popup menyembunyikan teks status login/refresh; logout diakses lewat klik profil.
+- 2025-01-17: Halaman pengaturan dipusatkan dalam card untuk UX lebih rapi.
+- 2025-01-17: Status/notifikasi popup diposisikan di atas agar lebih terlihat.

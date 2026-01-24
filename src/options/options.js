@@ -2,6 +2,8 @@ const DEFAULT_INCOME_ENDPOINT =
   "https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components";
 const DEFAULT_ORDER_ENDPOINT =
   "https://seller.shopee.co.id/api/v3/order/get_one_order";
+const DEFAULT_AUTH_BASE_URL = "https://powermaxx.test";
+const DEFAULT_DEVICE_NAME = "powermaxx-extension";
 const DEFAULT_AWB_PACKAGE_ENDPOINT =
   "https://seller.shopee.co.id/api/v3/order/get_package";
 const DEFAULT_AWB_CREATE_JOB_ENDPOINT =
@@ -17,10 +19,16 @@ const SETTINGS_KEY = "arvaSettings";
 
 const DEFAULT_SETTINGS = {
   defaultMarketplace: "shopee",
+  auth: {
+    baseUrl: DEFAULT_AUTH_BASE_URL,
+    token: "",
+    email: "",
+    deviceName: DEFAULT_DEVICE_NAME,
+    profile: null
+  },
   marketplaces: {
     shopee: {
       baseUrl: "https://powermaxx.test",
-      token: "",
       incomeEndpoint: DEFAULT_INCOME_ENDPOINT,
       orderEndpoint: DEFAULT_ORDER_ENDPOINT,
       awb: {
@@ -35,8 +43,7 @@ const DEFAULT_SETTINGS = {
       }
     },
     tiktok: {
-      baseUrl: "https://powermaxx.test",
-      token: ""
+      baseUrl: "https://powermaxx.test"
     }
   }
 };
@@ -45,7 +52,6 @@ const statusEl = document.getElementById("status");
 const saveBtn = document.getElementById("saveBtn");
 const defaultMarketplaceEl = document.getElementById("defaultMarketplace");
 const shopeeBaseUrlEl = document.getElementById("shopeeBaseUrl");
-const shopeeTokenEl = document.getElementById("shopeeToken");
 const shopeeIncomeEndpointEl = document.getElementById("shopeeIncomeEndpoint");
 const shopeeOrderEndpointEl = document.getElementById("shopeeOrderEndpoint");
 const shopeeAwbPackageEndpointEl = document.getElementById("shopeeAwbPackageEndpoint");
@@ -57,7 +63,6 @@ const shopeeAwbFileTypeEl = document.getElementById("shopeeAwbFileType");
 const shopeeAwbFileNameEl = document.getElementById("shopeeAwbFileName");
 const shopeeAwbFileContentsEl = document.getElementById("shopeeAwbFileContents");
 const tiktokBaseUrlEl = document.getElementById("tiktokBaseUrl");
-const tiktokTokenEl = document.getElementById("tiktokToken");
 
 const setStatus = (message, tone = "info") => {
   statusEl.textContent = message;
@@ -68,6 +73,8 @@ const setStatus = (message, tone = "info") => {
 
 const getStorageArea = () => chrome.storage?.sync || chrome.storage?.local;
 
+let settingsCache = DEFAULT_SETTINGS;
+
 const loadSettings = async () => {
   const storage = getStorageArea();
   if (!storage) return DEFAULT_SETTINGS;
@@ -76,9 +83,13 @@ const loadSettings = async () => {
       const stored = result?.[SETTINGS_KEY];
       if (!stored) return resolve(DEFAULT_SETTINGS);
       const storedMarketplaces = stored.marketplaces || {};
-      resolve({
+      const merged = {
         ...DEFAULT_SETTINGS,
         ...stored,
+        auth: {
+          ...DEFAULT_SETTINGS.auth,
+          ...(stored.auth || {})
+        },
         marketplaces: {
           shopee: {
             ...DEFAULT_SETTINGS.marketplaces.shopee,
@@ -93,7 +104,9 @@ const loadSettings = async () => {
             ...(storedMarketplaces.tiktok || {})
           }
         }
-      });
+      };
+      settingsCache = merged;
+      resolve(merged);
     });
   });
 };
@@ -109,7 +122,6 @@ const saveSettings = async (settings) => {
 const fillForm = (settings) => {
   defaultMarketplaceEl.value = settings.defaultMarketplace || "shopee";
   shopeeBaseUrlEl.value = settings.marketplaces?.shopee?.baseUrl || "";
-  shopeeTokenEl.value = settings.marketplaces?.shopee?.token || "";
   shopeeIncomeEndpointEl.value =
     settings.marketplaces?.shopee?.incomeEndpoint || DEFAULT_INCOME_ENDPOINT;
   shopeeOrderEndpointEl.value =
@@ -129,7 +141,6 @@ const fillForm = (settings) => {
   shopeeAwbFileContentsEl.value =
     awbSettings.fileContents || DEFAULT_AWB_FILE_CONTENTS;
   tiktokBaseUrlEl.value = settings.marketplaces?.tiktok?.baseUrl || "";
-  tiktokTokenEl.value = settings.marketplaces?.tiktok?.token || "";
 };
 
 const collectForm = () => ({
@@ -137,7 +148,6 @@ const collectForm = () => ({
   marketplaces: {
     shopee: {
       baseUrl: shopeeBaseUrlEl.value.trim(),
-      token: shopeeTokenEl.value.trim(),
       incomeEndpoint: shopeeIncomeEndpointEl.value.trim() || DEFAULT_INCOME_ENDPOINT,
       orderEndpoint: shopeeOrderEndpointEl.value.trim() || DEFAULT_ORDER_ENDPOINT,
       awb: {
@@ -157,11 +167,11 @@ const collectForm = () => ({
       }
     },
     tiktok: {
-      baseUrl: tiktokBaseUrlEl.value.trim(),
-      token: tiktokTokenEl.value.trim()
+      baseUrl: tiktokBaseUrlEl.value.trim()
     }
   }
 });
+
 
 const init = async () => {
   const settings = await loadSettings();
@@ -169,7 +179,26 @@ const init = async () => {
 
   saveBtn.addEventListener("click", async () => {
     const next = collectForm();
-    await saveSettings(next);
+    const merged = {
+      ...settingsCache,
+      ...next,
+      marketplaces: {
+        shopee: {
+          ...settingsCache.marketplaces?.shopee,
+          ...next.marketplaces.shopee,
+          awb: {
+            ...settingsCache.marketplaces?.shopee?.awb,
+            ...next.marketplaces.shopee.awb
+          }
+        },
+        tiktok: {
+          ...settingsCache.marketplaces?.tiktok,
+          ...next.marketplaces.tiktok
+        }
+      }
+    };
+    settingsCache = merged;
+    await saveSettings(merged);
     setStatus("Pengaturan tersimpan.", "ok");
   });
 };

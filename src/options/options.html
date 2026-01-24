@@ -7,10 +7,12 @@
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
+  <main class="page">
+    <div class="card">
   <header class="hero">
     <div class="title">
       <h1>Powermaxx Pengaturan</h1>
-      <p>Konfigurasi marketplace dan kredensial API.</p>
+      <p>Konfigurasi marketplace dan endpoint API.</p>
     </div>
     <button id="saveBtn" class="primary">Simpan</button>
   </header>
@@ -28,9 +30,6 @@
     <h2>Shopee</h2>
     <label for="shopeeBaseUrl">Base URL API</label>
     <input id="shopeeBaseUrl" type="url" spellcheck="false" placeholder="https://powermaxx.test">
-
-    <label for="shopeeToken">Bearer Token</label>
-    <input id="shopeeToken" type="text" spellcheck="false" placeholder="Token Sanctum">
 
     <label for="shopeeIncomeEndpoint">Endpoint Income</label>
     <input id="shopeeIncomeEndpoint" type="url" spellcheck="false">
@@ -70,13 +69,14 @@
     <label for="tiktokBaseUrl">Base URL API</label>
     <input id="tiktokBaseUrl" type="url" spellcheck="false" placeholder="https://powermaxx.test">
 
-    <label for="tiktokToken">Bearer Token</label>
-    <input id="tiktokToken" type="text" spellcheck="false" placeholder="Token Sanctum">
   </section>
 
   <section class="panel">
     <div class="status" id="status">Belum disimpan.</div>
   </section>
+
+    </div>
+  </main>
 
   <script src="options.js"></script>
 </body>

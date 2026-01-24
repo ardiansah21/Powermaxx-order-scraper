@@ -2,6 +2,8 @@ const DEFAULT_INCOME_ENDPOINT =
   "https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components";
 const DEFAULT_ORDER_ENDPOINT =
   "https://seller.shopee.co.id/api/v3/order/get_one_order";
+const DEFAULT_AUTH_BASE_URL = "https://powermaxx.test";
+const DEFAULT_DEVICE_NAME = "powermaxx-extension";
 const DEFAULT_AWB_PACKAGE_ENDPOINT =
   "https://seller.shopee.co.id/api/v3/order/get_package";
 const DEFAULT_AWB_CREATE_JOB_ENDPOINT =
@@ -17,10 +19,16 @@ const DEFAULT_COMPONENTS = "2,3,4,5";
 const SETTINGS_KEY = "arvaSettings";
 const DEFAULT_SETTINGS = {
   defaultMarketplace: "shopee",
+  auth: {
+    baseUrl: DEFAULT_AUTH_BASE_URL,
+    token: "",
+    email: "",
+    deviceName: DEFAULT_DEVICE_NAME,
+    profile: null
+  },
   marketplaces: {
     shopee: {
       baseUrl: "https://powermaxx.test",
-      token: "",
       incomeEndpoint: DEFAULT_INCOME_ENDPOINT,
       orderEndpoint: DEFAULT_ORDER_ENDPOINT,
       awb: {
@@ -35,21 +43,35 @@ const DEFAULT_SETTINGS = {
       }
     },
     tiktok: {
-      baseUrl: "https://powermaxx.test",
-      token: ""
+      baseUrl: "https://powermaxx.test"
     }
   }
 };
 
 const fetchBtn = document.getElementById("fetchBtn");
 const statusEl = document.getElementById("status");
+const statusCardEl = document.getElementById("statusCard");
+const statusIconEl = document.getElementById("statusIcon");
 const sendExportBtn = document.getElementById("sendExportBtn");
 const fetchSendBtn = document.getElementById("fetchSendBtn");
 const downloadAwbBtn = document.getElementById("downloadAwbBtn");
 const openSettingsBtn = document.getElementById("openSettingsBtn");
 const openViewerBtn = document.getElementById("openViewerBtn");
+const authBaseUrlEl = document.getElementById("authBaseUrl");
+const authEmailEl = document.getElementById("authEmail");
+const authPasswordEl = document.getElementById("authPassword");
+const authDeviceNameEl = document.getElementById("authDeviceName");
+const authTokenEl = document.getElementById("authToken");
+const authStatusEl = document.getElementById("authStatus");
+const loginViewEl = document.getElementById("loginView");
+const mainViewEl = document.getElementById("mainView");
+const loginBtn = document.getElementById("loginBtn");
+const refreshProfileBtn = document.getElementById("refreshProfileBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const profileNameEl = document.getElementById("profileName");
+const profileEmailEl = document.getElementById("profileEmail");
 const statusSpinner = document.getElementById("statusSpinner");
-const errorBox = document.getElementById("errorBox");
+const errorDetailsEl = document.getElementById("errorDetails");
 const errorTextEl = document.getElementById("errorText");
 const copyErrorBtn = document.getElementById("copyErrorBtn");
 const sellerBreakdownEl = null;
@@ -66,12 +88,86 @@ let activeMarketplace = "shopee";
 
 const setStatus = (message, tone = "info") => {
   statusEl.textContent = message;
-  statusEl.classList.remove("ok", "error");
-  if (tone === "ok") statusEl.classList.add("ok");
-  if (tone === "error") statusEl.classList.add("error");
+  if (statusCardEl) {
+    statusCardEl.classList.remove("ok", "error", "info");
+    statusCardEl.classList.add(tone);
+  }
+  if (statusIconEl) {
+    statusIconEl.textContent = tone === "ok" ? "✓" : tone === "error" ? "!" : "•";
+  }
 };
 
 const setOutput = () => {};
+let authProfileCache = null;
+
+const getAuthToken = () => (authTokenEl?.value || settingsCache.auth?.token || "").trim();
+
+const setProfile = (profile) => {
+  authProfileCache = profile || null;
+  if (!authProfileCache) {
+    profileNameEl.textContent = "-";
+    profileEmailEl.textContent = "-";
+    return;
+  }
+  profileNameEl.textContent = authProfileCache?.name || "-";
+  profileEmailEl.textContent = authProfileCache?.email || "-";
+};
+
+const updateAuthStatus = () => {
+  const token = getAuthToken();
+  const loggedIn = Boolean(token);
+  if (!authStatusEl) return loggedIn;
+  authStatusEl.textContent = loggedIn ? "Login aktif" : "Belum login";
+  authStatusEl.classList.toggle("ok", loggedIn);
+  authStatusEl.classList.toggle("error", !loggedIn);
+  return loggedIn;
+};
+
+const toggleAuthViews = (loggedIn) => {
+  if (loginViewEl) loginViewEl.classList.toggle("hidden", loggedIn);
+  if (mainViewEl) mainViewEl.classList.toggle("hidden", !loggedIn);
+};
+
+const setAuthBusy = (isBusy) => {
+  if (loginBtn) loginBtn.disabled = isBusy;
+  if (refreshProfileBtn) refreshProfileBtn.disabled = isBusy;
+  if (logoutBtn) logoutBtn.disabled = isBusy;
+  if (authBaseUrlEl) authBaseUrlEl.disabled = isBusy;
+  if (authEmailEl) authEmailEl.disabled = isBusy;
+  if (authPasswordEl) authPasswordEl.disabled = isBusy;
+  if (authDeviceNameEl) authDeviceNameEl.disabled = isBusy;
+};
+
+const updateActionState = () => {
+  const loggedIn = updateAuthStatus();
+  toggleAuthViews(loggedIn);
+  if (fetchBtn) fetchBtn.disabled = !loggedIn;
+  if (fetchSendBtn) fetchSendBtn.disabled = !loggedIn;
+  if (sendExportBtn) sendExportBtn.disabled = !loggedIn;
+  if (downloadAwbBtn) downloadAwbBtn.disabled = !loggedIn;
+  return loggedIn;
+};
+
+const persistAuthSettings = async (updates) => {
+  settingsCache = {
+    ...settingsCache,
+    auth: {
+      ...settingsCache.auth,
+      ...updates
+    }
+  };
+  await saveSettings(settingsCache);
+};
+
+const ensureLoggedIn = () => {
+  const token = getAuthToken();
+  if (token) return true;
+  setStatus("Login diperlukan.", "error");
+  setError("Silakan login terlebih dahulu di popup.");
+  updateActionState();
+  return false;
+};
+
 
 const saveViewerPayload = (payload) => {
   viewerPayloadCache = payload;
@@ -104,6 +200,10 @@ const loadSettings = async () => {
       resolve({
         ...DEFAULT_SETTINGS,
         ...stored,
+        auth: {
+          ...DEFAULT_SETTINGS.auth,
+          ...(stored.auth || {})
+        },
         marketplaces: {
           shopee: {
             ...DEFAULT_SETTINGS.marketplaces.shopee,
@@ -150,26 +250,232 @@ const setLoading = (isLoading) => {
 
 const setError = (message) => {
   if (!message) {
-    errorBox.classList.add("hidden");
+    if (errorDetailsEl) {
+      errorDetailsEl.classList.add("hidden");
+      errorDetailsEl.open = false;
+    }
     errorTextEl.textContent = "";
     return;
   }
-  errorBox.classList.remove("hidden");
+  if (errorDetailsEl) {
+    errorDetailsEl.classList.remove("hidden");
+    errorDetailsEl.open = true;
+  }
   errorTextEl.textContent = message;
 };
 
+const resolveAuthBaseUrl = () => {
+  const fallback =
+    authBaseUrlEl?.value ||
+    settingsCache.auth?.baseUrl ||
+    settingsCache.marketplaces?.[activeMarketplace]?.baseUrl ||
+    settingsCache.marketplaces?.[settingsCache.defaultMarketplace]?.baseUrl ||
+    DEFAULT_AUTH_BASE_URL;
+  return normalizeBaseUrl(fallback);
+};
+
+const fetchProfile = async () => {
+  const baseUrl = resolveAuthBaseUrl();
+  const token = getAuthToken();
+  if (!baseUrl) {
+    setStatus("Base URL wajib diisi.", "error");
+    return;
+  }
+  if (!token) {
+    setStatus("Token belum ada. Login terlebih dahulu.", "error");
+    return;
+  }
+
+  setStatus("Mengambil profil...", "info");
+  setLoading(true);
+  setAuthBusy(true);
+  try {
+    const response = await fetch(`${baseUrl}/api/user`, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        authorization: `Bearer ${token}`
+      }
+    });
+    const raw = await response.text();
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (e) {
+      data = null;
+    }
+    if (!response.ok) {
+      setStatus(`Gagal ambil profil ${response.status}`, "error");
+      return;
+    }
+    setProfile(data);
+    await persistAuthSettings({
+      baseUrl,
+      token,
+      email: authEmailEl.value.trim(),
+      deviceName: authDeviceNameEl.value.trim() || DEFAULT_DEVICE_NAME,
+      profile: data
+    });
+    updateActionState();
+    setStatus("Profil diperbarui.", "ok");
+  } catch (err) {
+    setStatus(`Gagal ambil profil: ${err.message}`, "error");
+  } finally {
+    setAuthBusy(false);
+    setLoading(false);
+  }
+};
+
+const login = async () => {
+  const baseUrl = resolveAuthBaseUrl();
+  const email = authEmailEl.value.trim();
+  const password = authPasswordEl.value;
+  const deviceName = authDeviceNameEl.value.trim() || DEFAULT_DEVICE_NAME;
+
+  if (!baseUrl) {
+    setStatus("Base URL wajib diisi.", "error");
+    return;
+  }
+  if (!email || !password) {
+    setStatus("Email dan password wajib diisi.", "error");
+    return;
+  }
+
+  setStatus("Login...", "info");
+  setLoading(true);
+  setAuthBusy(true);
+  try {
+    const response = await fetch(`${baseUrl}/api/login`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        device_name: deviceName
+      })
+    });
+    const raw = await response.text();
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (e) {
+      data = null;
+    }
+    if (!response.ok) {
+      setStatus(`Login gagal ${response.status}`, "error");
+      return;
+    }
+    const token = data?.token || data?.access_token;
+    if (!token) {
+      setStatus("Token tidak ditemukan di response.", "error");
+      return;
+    }
+    if (authTokenEl) authTokenEl.value = token;
+    authPasswordEl.value = "";
+    setProfile(data?.user || null);
+    await persistAuthSettings({
+      baseUrl,
+      token,
+      email,
+      deviceName,
+      profile: data?.user || authProfileCache
+    });
+    updateActionState();
+    setStatus("Login berhasil.", "ok");
+    if (!data?.user) {
+      await fetchProfile();
+    }
+  } catch (err) {
+    setStatus(`Login gagal: ${err.message}`, "error");
+  } finally {
+    setAuthBusy(false);
+    setLoading(false);
+  }
+};
+
+const logout = async () => {
+  const baseUrl = resolveAuthBaseUrl();
+  const token = getAuthToken();
+  if (!baseUrl) {
+    setStatus("Base URL wajib diisi.", "error");
+    return;
+  }
+
+  setStatus("Logout...", "info");
+  setLoading(true);
+  setAuthBusy(true);
+  try {
+    if (token) {
+      await fetch(`${baseUrl}/api/logout`, {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          authorization: `Bearer ${token}`
+        }
+      });
+    }
+  } catch (err) {
+    setStatus(`Logout gagal: ${err.message}`, "error");
+    return;
+  } finally {
+    setAuthBusy(false);
+    setLoading(false);
+  }
+
+  if (authTokenEl) authTokenEl.value = "";
+  authPasswordEl.value = "";
+  setProfile(null);
+  await persistAuthSettings({
+    baseUrl,
+    token: "",
+    profile: null
+  });
+  updateActionState();
+  setStatus("Logout berhasil.", "ok");
+};
+
+const hydrateAuthForm = () => {
+  const baseUrl =
+    settingsCache.auth?.baseUrl ||
+    settingsCache.marketplaces?.[activeMarketplace]?.baseUrl ||
+    settingsCache.marketplaces?.[settingsCache.defaultMarketplace]?.baseUrl ||
+    DEFAULT_AUTH_BASE_URL;
+  if (authBaseUrlEl) authBaseUrlEl.value = baseUrl;
+  authEmailEl.value = settingsCache.auth?.email || "";
+  authDeviceNameEl.value = settingsCache.auth?.deviceName || DEFAULT_DEVICE_NAME;
+  if (authTokenEl) authTokenEl.value = settingsCache.auth?.token || "";
+  setProfile(settingsCache.auth?.profile || null);
+  updateActionState();
+};
+
+const syncAuthFromInputs = async () => {
+  await persistAuthSettings({
+    baseUrl: resolveAuthBaseUrl(),
+    token: getAuthToken(),
+    email: authEmailEl.value.trim(),
+    deviceName: authDeviceNameEl.value.trim() || DEFAULT_DEVICE_NAME,
+    profile: authProfileCache
+  });
+  updateActionState();
+};
+
+
 const sendExportRequest = async () => {
+  if (!ensureLoggedIn()) return;
   const cfg = settingsCache.marketplaces?.[activeMarketplace] || {};
-  const baseUrl = normalizeBaseUrl(cfg.baseUrl);
-  const token = (cfg.token || "").trim();
+  const baseUrl = normalizeBaseUrl(settingsCache.auth?.baseUrl || cfg.baseUrl);
+  const token = getAuthToken();
   if (!baseUrl) {
     setStatus("Base URL wajib diisi.", "error");
     setError("Base URL belum diatur. Buka Pengaturan terlebih dahulu.");
     return;
   }
   if (!token) {
-    setStatus("Bearer token wajib diisi.", "error");
-    setError("Bearer token belum diatur. Buka Pengaturan terlebih dahulu.");
+    setStatus("Token belum ada.", "error");
+    setError("Silakan login terlebih dahulu di popup.");
     return;
   }
   if (!viewerPayloadCache?.orderRawJson || !viewerPayloadCache?.incomeRawJson) {
@@ -855,6 +1161,7 @@ const pageFetcherAwb = async (
 
 const fetchData = async () => {
   let success = false;
+  if (!ensureLoggedIn()) return false;
   setStatus("Mengambil data (menggunakan cookie/tab aktif)...", "info");
   setError("");
   setLoading(true);
@@ -973,10 +1280,11 @@ const fetchAndSend = async () => {
   if (ok) {
     await sendExportRequest();
   }
-  if (fetchSendBtn) fetchSendBtn.disabled = false;
+  updateActionState();
 };
 
 const downloadAwb = async () => {
+  if (!ensureLoggedIn()) return;
   setStatus("Menyiapkan AWB...", "info");
   setError("");
   setLoading(true);
@@ -1085,6 +1393,20 @@ const init = async () => {
   if (openViewerBtn) openViewerBtn.addEventListener("click", openViewerPage);
   if (sendExportBtn) sendExportBtn.addEventListener("click", sendExportRequest);
   if (openSettingsBtn) openSettingsBtn.addEventListener("click", openOptionsPage);
+  if (loginBtn) loginBtn.addEventListener("click", login);
+  if (refreshProfileBtn) refreshProfileBtn.addEventListener("click", fetchProfile);
+  if (logoutBtn) logoutBtn.addEventListener("click", logout);
+  if (authBaseUrlEl) authBaseUrlEl.addEventListener("change", syncAuthFromInputs);
+  if (authEmailEl) authEmailEl.addEventListener("change", syncAuthFromInputs);
+  if (authDeviceNameEl) authDeviceNameEl.addEventListener("change", syncAuthFromInputs);
+  if (authTokenEl) {
+    authTokenEl.addEventListener("change", async () => {
+      await syncAuthFromInputs();
+      if (authTokenEl.value.trim()) {
+        await fetchProfile();
+      }
+    });
+  }
   if (copyErrorBtn) {
     copyErrorBtn.addEventListener("click", async () => {
       const text = errorTextEl.textContent.trim();
@@ -1104,8 +1426,19 @@ const init = async () => {
   } catch (e) {
     activeMarketplace = settingsCache.defaultMarketplace || "shopee";
   }
+
+  hydrateAuthForm();
   openViewerBtn.disabled = true;
-  setStatus("Siap digunakan.", "ok");
+
+  if (settingsCache.auth?.token && !settingsCache.auth?.profile) {
+    fetchProfile();
+  }
+
+  if (!getAuthToken()) {
+    setStatus("Silakan login untuk mulai.", "error");
+  } else {
+    setStatus("Siap digunakan.", "ok");
+  }
 };
 
 document.addEventListener("DOMContentLoaded", init);
