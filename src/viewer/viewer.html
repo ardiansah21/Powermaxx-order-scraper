@@ -34,6 +34,81 @@
     <div id="summaryGrid" class="summary-grid"></div>
   </section>
 
+  <section id="tiktokPanel" class="panel output hidden">
+    <div class="panel-head">
+      <div>
+        <strong>TikTok Detail</strong>
+        <small>Ringkasan modul order & income (raw)</small>
+      </div>
+      <div class="actions actions-wrap">
+        <button id="toggleTiktokBtn" class="ghost">Tampilkan</button>
+      </div>
+    </div>
+    <div id="tiktokBody" class="tiktok-body hidden">
+            <div class="tiktok-section">
+        <div class="tiktok-section-title">Endpoint: raw response per request</div>
+        <details open>
+          <summary>order/get (full)</summary>
+          <pre id="tiktokOrderRawJson" class="json-box"></pre>
+        </details>
+        <details>
+          <summary>statement/order/list (full)</summary>
+          <pre id="tiktokStatementRawJson" class="json-box"></pre>
+        </details>
+        <details>
+          <summary>statement/transaction/detail (full)</summary>
+          <pre id="tiktokDetailRawJson" class="json-box"></pre>
+        </details>
+      </div>
+
+<div class="tiktok-section">
+        <div class="tiktok-section-title">Endpoint: /api/fulfillment/order/get</div>
+        <details open>
+          <summary>trade_order_module</summary>
+          <pre id="tiktokTradeOrderJson" class="json-box"></pre>
+        </details>
+        <details>
+          <summary>order_status_module</summary>
+          <pre id="tiktokStatusJson" class="json-box"></pre>
+        </details>
+        <details>
+          <summary>price_module</summary>
+          <pre id="tiktokPriceJson" class="json-box"></pre>
+        </details>
+        <details>
+          <summary>sku_module</summary>
+          <pre id="tiktokSkuJson" class="json-box"></pre>
+        </details>
+        <details>
+          <summary>buyer_info_module</summary>
+          <pre id="tiktokBuyerJson" class="json-box"></pre>
+        </details>
+        <details>
+          <summary>fulfillment_module</summary>
+          <pre id="tiktokFulfillmentJson" class="json-box"></pre>
+        </details>
+      </div>
+      <div class="tiktok-section">
+        <div class="tiktok-section-title">Endpoint: /api/v1/pay/statement/order/list</div>
+        <details open>
+          <summary>order_records</summary>
+          <pre id="tiktokIncomeRecordsJson" class="json-box"></pre>
+        </details>
+        <details>
+          <summary>sku_records</summary>
+          <pre id="tiktokSkuRecordsJson" class="json-box"></pre>
+        </details>
+      </div>
+      <div class="tiktok-section">
+        <div class="tiktok-section-title">Endpoint: /api/v1/pay/statement/transaction/detail</div>
+        <details open>
+          <summary>order_record</summary>
+          <pre id="tiktokIncomeDetailRecordJson" class="json-box"></pre>
+        </details>
+      </div>
+    </div>
+  </section>
+
   <section class="panel output">
     <div class="panel-head">
       <div>
@@ -85,6 +160,21 @@
       </div>
     </div>
     <pre id="incomeJson" class="json-box hidden"></pre>
+  </section>
+
+  <section class="panel output">
+    <div class="panel-head">
+      <div>
+        <strong>Income Detail JSON</strong>
+        <small>Raw pay/statement/transaction/detail</small>
+      </div>
+      <div class="actions actions-wrap">
+        <button id="toggleIncomeDetailJsonBtn" class="ghost">Tampilkan</button>
+        <button id="downloadIncomeDetailJsonBtn" class="ghost">Download</button>
+        <button id="copyIncomeDetailJsonBtn" class="ghost">Copy</button>
+      </div>
+    </div>
+    <pre id="incomeDetailJson" class="json-box hidden"></pre>
   </section>
 
   <section class="panel output">

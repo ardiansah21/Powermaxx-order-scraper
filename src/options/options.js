@@ -2,6 +2,12 @@ const DEFAULT_INCOME_ENDPOINT =
   "https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components";
 const DEFAULT_ORDER_ENDPOINT =
   "https://seller.shopee.co.id/api/v3/order/get_one_order";
+const DEFAULT_TIKTOK_ORDER_ENDPOINT =
+  "https://seller-id.tokopedia.com/api/fulfillment/order/get";
+const DEFAULT_TIKTOK_STATEMENT_ENDPOINT =
+  "https://seller-id.tokopedia.com/api/v1/pay/statement/order/list";
+const DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT =
+  "https://seller-id.tokopedia.com/api/v1/pay/statement/transaction/detail";
 const DEFAULT_AUTH_BASE_URL = "https://powermaxx.test";
 const DEFAULT_DEVICE_NAME = "powermaxx-extension";
 const DEFAULT_AWB_PACKAGE_ENDPOINT =
@@ -42,8 +48,11 @@ const DEFAULT_SETTINGS = {
         fileContents: DEFAULT_AWB_FILE_CONTENTS
       }
     },
-    tiktok: {
-      baseUrl: "https://powermaxx.test"
+    tiktok_shop: {
+      baseUrl: "https://powermaxx.test",
+      orderEndpoint: DEFAULT_TIKTOK_ORDER_ENDPOINT,
+      statementEndpoint: DEFAULT_TIKTOK_STATEMENT_ENDPOINT,
+      statementDetailEndpoint: DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT
     }
   }
 };
@@ -63,6 +72,9 @@ const shopeeAwbFileTypeEl = document.getElementById("shopeeAwbFileType");
 const shopeeAwbFileNameEl = document.getElementById("shopeeAwbFileName");
 const shopeeAwbFileContentsEl = document.getElementById("shopeeAwbFileContents");
 const tiktokBaseUrlEl = document.getElementById("tiktokBaseUrl");
+const tiktokOrderEndpointEl = document.getElementById("tiktokOrderEndpoint");
+const tiktokStatementEndpointEl = document.getElementById("tiktokStatementEndpoint");
+const tiktokStatementDetailEndpointEl = document.getElementById("tiktokStatementDetailEndpoint");
 
 const setStatus = (message, tone = "info") => {
   statusEl.textContent = message;
@@ -83,9 +95,14 @@ const loadSettings = async () => {
       const stored = result?.[SETTINGS_KEY];
       if (!stored) return resolve(DEFAULT_SETTINGS);
       const storedMarketplaces = stored.marketplaces || {};
+      const legacyTikTok = storedMarketplaces.tiktok || {};
+      const tiktokShopStored = storedMarketplaces.tiktok_shop || legacyTikTok;
+      const normalizedDefault =
+        stored.defaultMarketplace === "tiktok" ? "tiktok_shop" : stored.defaultMarketplace;
       const merged = {
         ...DEFAULT_SETTINGS,
         ...stored,
+        defaultMarketplace: normalizedDefault || DEFAULT_SETTINGS.defaultMarketplace,
         auth: {
           ...DEFAULT_SETTINGS.auth,
           ...(stored.auth || {})
@@ -99,9 +116,9 @@ const loadSettings = async () => {
               ...(storedMarketplaces.shopee?.awb || {})
             }
           },
-          tiktok: {
-            ...DEFAULT_SETTINGS.marketplaces.tiktok,
-            ...(storedMarketplaces.tiktok || {})
+          tiktok_shop: {
+            ...DEFAULT_SETTINGS.marketplaces.tiktok_shop,
+            ...tiktokShopStored
           }
         }
       };
@@ -140,7 +157,13 @@ const fillForm = (settings) => {
   shopeeAwbFileNameEl.value = awbSettings.fileName || DEFAULT_AWB_FILE_NAME;
   shopeeAwbFileContentsEl.value =
     awbSettings.fileContents || DEFAULT_AWB_FILE_CONTENTS;
-  tiktokBaseUrlEl.value = settings.marketplaces?.tiktok?.baseUrl || "";
+  tiktokBaseUrlEl.value = settings.marketplaces?.tiktok_shop?.baseUrl || "";
+  tiktokOrderEndpointEl.value =
+    settings.marketplaces?.tiktok_shop?.orderEndpoint || DEFAULT_TIKTOK_ORDER_ENDPOINT;
+  tiktokStatementEndpointEl.value =
+    settings.marketplaces?.tiktok_shop?.statementEndpoint || DEFAULT_TIKTOK_STATEMENT_ENDPOINT;
+  tiktokStatementDetailEndpointEl.value =
+    settings.marketplaces?.tiktok_shop?.statementDetailEndpoint || DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT;
 };
 
 const collectForm = () => ({
@@ -166,8 +189,12 @@ const collectForm = () => ({
           shopeeAwbFileContentsEl.value.trim() || DEFAULT_AWB_FILE_CONTENTS
       }
     },
-    tiktok: {
-      baseUrl: tiktokBaseUrlEl.value.trim()
+    tiktok_shop: {
+      baseUrl: tiktokBaseUrlEl.value.trim(),
+      orderEndpoint:
+        tiktokOrderEndpointEl.value.trim() || DEFAULT_TIKTOK_ORDER_ENDPOINT,
+      statementEndpoint:
+        tiktokStatementEndpointEl.value.trim() || DEFAULT_TIKTOK_STATEMENT_ENDPOINT
     }
   }
 });
@@ -191,9 +218,9 @@ const init = async () => {
             ...next.marketplaces.shopee.awb
           }
         },
-        tiktok: {
-          ...settingsCache.marketplaces?.tiktok,
-          ...next.marketplaces.tiktok
+        tiktok_shop: {
+          ...settingsCache.marketplaces?.tiktok_shop,
+          ...next.marketplaces.tiktok_shop
         }
       }
     };

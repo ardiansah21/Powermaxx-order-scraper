@@ -38,6 +38,19 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 - 2025-01-17: Info session disederhanakan; logout dipindah ke menu profil.
 - 2025-01-17: UI halaman pengaturan dirapikan dengan card center dan layout lebih fokus.
 - 2025-01-17: Panel status/notifikasi dipindah ke bagian paling atas popup.
+- 2025-01-25: Menambahkan dukungan TikTok Shop (order get + statement) dan deteksi domain seller-id.tokopedia.com.
+- 2026-01-24: Menambahkan detail error popup (status, URL, body) untuk fetch/export/AWB.
+- 2026-01-24: TikTok pakai URL XHR terbaru dari performance entries + validasi app code/message.
+- 2026-01-24: TikTok statement fallback merge query param + default pagination; error box jadi scroll.
+- 2026-01-24: TikTok menambah statement transaction detail untuk fee per order + viewer Income Detail JSON.
+- 2026-01-24: TikTok detail fallback buang signature & tambah hint jika invalid params.
+- 2026-01-24: Viewer menambah panel TikTok Detail (modul order & income) untuk inspeksi cepat.
+- 2026-01-24: TikTok Detail dipisah per endpoint di viewer.
+- 2026-01-24: TikTok Detail menampilkan raw response per endpoint.
+- 2026-01-25: Menambahkan tombol Update Income untuk refresh income saja dan kirim ulang ke API.
+- 2026-01-25: TikTok detail yang belum tersedia ditandai warning (bukan error) dan fetch tetap dianggap sukses.
+- 2026-01-25: Keyword marketplace diubah dari tiktok ke tiktok_shop (settings + payload).
+- 2026-01-25: Payload TikTok Shop diringkas jadi 2 field (order + statement gabungan).
 
 ## Ringkasan proyek
 
@@ -45,6 +58,7 @@ Ekstensi Chrome MV3 untuk `seller.shopee.co.id` yang mengambil:
 - Income breakdown (POST `get_order_income_components`).
 - Order detail (GET `get_one_order`).
 - AWB/label pengiriman (GET `get_package` -> POST `create_sd_jobs` -> GET `download_sd_job`).
+- TikTok Shop: order detail (POST `fulfillment/order/get`) dan statement (GET `pay/statement/order/list`).
 - Login token global via `/api/login` untuk export API.
 
 Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`credentials: include`).
@@ -137,3 +151,16 @@ Alur AWB (ringkas):
 - 2025-01-17: UI popup menyembunyikan teks status login/refresh; logout diakses lewat klik profil.
 - 2025-01-17: Halaman pengaturan dipusatkan dalam card untuk UX lebih rapi.
 - 2025-01-17: Status/notifikasi popup diposisikan di atas agar lebih terlihat.
+- 2025-01-25: TikTok Shop gunakan /api/fulfillment/order/get + /api/v1/pay/statement/order/list; summary di viewer menyesuaikan struktur TikTok.
+- 2026-01-24: Detail error popup ditingkatkan (status, URL, body) untuk debug.
+- 2026-01-24: TikTok auto-pakai URL XHR terbaru dan cek code/message untuk error.
+- 2026-01-24: TikTok statement copy query param dari order + default pagination; UI error bisa scroll.
+- 2026-01-24: TikTok fetch statement transaction detail (per order) + simpan Income Detail JSON.
+- 2026-01-24: Fallback detail TikTok hapus X-Bogus/X-Gnarly + hint bila invalid params.
+- 2026-01-24: Viewer tampilkan modul TikTok (trade_order_module, price_module, sku_records, dsb).
+- 2026-01-24: Viewer TikTok dipecah per endpoint untuk kejelasan.
+- 2026-01-24: Viewer TikTok menampilkan raw response per endpoint.
+- 2026-01-25: Menambahkan tombol Update Income (income-only) di popup dan kirim ulang ke API.
+- 2026-01-25: TikTok detail missing dianggap warning agar tetap bisa lanjut (success).
+- 2026-01-25: Rename keyword marketplace tiktok -> tiktok_shop untuk settings dan payload export.
+- 2026-01-25: Payload TikTok Shop digabung jadi 2 field sesuai kebutuhan DB.

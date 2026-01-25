@@ -10,15 +10,34 @@ const toggleIncomeSheetBtn = document.getElementById("toggleIncomeSheetBtn");
 const toggleOrderSheetBtn = document.getElementById("toggleOrderSheetBtn");
 const incomeSheetWrapEl = document.getElementById("incomeSheetWrap");
 const orderSheetWrapEl = document.getElementById("orderSheetWrap");
+const tiktokPanelEl = document.getElementById("tiktokPanel");
+const toggleTiktokBtn = document.getElementById("toggleTiktokBtn");
+const tiktokBodyEl = document.getElementById("tiktokBody");
+const tiktokTradeOrderJsonEl = document.getElementById("tiktokTradeOrderJson");
+const tiktokStatusJsonEl = document.getElementById("tiktokStatusJson");
+const tiktokPriceJsonEl = document.getElementById("tiktokPriceJson");
+const tiktokSkuJsonEl = document.getElementById("tiktokSkuJson");
+const tiktokBuyerJsonEl = document.getElementById("tiktokBuyerJson");
+const tiktokFulfillmentJsonEl = document.getElementById("tiktokFulfillmentJson");
+const tiktokIncomeRecordsJsonEl = document.getElementById("tiktokIncomeRecordsJson");
+const tiktokSkuRecordsJsonEl = document.getElementById("tiktokSkuRecordsJson");
+const tiktokIncomeDetailRecordJsonEl = document.getElementById("tiktokIncomeDetailRecordJson");
+const tiktokOrderRawJsonEl = document.getElementById("tiktokOrderRawJson");
+const tiktokStatementRawJsonEl = document.getElementById("tiktokStatementRawJson");
+const tiktokDetailRawJsonEl = document.getElementById("tiktokDetailRawJson");
 const copyIncomeJsonBtn = document.getElementById("copyIncomeJsonBtn");
+const copyIncomeDetailJsonBtn = document.getElementById("copyIncomeDetailJsonBtn");
 const copyOrderJsonBtn = document.getElementById("copyOrderJsonBtn");
 const downloadIncomeJsonBtn = document.getElementById("downloadIncomeJsonBtn");
+const downloadIncomeDetailJsonBtn = document.getElementById("downloadIncomeDetailJsonBtn");
 const downloadOrderJsonBtn = document.getElementById("downloadOrderJsonBtn");
 const toggleIncomeJsonBtn = document.getElementById("toggleIncomeJsonBtn");
+const toggleIncomeDetailJsonBtn = document.getElementById("toggleIncomeDetailJsonBtn");
 const toggleOrderJsonBtn = document.getElementById("toggleOrderJsonBtn");
 const incomeSheetTableEl = document.getElementById("incomeSheetTable");
 const orderSheetTableEl = document.getElementById("orderSheetTable");
 const incomeJsonEl = document.getElementById("incomeJson");
+const incomeDetailJsonEl = document.getElementById("incomeDetailJson");
 const orderJsonEl = document.getElementById("orderJson");
 
 const setStatus = (message, tone = "info") => {
@@ -62,6 +81,20 @@ const renderSheetTable = (tableEl, headers = [], rows = []) => {
   });
 };
 
+
+const setJsonText = (el, value) => {
+  if (!el) return;
+  if (!value) {
+    el.textContent = "";
+    return;
+  }
+  try {
+    el.textContent = JSON.stringify(value, null, 2);
+  } catch (e) {
+    el.textContent = String(value);
+  }
+};
+
 const setSheetOutput = (sheet, tableEl) => {
   const headers = sheet?.headers || [];
   const rows = sheet?.rows || [];
@@ -82,14 +115,67 @@ const formatLocalDateTime = (ts) => {
   )}:${pad(date.getSeconds())}`;
 };
 
+const renderTikTokDetails = (orderPayload, incomePayload, detailPayload) => {
+  if (!tiktokPanelEl || !tiktokBodyEl) return;
+  const mainOrder = orderPayload?.data?.main_order?.[0];
+  if (!mainOrder) {
+    tiktokPanelEl.classList.add("hidden");
+    tiktokBodyEl.classList.add("hidden");
+    return;
+  }
+
+  tiktokPanelEl.classList.remove("hidden");
+  const orderRecords = incomePayload?.data?.order_records || [];
+  const matchedRecord =
+    orderRecords.find((record) => String(record.reference_id) === String(mainOrder.main_order_id)) ||
+    orderRecords.find((record) => String(record.trade_order_id) === String(mainOrder.main_order_id)) ||
+    orderRecords[0];
+  const skuRecords = matchedRecord?.sku_records || [];
+  const detailRecord = detailPayload?.data?.order_record || null;
+
+  setJsonText(tiktokTradeOrderJsonEl, mainOrder.trade_order_module);
+  setJsonText(tiktokStatusJsonEl, mainOrder.order_status_module);
+  setJsonText(tiktokPriceJsonEl, mainOrder.price_module);
+  setJsonText(tiktokSkuJsonEl, mainOrder.sku_module);
+  setJsonText(tiktokBuyerJsonEl, mainOrder.buyer_info_module);
+  setJsonText(tiktokFulfillmentJsonEl, mainOrder.fulfillment_module || mainOrder.delivery_module);
+  setJsonText(tiktokIncomeRecordsJsonEl, orderRecords);
+  setJsonText(tiktokSkuRecordsJsonEl, skuRecords);
+  setJsonText(tiktokIncomeDetailRecordJsonEl, detailRecord);
+  setJsonText(tiktokOrderRawJsonEl, orderPayload);
+  setJsonText(tiktokStatementRawJsonEl, incomePayload);
+  setJsonText(tiktokDetailRawJsonEl, detailPayload);
+};
+
 const renderSummary = (orderData, incomeData) => {
   if (!summaryGridEl) return;
   summaryGridEl.innerHTML = "";
-  const orderSn = orderData?.order_sn || incomeData?.order_info?.order_sn || "-";
-  const orderId = orderData?.order_id || incomeData?.order_info?.order_id || "-";
-  const status = orderData?.status ?? incomeData?.order_info?.status ?? "-";
-  const createdAt = formatLocalDateTime(orderData?.create_time) || "-";
-  const totalPrice = orderData?.total_price || "-";
+
+  const isTikTok = Array.isArray(orderData?.main_order);
+  const mainOrder = isTikTok ? orderData.main_order[0] : null;
+  const tiktokStatus = mainOrder?.order_status_module?.[0]?.main_order_status;
+  const tiktokCreated = mainOrder?.trade_order_module?.create_time;
+  const tiktokTotal = mainOrder?.price_module?.grand_total?.format_price;
+
+  const orderSn =
+    orderData?.order_sn ||
+    incomeData?.order_info?.order_sn ||
+    mainOrder?.main_order_id ||
+    incomeData?.order_records?.[0]?.reference_id ||
+    "-";
+  const orderId =
+    orderData?.order_id ||
+    incomeData?.order_info?.order_id ||
+    mainOrder?.main_order_id ||
+    incomeData?.order_records?.[0]?.reference_id ||
+    "-";
+  const status =
+    orderData?.status ??
+    incomeData?.order_info?.status ??
+    tiktokStatus ??
+    "-";
+  const createdAt = formatLocalDateTime(orderData?.create_time || tiktokCreated) || "-";
+  const totalPrice = orderData?.total_price || tiktokTotal || "-";
 
   const rows = [
     { label: "Order SN", value: orderSn },
@@ -117,16 +203,29 @@ const loadViewerPayload = () => {
       setSheetOutput(null, incomeSheetTableEl);
       setSheetOutput(null, orderSheetTableEl);
       incomeJsonEl.textContent = "";
+      if (incomeDetailJsonEl) incomeDetailJsonEl.textContent = "";
       orderJsonEl.textContent = "";
       if (summaryGridEl) summaryGridEl.innerHTML = "";
+      if (tiktokPanelEl) tiktokPanelEl.classList.add("hidden");
+      if (tiktokBodyEl) tiktokBodyEl.classList.add("hidden");
       return;
     }
 
     const orderData = payload.orderRawJson || {};
     const incomeData = payload.incomeRawJson || {};
     const updatedText = formatLocalDateTime(payload.updatedAt);
-    const orderSn = orderData?.data?.order_sn || payload.orderSn || "-";
-    const orderId = orderData?.data?.order_id || payload.orderId || "";
+    const tiktokMain = orderData?.data?.main_order?.[0];
+    const orderSn =
+      orderData?.data?.order_sn ||
+      payload.orderSn ||
+      tiktokMain?.main_order_id ||
+      orderData?.data?.main_order?.[0]?.trade_order_module?.main_order_id ||
+      "-";
+    const orderId =
+      orderData?.data?.order_id ||
+      payload.orderId ||
+      tiktokMain?.main_order_id ||
+      "";
     const orderMeta = orderId ? `Order ${orderId}` : "Order tidak terdeteksi";
     metaEl.textContent = `${orderMeta} | Update ${updatedText}`;
     if (orderSnTitleEl) orderSnTitleEl.textContent = `Order SN ${orderSn}`;
@@ -134,8 +233,10 @@ const loadViewerPayload = () => {
     setSheetOutput(payload.incomeSheet, incomeSheetTableEl);
     setSheetOutput(payload.orderSheet, orderSheetTableEl);
     incomeJsonEl.textContent = payload.incomeRaw || "";
+    if (incomeDetailJsonEl) incomeDetailJsonEl.textContent = payload.incomeDetailRaw || "";
     orderJsonEl.textContent = payload.orderRaw || "";
     renderSummary(orderData?.data, incomeData?.data);
+    renderTikTokDetails(orderData, incomeData, payload.incomeDetailRawJson || {});
   });
 };
 
@@ -172,12 +273,22 @@ const init = () => {
   copyIncomeJsonBtn.addEventListener("click", () =>
     copyText(incomeJsonEl.textContent.trim(), "Income JSON dicopy.")
   );
+  if (copyIncomeDetailJsonBtn) {
+    copyIncomeDetailJsonBtn.addEventListener("click", () =>
+      copyText(incomeDetailJsonEl.textContent.trim(), "Income Detail JSON dicopy.")
+    );
+  }
   copyOrderJsonBtn.addEventListener("click", () =>
     copyText(orderJsonEl.textContent.trim(), "Order JSON dicopy.")
   );
   downloadIncomeJsonBtn.addEventListener("click", () =>
     downloadJson("income.json", incomeJsonEl.textContent.trim())
   );
+  if (downloadIncomeDetailJsonBtn) {
+    downloadIncomeDetailJsonBtn.addEventListener("click", () =>
+      downloadJson("income-detail.json", incomeDetailJsonEl.textContent.trim())
+    );
+  }
   downloadOrderJsonBtn.addEventListener("click", () =>
     downloadJson("order.json", orderJsonEl.textContent.trim())
   );
@@ -185,10 +296,22 @@ const init = () => {
     const isHidden = incomeJsonEl.classList.toggle("hidden");
     toggleIncomeJsonBtn.textContent = isHidden ? "Tampilkan" : "Sembunyikan";
   });
+  if (toggleIncomeDetailJsonBtn) {
+    toggleIncomeDetailJsonBtn.addEventListener("click", () => {
+      const isHidden = incomeDetailJsonEl.classList.toggle("hidden");
+      toggleIncomeDetailJsonBtn.textContent = isHidden ? "Tampilkan" : "Sembunyikan";
+    });
+  }
   toggleOrderJsonBtn.addEventListener("click", () => {
     const isHidden = orderJsonEl.classList.toggle("hidden");
     toggleOrderJsonBtn.textContent = isHidden ? "Tampilkan" : "Sembunyikan";
   });
+  if (toggleTiktokBtn) {
+    toggleTiktokBtn.addEventListener("click", () => {
+      const isHidden = tiktokBodyEl.classList.toggle("hidden");
+      toggleTiktokBtn.textContent = isHidden ? "Tampilkan" : "Sembunyikan";
+    });
+  }
   if (toggleSummaryBtn) {
     toggleSummaryBtn.addEventListener("click", () => {
       const isHidden = summaryGridEl.classList.toggle("hidden");

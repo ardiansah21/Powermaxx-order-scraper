@@ -21,7 +21,7 @@
     <label for="defaultMarketplace">Marketplace Default</label>
     <select id="defaultMarketplace">
       <option value="shopee">Shopee</option>
-      <option value="tiktok">TikTok Shop</option>
+      <option value="tiktok_shop">TikTok Shop</option>
     </select>
     <small>Jika URL tab tidak terdeteksi, gunakan default ini.</small>
   </section>
@@ -69,6 +69,16 @@
     <label for="tiktokBaseUrl">Base URL API</label>
     <input id="tiktokBaseUrl" type="url" spellcheck="false" placeholder="https://powermaxx.test">
 
+    <label for="tiktokOrderEndpoint">Endpoint Order</label>
+    <input id="tiktokOrderEndpoint" type="url" spellcheck="false">
+
+    <label for="tiktokStatementEndpoint">Endpoint Statement</label>
+    <input id="tiktokStatementEndpoint" type="url" spellcheck="false">
+    <small>Gunakan endpoint pay/statement/order/list untuk settlement/fee.</small>
+
+    <label for="tiktokStatementDetailEndpoint">Endpoint Statement Detail</label>
+    <input id="tiktokStatementDetailEndpoint" type="url" spellcheck="false">
+    <small>Gunakan endpoint pay/statement/transaction/detail untuk fee detail per order.</small>
   </section>
 
   <section class="panel">
