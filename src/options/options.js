@@ -8,6 +8,9 @@ const DEFAULT_TIKTOK_STATEMENT_ENDPOINT =
   "https://seller-id.tokopedia.com/api/v1/pay/statement/order/list";
 const DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT =
   "https://seller-id.tokopedia.com/api/v1/pay/statement/transaction/detail";
+const DEFAULT_TIKTOK_AWB_GENERATE_ENDPOINT =
+  "https://seller-id.tokopedia.com/api/v1/fulfillment/shipping_doc/generate";
+const DEFAULT_TIKTOK_AWB_FILE_PREFIX = "Shipping label";
 const DEFAULT_AUTH_BASE_URL = "https://powermaxx.test";
 const DEFAULT_DEVICE_NAME = "powermaxx-extension";
 const DEFAULT_AWB_PACKAGE_ENDPOINT =
@@ -52,7 +55,11 @@ const DEFAULT_SETTINGS = {
       baseUrl: "https://powermaxx.test",
       orderEndpoint: DEFAULT_TIKTOK_ORDER_ENDPOINT,
       statementEndpoint: DEFAULT_TIKTOK_STATEMENT_ENDPOINT,
-      statementDetailEndpoint: DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT
+      statementDetailEndpoint: DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT,
+      awb: {
+        generateEndpoint: DEFAULT_TIKTOK_AWB_GENERATE_ENDPOINT,
+        filePrefix: DEFAULT_TIKTOK_AWB_FILE_PREFIX
+      }
     }
   }
 };
@@ -75,6 +82,8 @@ const tiktokBaseUrlEl = document.getElementById("tiktokBaseUrl");
 const tiktokOrderEndpointEl = document.getElementById("tiktokOrderEndpoint");
 const tiktokStatementEndpointEl = document.getElementById("tiktokStatementEndpoint");
 const tiktokStatementDetailEndpointEl = document.getElementById("tiktokStatementDetailEndpoint");
+const tiktokAwbGenerateEndpointEl = document.getElementById("tiktokAwbGenerateEndpoint");
+const tiktokAwbFilePrefixEl = document.getElementById("tiktokAwbFilePrefix");
 
 const setStatus = (message, tone = "info") => {
   statusEl.textContent = message;
@@ -118,7 +127,11 @@ const loadSettings = async () => {
           },
           tiktok_shop: {
             ...DEFAULT_SETTINGS.marketplaces.tiktok_shop,
-            ...tiktokShopStored
+            ...tiktokShopStored,
+            awb: {
+              ...DEFAULT_SETTINGS.marketplaces.tiktok_shop.awb,
+              ...(tiktokShopStored.awb || {})
+            }
           }
         }
       };
@@ -164,6 +177,10 @@ const fillForm = (settings) => {
     settings.marketplaces?.tiktok_shop?.statementEndpoint || DEFAULT_TIKTOK_STATEMENT_ENDPOINT;
   tiktokStatementDetailEndpointEl.value =
     settings.marketplaces?.tiktok_shop?.statementDetailEndpoint || DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT;
+  const tiktokAwbSettings = settings.marketplaces?.tiktok_shop?.awb || {};
+  tiktokAwbGenerateEndpointEl.value =
+    tiktokAwbSettings.generateEndpoint || DEFAULT_TIKTOK_AWB_GENERATE_ENDPOINT;
+  tiktokAwbFilePrefixEl.value = tiktokAwbSettings.filePrefix || DEFAULT_TIKTOK_AWB_FILE_PREFIX;
 };
 
 const collectForm = () => ({
@@ -194,7 +211,15 @@ const collectForm = () => ({
       orderEndpoint:
         tiktokOrderEndpointEl.value.trim() || DEFAULT_TIKTOK_ORDER_ENDPOINT,
       statementEndpoint:
-        tiktokStatementEndpointEl.value.trim() || DEFAULT_TIKTOK_STATEMENT_ENDPOINT
+        tiktokStatementEndpointEl.value.trim() || DEFAULT_TIKTOK_STATEMENT_ENDPOINT,
+      statementDetailEndpoint:
+        tiktokStatementDetailEndpointEl.value.trim() || DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT,
+      awb: {
+        generateEndpoint:
+          tiktokAwbGenerateEndpointEl.value.trim() || DEFAULT_TIKTOK_AWB_GENERATE_ENDPOINT,
+        filePrefix:
+          tiktokAwbFilePrefixEl.value.trim() || DEFAULT_TIKTOK_AWB_FILE_PREFIX
+      }
     }
   }
 });
@@ -220,7 +245,11 @@ const init = async () => {
         },
         tiktok_shop: {
           ...settingsCache.marketplaces?.tiktok_shop,
-          ...next.marketplaces.tiktok_shop
+          ...next.marketplaces.tiktok_shop,
+          awb: {
+            ...settingsCache.marketplaces?.tiktok_shop?.awb,
+            ...next.marketplaces.tiktok_shop.awb
+          }
         }
       }
     };

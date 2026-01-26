@@ -8,6 +8,9 @@ const DEFAULT_TIKTOK_STATEMENT_ENDPOINT =
   "https://seller-id.tokopedia.com/api/v1/pay/statement/order/list";
 const DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT =
   "https://seller-id.tokopedia.com/api/v1/pay/statement/transaction/detail";
+const DEFAULT_TIKTOK_AWB_GENERATE_ENDPOINT =
+  "https://seller-id.tokopedia.com/api/v1/fulfillment/shipping_doc/generate";
+const DEFAULT_TIKTOK_AWB_FILE_PREFIX = "Shipping label";
 const DEFAULT_AUTH_BASE_URL = "https://powermaxx.test";
 const DEFAULT_DEVICE_NAME = "powermaxx-extension";
 const DEFAULT_AWB_PACKAGE_ENDPOINT =
@@ -52,12 +55,17 @@ const DEFAULT_SETTINGS = {
       baseUrl: "https://powermaxx.test",
       orderEndpoint: DEFAULT_TIKTOK_ORDER_ENDPOINT,
       statementEndpoint: DEFAULT_TIKTOK_STATEMENT_ENDPOINT,
-      statementDetailEndpoint: DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT
+      statementDetailEndpoint: DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT,
+      awb: {
+        generateEndpoint: DEFAULT_TIKTOK_AWB_GENERATE_ENDPOINT,
+        filePrefix: DEFAULT_TIKTOK_AWB_FILE_PREFIX
+      }
     }
   }
 };
 
 const fetchBtn = document.getElementById("fetchBtn");
+const fetchSendAwbBtn = document.getElementById("fetchSendAwbBtn");
 const refreshIncomeBtn = document.getElementById("refreshIncomeBtn");
 const statusEl = document.getElementById("status");
 const statusCardEl = document.getElementById("statusCard");
@@ -65,6 +73,7 @@ const statusIconEl = document.getElementById("statusIcon");
 const sendExportBtn = document.getElementById("sendExportBtn");
 const fetchSendBtn = document.getElementById("fetchSendBtn");
 const downloadAwbBtn = document.getElementById("downloadAwbBtn");
+const openBulkBtn = document.getElementById("openBulkBtn");
 const openSettingsBtn = document.getElementById("openSettingsBtn");
 const openViewerBtn = document.getElementById("openViewerBtn");
 const authBaseUrlEl = document.getElementById("authBaseUrl");
@@ -152,6 +161,7 @@ const updateActionState = () => {
   const loggedIn = updateAuthStatus();
   toggleAuthViews(loggedIn);
   if (fetchBtn) fetchBtn.disabled = !loggedIn;
+  if (fetchSendAwbBtn) fetchSendAwbBtn.disabled = !loggedIn;
   if (refreshIncomeBtn) refreshIncomeBtn.disabled = !loggedIn;
   if (fetchSendBtn) fetchSendBtn.disabled = !loggedIn;
   if (sendExportBtn) sendExportBtn.disabled = !loggedIn;
@@ -243,7 +253,11 @@ const loadSettings = async () => {
           },
           tiktok_shop: {
             ...DEFAULT_SETTINGS.marketplaces.tiktok_shop,
-            ...tiktokShopStored
+            ...tiktokShopStored,
+            awb: {
+              ...DEFAULT_SETTINGS.marketplaces.tiktok_shop.awb,
+              ...(tiktokShopStored.awb || {})
+            }
           }
         }
       });
@@ -1593,7 +1607,7 @@ const pageFetcherAwb = async (
       const pad = (num) => String(num).padStart(2, "0");
       return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(
         now.getHours()
-      )}${pad(now.getMinutes())}`;
+      )}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
     };
     const sanitizeFilePart = (value) =>
       String(value || "").replace(/[^a-zA-Z0-9_-]+/g, "");
@@ -1805,6 +1819,192 @@ const pageFetcherAwb = async (
     };
   } catch (e) {
     return { error: e.message, step: "unknown" };
+  }
+};
+
+const pageFetcherTikTokAwb = async (orderBase, generateBase, filePrefix) => {
+  try {
+    const parseOrderId = () => {
+      const params = new URLSearchParams(location.search || "");
+      const fromQuery =
+        params.get("order_no") ||
+        params.get("orderNo") ||
+        params.get("main_order_id") ||
+        params.get("order_id");
+      if (fromQuery) return fromQuery;
+      const pathMatch = location.pathname.match(/order\/(detail\/)?(\d+)/);
+      return pathMatch ? pathMatch[2] : "";
+    };
+
+    const safeJson = (raw) => {
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const pickLatestResourceUrl = (keyword, paramKey, paramValue) => {
+      const entries = performance.getEntriesByType("resource") || [];
+      for (let i = entries.length - 1; i >= 0; i -= 1) {
+        const url = entries[i]?.name || "";
+        if (!url.includes(keyword)) continue;
+        if (paramKey && paramValue) {
+          try {
+            const parsed = new URL(url);
+            if (parsed.searchParams.get(paramKey) !== String(paramValue)) {
+              continue;
+            }
+          } catch (e) {
+            continue;
+          }
+        }
+        return url;
+      }
+      return "";
+    };
+
+    const orderId = parseOrderId();
+    if (!orderId) {
+      return { error: "Order ID tidak ditemukan (buka halaman order detail TikTok)" };
+    }
+
+    const perfOrderUrl = pickLatestResourceUrl("/api/fulfillment/order/get");
+    const perfGenerateUrl = pickLatestResourceUrl(
+      "/api/v1/fulfillment/shipping_doc/generate"
+    );
+    const orderUrl = new URL(perfOrderUrl || orderBase);
+    const generateUrl = new URL(perfGenerateUrl || generateBase);
+
+    if (!perfGenerateUrl && perfOrderUrl) {
+      for (const [key, value] of orderUrl.searchParams.entries()) {
+        if (!generateUrl.searchParams.has(key)) {
+          generateUrl.searchParams.set(key, value);
+        }
+      }
+    }
+
+    const orderResp = await fetch(orderUrl.toString(), {
+      method: "POST",
+      headers: {
+        "content-type": "application/json;charset=UTF-8",
+        accept: "application/json, text/plain, */*"
+      },
+      credentials: "include",
+      body: JSON.stringify({ main_order_id: [String(orderId)] })
+    });
+    const orderBody = await orderResp.text();
+    const orderJson = safeJson(orderBody);
+    if (!orderResp.ok || orderJson?.code !== 0) {
+      return {
+        error: `Get order gagal ${orderResp.status}`,
+        detail: orderBody,
+        step: "get_order"
+      };
+    }
+
+    const mainOrder = orderJson?.data?.main_order?.[0];
+    const fulfillIds = [];
+    const pushId = (value) => {
+      if (!value) return;
+      fulfillIds.push(String(value));
+    };
+
+    const mapper = Array.isArray(mainOrder?.fulfill_unit_id_mapper)
+      ? mainOrder.fulfill_unit_id_mapper
+      : [];
+    mapper.forEach((item) => pushId(item?.fulfill_unit_id));
+
+    const addFromModule = (modules) => {
+      if (!Array.isArray(modules)) return;
+      modules.forEach((item) => pushId(item?.fulfill_unit_id));
+    };
+    addFromModule(mainOrder?.fulfillment_module);
+    addFromModule(mainOrder?.delivery_module);
+    addFromModule(mainOrder?.print_label_module);
+
+    const uniqueIds = Array.from(new Set(fulfillIds));
+    if (!uniqueIds.length) {
+      return { error: "fulfill_unit_id tidak ditemukan", detail: orderBody, step: "get_order" };
+    }
+
+    const prefix = String(filePrefix || "").trim() || "Shipping label";
+
+    const generateBody = {
+      fulfill_unit_id_list: uniqueIds,
+      content_type_list: [1],
+      template_type: 0,
+      op_scene: 2,
+      file_prefix: prefix,
+      request_time: Date.now(),
+      print_option: {
+        tmpl: 0,
+        template_size: 0,
+        layout: [0]
+      },
+      print_source: 101
+    };
+
+    const generateResp = await fetch(generateUrl.toString(), {
+      method: "POST",
+      headers: {
+        "content-type": "application/json;charset=UTF-8",
+        accept: "application/json, text/plain, */*"
+      },
+      credentials: "include",
+      body: JSON.stringify(generateBody)
+    });
+    const generateText = await generateResp.text();
+    const generateJson = safeJson(generateText);
+    if (!generateResp.ok || generateJson?.code !== 0) {
+      return {
+        error: `Generate label gagal ${generateResp.status}`,
+        detail: generateText,
+        step: "generate"
+      };
+    }
+
+    const docUrl = generateJson?.data?.doc_url;
+    const fileNameRaw = generateJson?.data?.file_prefix;
+    if (!docUrl) {
+      return { error: "doc_url tidak ditemukan", detail: generateText, step: "generate" };
+    }
+
+    const formatTimestamp = () => {
+      const now = new Date();
+      const pad = (num) => String(num).padStart(2, "0");
+      return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(
+        now.getHours()
+      )}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    };
+
+    const fileName = `${formatTimestamp()}_TIKTOKSHOP_${orderId}.pdf`;
+
+    const downloadResp = await fetch(docUrl, {
+      method: "GET",
+      headers: { accept: "application/pdf, application/json, */*" },
+      credentials: "include"
+    });
+    const contentType = downloadResp.headers.get("content-type") || "";
+    if (downloadResp.ok && (contentType.includes("pdf") || contentType.includes("octet-stream"))) {
+      const blob = await downloadResp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = blobUrl;
+      anchor.download = fileName;
+      anchor.style.display = "none";
+      document.body.appendChild(anchor);
+      anchor.click();
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+        anchor.remove();
+      }, 1000);
+      return { ok: true, downloaded: true, fileName, openUrl: docUrl };
+    }
+
+    return { ok: true, downloaded: false, fileName, openUrl: docUrl };
+  } catch (e) {
+    return { error: e.message };
   }
 };
 
@@ -2318,6 +2518,16 @@ const fetchAndSend = async () => {
   updateActionState();
 };
 
+const fetchSendAwb = async () => {
+  if (fetchSendAwbBtn) fetchSendAwbBtn.disabled = true;
+  const ok = await fetchData();
+  if (ok) {
+    await sendExportRequest();
+  }
+  await downloadAwb();
+  updateActionState();
+};
+
 const downloadAwb = async () => {
   if (!ensureLoggedIn()) return;
   setStatus("Menyiapkan AWB...", "info");
@@ -2334,9 +2544,61 @@ const downloadAwb = async () => {
     }
 
     activeMarketplace = detectMarketplace(tab.url);
+    if (activeMarketplace === "tiktok_shop") {
+      const tiktokCfg = settingsCache.marketplaces?.tiktok_shop || {};
+      const awbCfg = tiktokCfg.awb || {};
+      const generateUrl = awbCfg.generateEndpoint || DEFAULT_TIKTOK_AWB_GENERATE_ENDPOINT;
+      const orderUrl = tiktokCfg.orderEndpoint || DEFAULT_TIKTOK_ORDER_ENDPOINT;
+      const filePrefix = awbCfg.filePrefix || DEFAULT_TIKTOK_AWB_FILE_PREFIX;
+
+      const [execResult] = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: pageFetcherTikTokAwb,
+        args: [orderUrl, generateUrl, filePrefix]
+      });
+      const result = execResult?.result;
+
+      if (!result) {
+        setStatus("Tidak ada hasil dari tab (mungkin diblokir CSP atau error lain).", "error");
+        setError("Eksekusi script di tab gagal. Coba refresh halaman seller.", {
+          tabUrl: tab.url || "",
+          orderEndpoint: orderUrl,
+          generateEndpoint: generateUrl,
+          marketplace: activeMarketplace
+        });
+        return;
+      }
+
+      if (result.error) {
+        setStatus(`Gagal download AWB: ${result.error}`, "error");
+        setError(result.error, {
+          detail: result.detail,
+          step: result.step,
+          docUrl: result.openUrl,
+          marketplace: activeMarketplace
+        });
+        return;
+      }
+
+      if (result.downloaded) {
+        setStatus(`AWB diunduh: ${result.fileName || "PDF"}`, "ok");
+        return;
+      }
+
+      if (result.openUrl) {
+        const label = result.fileName ? ` (${result.fileName})` : "";
+        setStatus(`AWB siap${label}, membuka file...`, "ok");
+        await chrome.tabs.create({ url: result.openUrl });
+        return;
+      }
+
+      setStatus("AWB selesai diproses.", "ok");
+      return;
+    }
+
     if (activeMarketplace !== "shopee") {
-      setStatus("AWB hanya tersedia untuk Shopee.", "error");
-      setError("Marketplace aktif bukan Shopee.");
+      setStatus("AWB hanya tersedia untuk Shopee/TikTok Shop.", "error");
+      setError("Marketplace aktif bukan Shopee/TikTok Shop.");
       return;
     }
 
@@ -2429,6 +2691,15 @@ const openViewerPage = async () => {
   }
 };
 
+const openBulkPage = async () => {
+  const url = chrome.runtime.getURL("src/bulk/bulk.html");
+  try {
+    await chrome.tabs.create({ url });
+  } catch (err) {
+    setStatus(`Gagal membuka bulk: ${err.message}`, "error");
+  }
+};
+
 const init = async () => {
   settingsCache = await loadSettings();
   setStatus("Belum ada permintaan.");
@@ -2438,10 +2709,12 @@ const init = async () => {
   clearRendered();
 
   fetchBtn.addEventListener("click", fetchData);
+  if (fetchSendAwbBtn) fetchSendAwbBtn.addEventListener("click", fetchSendAwb);
   if (fetchSendBtn) fetchSendBtn.addEventListener("click", fetchAndSend);
   if (refreshIncomeBtn) refreshIncomeBtn.addEventListener("click", refreshIncomeOnly);
   if (downloadAwbBtn) downloadAwbBtn.addEventListener("click", downloadAwb);
   if (openViewerBtn) openViewerBtn.addEventListener("click", openViewerPage);
+  if (openBulkBtn) openBulkBtn.addEventListener("click", openBulkPage);
   if (sendExportBtn) sendExportBtn.addEventListener("click", sendExportRequest);
   if (openSettingsBtn) openSettingsBtn.addEventListener("click", openOptionsPage);
   if (loginBtn) loginBtn.addEventListener("click", login);

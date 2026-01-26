@@ -15,10 +15,12 @@ Developer: Ardiansah / Arva.
 - Buka tab `seller.shopee.co.id` (Shopee) atau `seller-id.tokopedia.com` (TikTok Shop) dan biarkan sebagai tab aktif.
 - Saat popup dibuka, tampil layar login (Base URL diambil dari Pengaturan).
 - Login di popup menggunakan **/api/login** agar token global tersimpan.
-- Aksi utama: **Ambil + Kirim** (ambil data lalu POST ke `/api/orders/import`).
+- Aksi utama: **Ambil + Kirim + AWB** dan **Update Income**.
 - Jika income perlu diperbarui, gunakan **Update Income** (income-only) lalu otomatis kirim ulang ke API.
 - Untuk TikTok Shop, order ID diambil dari query `order_no` di URL order detail.
-- **Update Income**, **Download AWB**, **Ambil Data**, **Kirim Data**, dan **Lihat Data** ada di menu **Aksi lainnya**.
+- **Ambil + Kirim**, **Ambil Data**, **Kirim Data**, **Download AWB**, dan **Lihat Data** ada di menu **Aksi lainnya**.
+- Ikon **Bulk** (☰) di header popup membuka halaman bulk untuk proses **Ambil + Kirim + AWB** banyak order.
+- Bulk Auto: coba cari order SN di Shopee (search endpoint), jika tidak ditemukan maka diproses sebagai TikTok Shop.
 - Logout ada di menu profil (klik kartu profil).
 
 ## Pengaturan
@@ -26,6 +28,7 @@ Developer: Ardiansah / Arva.
 - Klik ikon **Pengaturan** di popup untuk membuka halaman options.
 - Atur Base URL API per marketplace (Shopee/TikTok) untuk kebutuhan export.
 - Untuk TikTok Shop, atur endpoint Order (`/api/fulfillment/order/get`), Statement (`/api/v1/pay/statement/order/list`), dan Statement Detail (`/api/v1/pay/statement/transaction/detail`).
+- Untuk TikTok Shop, atur endpoint AWB `shipping_doc/generate` + file prefix label jika perlu.
 - Atur endpoint AWB Shopee (get_package, create_sd_jobs, download_sd_job) + opsi file label.
 - Marketplace aktif dideteksi otomatis dari URL tab; jika tidak terdeteksi, pakai default marketplace di pengaturan.
 
@@ -36,7 +39,9 @@ Developer: Ardiansah / Arva.
 - Keyword marketplace untuk TikTok Shop di payload/export: `tiktok_shop`.
 - Payload TikTok Shop hanya 2 field: `tiktok_shop_fulfillment_order_get_json` + `tiktok_shop_statement_json` (berisi order/list + transaction/detail).
 - Download AWB membutuhkan tab order detail (URL mengandung `/order/<order_id>`).
-- Nama file AWB otomatis: `YYYYMMDD-HHmm_SHOPEE_{order_sn}.pdf` (waktu lokal).
+- Download AWB TikTok memakai `shipping_doc/generate` lalu unduh dari `doc_url` (link bisa expired).
+- Nama file AWB otomatis: `YYYYMMDD-HHmmss_SHOPEE_{order_sn}.pdf` (waktu lokal).
+- Nama file AWB TikTok otomatis: `YYYYMMDD-HHmmss_TIKTOKSHOP_{main_order_id}.pdf` (waktu lokal).
 - Endpoint bawaan Shopee:
   - `https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components`
   - `https://seller.shopee.co.id/api/v3/order/get_one_order`
@@ -48,6 +53,7 @@ Developer: Ardiansah / Arva.
   - `https://seller-id.tokopedia.com/api/fulfillment/order/get`
   - `https://seller-id.tokopedia.com/api/v1/pay/statement/order/list`
   - `https://seller-id.tokopedia.com/api/v1/pay/statement/transaction/detail`
+  - `https://seller-id.tokopedia.com/api/v1/fulfillment/shipping_doc/generate`
 
 ## Output viewer
 

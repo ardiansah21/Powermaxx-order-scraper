@@ -51,13 +51,36 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 - 2026-01-25: TikTok detail yang belum tersedia ditandai warning (bukan error) dan fetch tetap dianggap sukses.
 - 2026-01-25: Keyword marketplace diubah dari tiktok ke tiktok_shop (settings + payload).
 - 2026-01-25: Payload TikTok Shop diringkas jadi 2 field (order + statement gabungan).
+- 2026-01-25: Menambahkan download AWB TikTok via shipping_doc/generate + pengaturan endpoint/prefix.
+- 2026-01-25: Format nama file AWB TikTok: YYYYMMDD-HHmm_TIKTOKSHOP_{main_order_id}.pdf.
+- 2026-01-25: Format nama file AWB Shopee/TikTok pakai detik (YYYYMMDD-HHmmss).
+- 2026-01-25: Menambahkan tombol utama Ambil + Kirim + AWB (aksi gabungan).
+- 2026-01-25: Ukuran popup diperbesar (380x540) untuk keterbacaan.
+- 2026-01-25: Update Income dipindah ke tombol utama; Download AWB pindah ke Aksi lainnya.
+- 2026-01-25: Menambahkan halaman bulk untuk Ambil + Kirim + AWB dari daftar order.
+- 2026-01-25: Bulk Auto menebak marketplace via pencarian Shopee, fallback ke TikTok.
+- 2026-01-26: UI bulk dipusatkan dalam card, template URL dihapus, ringkasan hasil + log error detail (copy) ditambahkan.
+- 2026-01-26: Bulk progress menampilkan nama marketplace dan log bisa di-copy langsung dari daftar.
+- 2026-01-26: Pesan error bulk menambahkan hint izin host/login dan label marketplace distabilkan.
+- 2026-01-26: Bulk error di tahap Shopee search dipaksa berlabel Shopee (bukan Auto) dan log menampilkan marketplace teridentifikasi.
+- 2026-01-26: Bulk validasi URL tab sebelum executeScript untuk menghindari error permission.
+- 2026-01-26: Log bulk hanya menampilkan copy pada error dan menghapus stacktrace dari pesan.
+- 2026-01-26: Log bulk kembali menampilkan stacktrace untuk error.
+- 2026-01-26: Validasi URL bulk memakai pendingUrl/orderUrl sebagai fallback agar tidak false-negative.
+- 2026-01-26: Bulk menunggu URL tab benar (host valid) sebelum executeScript untuk mengurangi error permission.
+- 2026-01-26: Bulk fallback ke orderUrl jika tab URL kosong namun status complete (hindari false-negative host).
+- 2026-01-26: Normalisasi marketplace untuk validasi host (tiktok/tiktok_shop) agar tidak false-negative.
+- 2026-01-26: Error export bulk menambahkan detail koneksi (baseUrl/URL/hasToken + hint).
+- 2026-01-26: Log error bulk menambahkan ringkasan kemampuan (bisa/tidak bisa) per langkah.
+- 2026-01-26: Log error bulk diperkaya detail langkah (fetch/export/AWB), endpoint, timing, status, dan kategori error.
 
 ## Ringkasan proyek
 
 Ekstensi Chrome MV3 untuk `seller.shopee.co.id` yang mengambil:
 - Income breakdown (POST `get_order_income_components`).
 - Order detail (GET `get_one_order`).
-- AWB/label pengiriman (GET `get_package` -> POST `create_sd_jobs` -> GET `download_sd_job`).
+- AWB/label pengiriman Shopee (GET `get_package` -> POST `create_sd_jobs` -> GET `download_sd_job`).
+- AWB/label pengiriman TikTok (POST `shipping_doc/generate` -> unduh `doc_url`).
 - TikTok Shop: order detail (POST `fulfillment/order/get`) dan statement (GET `pay/statement/order/list`).
 - Login token global via `/api/login` untuk export API.
 
@@ -87,8 +110,8 @@ Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`cre
 Alur AWB (ringkas):
 
 1. User klik **Download AWB** di popup.
-2. `pageFetcherAwb` memanggil `get_one_order` untuk `shop_id`, lalu `get_package`.
-3. Buat job via `create_sd_jobs` dan unduh PDF via `download_sd_job` (fallback buka `awbprint`).
+2. Shopee: `pageFetcherAwb` memanggil `get_one_order` -> `get_package` -> `create_sd_jobs` -> `download_sd_job`.
+3. TikTok: `pageFetcherTikTokAwb` memanggil `order/get` -> `shipping_doc/generate` -> unduh `doc_url`.
 
 ## Autentikasi Shopee
 
@@ -122,6 +145,7 @@ Alur AWB (ringkas):
 - UI masih rapi dan ringan.
 - Fetch tidak hardcode cookie.
 - Download AWB Shopee berjalan (get_package -> create_sd_jobs -> download_sd_job).
+- Download AWB TikTok berjalan (shipping_doc/generate -> doc_url).
 - Viewer bisa menampilkan ringkasan + JSON + sheet.
 - README sudah diperbarui jika ada perubahan alur/endpoint.
 - Decision Log diperbarui.
@@ -164,3 +188,25 @@ Alur AWB (ringkas):
 - 2026-01-25: TikTok detail missing dianggap warning agar tetap bisa lanjut (success).
 - 2026-01-25: Rename keyword marketplace tiktok -> tiktok_shop untuk settings dan payload export.
 - 2026-01-25: Payload TikTok Shop digabung jadi 2 field sesuai kebutuhan DB.
+- 2026-01-25: Menambahkan AWB TikTok (shipping_doc/generate + doc_url) dan opsi pengaturannya.
+- 2026-01-25: Menetapkan format nama file AWB TikTok.
+- 2026-01-25: Menambahkan detik pada format nama file AWB Shopee/TikTok.
+- 2026-01-25: Menambah tombol utama Ambil + Kirim + AWB di popup.
+- 2026-01-25: Memperbesar ukuran popup agar tombol lebih lega.
+- 2026-01-25: Menata ulang tombol (Update Income di utama, Download AWB di dropdown).
+- 2026-01-25: Menambahkan halaman bulk (ikon ☰ di popup) untuk proses massal.
+- 2026-01-25: Bulk Auto mencoba Shopee dulu (search order_sn -> order_id), jika gagal pakai TikTok.
+- 2026-01-26: Bulk UI dipusatkan dalam card, template URL dihapus, ringkasan hasil + log error detail (copy).
+- 2026-01-26: Log bulk tampilkan marketplace di progress dan tersedia tombol copy di setiap item.
+- 2026-01-26: Pesan error bulk ditambah hint izin host/login dan label marketplace distabilkan.
+- 2026-01-26: Bulk menampilkan label marketplace teridentifikasi meski gagal di tahap pencarian.
+- 2026-01-26: Bulk memeriksa URL tab sebelum inject script agar error permission lebih jelas.
+- 2026-01-26: Copy log hanya untuk error, stacktrace tidak ditampilkan di UI.
+- 2026-01-26: Stacktrace error ditampilkan kembali pada log bulk.
+- 2026-01-26: Validasi URL bulk gunakan pendingUrl/orderUrl untuk mengurangi error kosong.
+- 2026-01-26: Bulk menunggu URL host valid sebelum executeScript (hindari error permission saat tab masih newtab/redirect).
+- 2026-01-26: Validasi URL bulk menerima fallback orderUrl saat tab URL kosong tetapi sudah complete.
+- 2026-01-26: Validasi host bulk dinormalisasi untuk variasi nama marketplace TikTok.
+- 2026-01-26: Detail error export bulk ditambahkan (baseUrl/URL/hasToken + hint).
+- 2026-01-26: Log error bulk menampilkan ringkasan kemampuan (Ambil data/AWB/Kirim API).
+- 2026-01-26: Log error bulk kini memuat detail langkah + endpoint + timing + kategori error.

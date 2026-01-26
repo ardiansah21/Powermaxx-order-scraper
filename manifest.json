@@ -11,7 +11,8 @@
   "permissions": ["scripting", "activeTab", "storage"],
   "host_permissions": [
     "https://seller.shopee.co.id/*",
-    "https://*.shopee.co.id/*"
+    "https://*.shopee.co.id/*",
+    "https://seller-id.tokopedia.com/*"
   ],
   "options_page": "src/options/options.html"
 }

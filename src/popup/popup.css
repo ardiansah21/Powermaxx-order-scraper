@@ -19,15 +19,17 @@
 }
 
 html {
-  width: 360px;
-  min-width: 360px;
+  width: 380px;
+  min-width: 380px;
+  min-height: 540px;
 }
 
 body {
   margin: 0;
   padding: 16px;
-  width: 360px;
-  min-width: 360px;
+  width: 380px;
+  min-width: 380px;
+  min-height: 540px;
   overflow-x: hidden;
   display: grid;
   gap: 12px;
@@ -67,6 +69,12 @@ header.hero {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .panel {
@@ -459,7 +467,7 @@ button:disabled {
   display: none !important;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 380px) {
   .actions-secondary {
     grid-template-columns: 1fr;
   }

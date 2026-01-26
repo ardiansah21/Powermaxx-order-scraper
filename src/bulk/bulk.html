@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Powermaxx Order Scraper - Bulk</title>
+  <link rel="stylesheet" href="bulk.css">
+</head>
+
+<body>
+  <main class="page">
+  <header class="hero">
+    <div class="header-row">
+      <h1>Bulk Ambil + Kirim + AWB</h1>
+      <a class="ghost-link" href="javascript:window.close()">Tutup</a>
+    </div>
+    <p>Masukkan daftar order, lalu jalankan proses bulk.</p>
+  </header>
+
+  <section class="panel">
+    <div class="grid">
+      <div>
+        <label for="marketplace">Marketplace</label>
+        <select id="marketplace">
+          <option value="auto">Auto (Shopee -> TikTok Shop)</option>
+          <option value="shopee">Shopee</option>
+          <option value="tiktok_shop">TikTok Shop</option>
+        </select>
+      </div>
+      <div>
+        <label for="delayMs">Delay (ms)</label>
+        <input id="delayMs" type="number" min="0" step="100" value="1500">
+      </div>
+    </div>
+
+    <label for="orderList">Daftar Order SN/ID (1 per baris)</label>
+    <textarea id="orderList" rows="8" placeholder="Contoh:
+582270328401987122
+582260686683014180"></textarea>
+
+    <div class="actions">
+      <button id="startBtn" class="primary">Mulai</button>
+      <button id="stopBtn" class="ghost">Stop</button>
+      <button id="clearBtn" class="ghost">Bersihkan</button>
+    </div>
+    <div class="status" id="status">Siap.</div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Ringkasan</h2>
+      <span id="summaryText" class="muted">Belum mulai.</span>
+    </div>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Total</div>
+        <div class="summary-value" id="summaryTotal">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Berhasil</div>
+        <div class="summary-value" id="summarySuccess">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Gagal</div>
+        <div class="summary-value" id="summaryError">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Dilewati</div>
+        <div class="summary-value" id="summarySkipped">0</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Progress</h2>
+      <span id="progressText" class="muted">0/0</span>
+    </div>
+    <ul id="logList" class="log-list"></ul>
+  </section>
+
+  </main>
+
+  <script src="bulk.js"></script>
+</body>
+
+</html>
