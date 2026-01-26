@@ -1,224 +1,231 @@
-# AGENTS
+# AGENTS.md
 
-Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun.
+## 0) Tujuan Utama
 
-## Aturan wajib
+Repo ini untuk: ekstensi Chrome yang mengambil data order/income dari Shopee dan TikTok Shop lalu mengirim ke API Powermaxx.
 
-- Selalu perbarui `AGENTS.md` setiap kali ada keputusan baru (perubahan arsitektur, endpoint, alur UI, atau format data). Tambahkan entri di "Decision Log" dan perbarui "Last Updated".
-- Jika sebuah fitur/bug/update selesai, ingatkan user untuk melakukan `git push`.
-- Jaga perubahan tetap minimal dan jelas; hindari refactor besar jika tidak diminta.
-- Gunakan ASCII sebagai default; pakai Unicode hanya jika file sudah menggunakannya.
-- Tambahkan komentar singkat hanya bila diperlukan untuk blok kode yang tidak jelas.
+Target kamu sebagai agent:
 
-## Last Updated
+- Implement fitur / fix bug / refactor yang relevan
+- Hasil rapi, mudah dipahami, dan gampang diverifikasi
+- Setiap keputusan yang sudah dikonfirmasi user wajib dicatat di file ini
 
-- 2025-01-13: AGENTS.md dibuat sebagai panduan dasar.
-- 2025-01-13: Menambahkan fitur export JSON ke API dengan base URL + token.
-- 2025-01-13: Default base URL export diset ke https://powermaxx.test dan token ditampilkan (input text).
-- 2025-01-13: Format payload export diubah ke shopee_get_one_order_json + shopee_get_order_income_components_json.
-- 2025-01-16: Menambahkan halaman pengaturan (options page) dengan konfigurasi per marketplace dan auto-detect dari URL tab.
-- 2025-01-16: Pengaturan dihapus dari popup; sheet dipindah hanya ke viewer; ringkasan/JSON default tersembunyi.
-- 2025-01-16: Popup disederhanakan: hanya ambil data, kirim data, buka pengaturan, buka viewer, dan download JSON.
-- 2025-01-16: Download JSON dipindah ke halaman viewer; popup hanya tombol ambil/kirim + status.
-- 2025-01-16: Popup dibuat sangat minimal dengan status animasi dan error box yang bisa dicopy.
-- 2025-01-16: Viewer menampilkan ringkasan berbasis get_one_order dan JSON default tersembunyi.
-- 2025-01-16: Viewer mengutamakan Order Items dan kedua sheet disembunyikan default (bisa ditampilkan).
-- 2025-01-16: Rebrand nama ekstensi menjadi Powermaxx Order Scraper.
-- 2025-01-17: Rapikan struktur folder ke `src/` dan `examples/`.
-- 2025-01-17: Menambahkan download AWB Shopee (get_package -> create_sd_jobs -> download_sd_job) dan pengaturannya.
-- 2025-01-17: Format nama file AWB: YYYYMMDD-HHmm_SHOPEE_{order_sn}.pdf (waktu lokal).
-- 2025-01-17: Menambahkan tombol Ambil + Kirim untuk fetch dan export sekaligus.
-- 2025-01-17: Autentikasi token global via /api/login + tampil profil di options.
-- 2025-01-17: Login token dipindah ke popup; options fokus ke pengaturan marketplace.
-- 2025-01-17: Popup pakai layar login terpisah dan tampilan utama muncul setelah login (Base URL tetap di Pengaturan).
-- 2025-01-17: Refresh UI popup ke gaya app standar dark (login view + main view lebih rapi).
-- 2025-01-17: Popup dibuat lebih minimal dengan aksi utama saja + detail aksi lainnya (status UX ditingkatkan).
-- 2025-01-17: Download AWB dijadikan aksi utama di popup dan token API disembunyikan.
-- 2025-01-17: Aksi utama popup sekarang Ambil + Kirim; Download AWB pindah ke aksi sekunder.
-- 2025-01-17: Info session disederhanakan; logout dipindah ke menu profil.
-- 2025-01-17: UI halaman pengaturan dirapikan dengan card center dan layout lebih fokus.
-- 2025-01-17: Panel status/notifikasi dipindah ke bagian paling atas popup.
-- 2025-01-25: Menambahkan dukungan TikTok Shop (order get + statement) dan deteksi domain seller-id.tokopedia.com.
-- 2026-01-24: Menambahkan detail error popup (status, URL, body) untuk fetch/export/AWB.
-- 2026-01-24: TikTok pakai URL XHR terbaru dari performance entries + validasi app code/message.
-- 2026-01-24: TikTok statement fallback merge query param + default pagination; error box jadi scroll.
-- 2026-01-24: TikTok menambah statement transaction detail untuk fee per order + viewer Income Detail JSON.
-- 2026-01-24: TikTok detail fallback buang signature & tambah hint jika invalid params.
-- 2026-01-24: Viewer menambah panel TikTok Detail (modul order & income) untuk inspeksi cepat.
-- 2026-01-24: TikTok Detail dipisah per endpoint di viewer.
-- 2026-01-24: TikTok Detail menampilkan raw response per endpoint.
-- 2026-01-25: Menambahkan tombol Update Income untuk refresh income saja dan kirim ulang ke API.
-- 2026-01-25: TikTok detail yang belum tersedia ditandai warning (bukan error) dan fetch tetap dianggap sukses.
-- 2026-01-25: Keyword marketplace diubah dari tiktok ke tiktok_shop (settings + payload).
-- 2026-01-25: Payload TikTok Shop diringkas jadi 2 field (order + statement gabungan).
-- 2026-01-25: Menambahkan download AWB TikTok via shipping_doc/generate + pengaturan endpoint/prefix.
-- 2026-01-25: Format nama file AWB TikTok: YYYYMMDD-HHmm_TIKTOKSHOP_{main_order_id}.pdf.
-- 2026-01-25: Format nama file AWB Shopee/TikTok pakai detik (YYYYMMDD-HHmmss).
-- 2026-01-25: Menambahkan tombol utama Ambil + Kirim + AWB (aksi gabungan).
-- 2026-01-25: Ukuran popup diperbesar (380x540) untuk keterbacaan.
-- 2026-01-25: Update Income dipindah ke tombol utama; Download AWB pindah ke Aksi lainnya.
-- 2026-01-25: Menambahkan halaman bulk untuk Ambil + Kirim + AWB dari daftar order.
-- 2026-01-25: Bulk Auto menebak marketplace via pencarian Shopee, fallback ke TikTok.
-- 2026-01-26: UI bulk dipusatkan dalam card, template URL dihapus, ringkasan hasil + log error detail (copy) ditambahkan.
-- 2026-01-26: Bulk progress menampilkan nama marketplace dan log bisa di-copy langsung dari daftar.
-- 2026-01-26: Pesan error bulk menambahkan hint izin host/login dan label marketplace distabilkan.
-- 2026-01-26: Bulk error di tahap Shopee search dipaksa berlabel Shopee (bukan Auto) dan log menampilkan marketplace teridentifikasi.
-- 2026-01-26: Bulk validasi URL tab sebelum executeScript untuk menghindari error permission.
-- 2026-01-26: Log bulk hanya menampilkan copy pada error dan menghapus stacktrace dari pesan.
-- 2026-01-26: Log bulk kembali menampilkan stacktrace untuk error.
-- 2026-01-26: Validasi URL bulk memakai pendingUrl/orderUrl sebagai fallback agar tidak false-negative.
-- 2026-01-26: Bulk menunggu URL tab benar (host valid) sebelum executeScript untuk mengurangi error permission.
-- 2026-01-26: Bulk fallback ke orderUrl jika tab URL kosong namun status complete (hindari false-negative host).
-- 2026-01-26: Normalisasi marketplace untuk validasi host (tiktok/tiktok_shop) agar tidak false-negative.
-- 2026-01-26: Error export bulk menambahkan detail koneksi (baseUrl/URL/hasToken + hint).
-- 2026-01-26: Log error bulk menambahkan ringkasan kemampuan (bisa/tidak bisa) per langkah.
-- 2026-01-26: Log error bulk diperkaya detail langkah (fetch/export/AWB), endpoint, timing, status, dan kategori error.
-- 2026-01-26: Bulk menambahkan mode aksi (Ambil+Kirim atau Ambil+Kirim+AWB).
-- 2026-01-26: UI halaman bulk disempurnakan (layout, panel, ringkasan, dan log).
-- 2026-01-26: Header bulk dirapatkan dan tombol tutup dihapus.
-- 2026-01-26: Export bulk menambahkan header Accept JSON dan X-Requested-With untuk response error lebih bersih.
-- 2026-01-26: Spacing header bulk dirapatkan untuk mengurangi jarak awal halaman.
-- 2026-01-26: Jarak antara header dan panel pertama bulk diperkecil.
+## 1) Konteks Cepat (biar kamu bisa mulai kerja tanpa baca semua code)
 
-## Ringkasan proyek
+Produk ini dipakai untuk: tim internal Powermaxx (ops/packing) agar data order & income dari marketplace bisa dikirim ke API Powermaxx.  
+Jenis aplikasi: Tool (Chrome Extension MV3)
 
-Ekstensi Chrome MV3 untuk `seller.shopee.co.id` yang mengambil:
-- Income breakdown (POST `get_order_income_components`).
-- Order detail (GET `get_one_order`).
-- AWB/label pengiriman Shopee (GET `get_package` -> POST `create_sd_jobs` -> GET `download_sd_job`).
-- AWB/label pengiriman TikTok (POST `shipping_doc/generate` -> unduh `doc_url`).
-- TikTok Shop: order detail (POST `fulfillment/order/get`) dan statement (GET `pay/statement/order/list`).
-- Login token global via `/api/login` untuk export API.
+Output yang dianggap “beres”:
 
-Data diambil dengan menjalankan `fetch` di tab aktif agar cookie sesi ikut (`credentials: include`).
+- Aksi ambil data sukses, export ke API sukses, dan tidak ada error runtime yang terlihat
+- Download AWB berjalan dan file tersimpan sesuai format nama
+- Viewer menampilkan ringkasan + JSON sesuai data yang diambil
 
-## Struktur file utama
+## 2) Cara Menjalankan & Verifikasi (WAJIB)
 
-- `manifest.json`: konfigurasi MV3, permissions, dan branding.
-- `src/popup/`: UI popup (login view -> main view, ambil/kirim, status, dan error copy).
-- `src/viewer/`: viewer untuk ringkasan, sheet, dan JSON (toggle + download JSON).
-- `src/options/`: halaman pengaturan Base URL + endpoint per marketplace.
-- `examples/shopee/`: contoh payload dan hasil respons.
+Kalau command repo belum jelas, kamu wajib cari dari sumber yang ada di repo, contoh:
 
-## Alur data (ringkas)
+- `README.md`
+- `package.json` bagian `scripts`
+- `composer.json` bagian `scripts`
+- `Makefile`
+- folder `scripts/`
+- konfigurasi CI (kalau ada)
 
-1. User login di popup (token global via `/api/login`).
-2. User klik **Ambil Data** di popup.
-3. `src/popup/popup.js` menjalankan `pageFetcher` via `chrome.scripting.executeScript` di tab aktif.
-4. `pageFetcher`:
-   - Ambil cookie `SPC_CDS` dan `SPC_CDS_VER` (fallback `2`).
-   - Bangun URL income (POST) dan order (GET).
-   - Kirim income payload (default `{ order_id, components }`).
-   - Ambil order detail dengan `order_id` dari URL tab.
-5. Hasil income + order disimpan ke `chrome.storage.local` dengan key `viewerPayload`.
-6. `src/viewer/viewer.js` membaca `viewerPayload` dan menampilkan ringkasan, sheet, dan JSON.
+Aturan verifikasi minimal sebelum bilang selesai:
 
-Alur AWB (ringkas):
+- Fitur berjalan sesuai requirement
+- Gak ada error runtime yang jelas kelihatan
+- Kalau repo punya test atau quality check, jalankan yang relevan
 
-1. User klik **Download AWB** di popup.
-2. Shopee: `pageFetcherAwb` memanggil `get_one_order` -> `get_package` -> `create_sd_jobs` -> `download_sd_job`.
-3. TikTok: `pageFetcherTikTokAwb` memanggil `order/get` -> `shipping_doc/generate` -> unduh `doc_url`.
+Catatan repo ini:
 
-## Autentikasi Shopee
+- Tidak ada script otomatis untuk run/test.
+- Verifikasi dilakukan manual via Chrome (Load unpacked).
 
-- Gunakan `fetch(..., { credentials: "include" })` di tab aktif `seller.shopee.co.id`.
-- Parameter penting:
-  - `SPC_CDS` dan `SPC_CDS_VER` (ambil dari cookie; fallback `SPC_CDS_VER=2`).
-- Jika endpoint butuh CSRF, gunakan cookie `csrftoken` ke header `x-csrftoken`.
-- Jangan hardcode cookie statis; selalu ambil dari tab aktif.
+## 3) Aturan README.md (wajib dijaga tetap akurat)
 
-## Format output
+- README.md harus selalu menjelaskan cara menjalankan project dan cara verifikasi paling sederhana.
+- Kalau perubahan yang kamu buat mempengaruhi salah satu hal di bawah ini, kamu wajib update README.md juga:
+  - Cara install / setup
+  - Command run/dev/test/build
+  - Konfigurasi environment (.env / config)
+  - Fitur utama / alur penggunaan (kalau berubah signifikan)
+  - Requirement versi (runtime/framework) kalau ada
+  - Troubleshooting umum (kalau bug tertentu sering kejadian)
+- Jangan bikin README kepanjangan. Fokus ke “cara pakai yang benar” dan poin penting yang sering bikin orang nyangkut.
 
-- Viewer menampilkan ringkasan: order_sn (utama), order_id, waktu dibuat, status, total harga.
-- JSON raw (income/order) default tersembunyi, bisa ditampilkan dan diunduh.
-- Sheet output (TSV) default tersembunyi:
-  - Income: `buildIncomeSheet` menghasilkan format long (breakdown + sub_breakdown + ext_info).
-  - Order: `buildOrderSheet` berisi item per baris.
+## 4) Aturan Dependency & Versi Package (WAJIB)
 
-## Panduan perubahan kode
+- Kalau kamu butuh package/library baru dan package itu belum ada di project:
+  - Gunakan versi terbaru yang masih kompatibel dengan project ini (runtime + framework + environment).
+- Kalau package/library itu sudah ada di project:
+  - Gunakan versi yang sudah dipakai project saat ini sebagai acuan penulisan code (API/fiturnya menyesuaikan versi yang ada).
+- Jangan memaksakan fitur yang hanya ada di versi lebih baru kalau project masih memakai versi lama.
+- Kalau ada pilihan upgrade versi demi fitur tertentu:
+  - Ajukan sebagai opsi dan tunggu persetujuan user sebelum melakukan upgrade.
 
-- Jika menambah endpoint baru:
-  - Tambahkan konfigurasi di `src/options/` bila perlu.
-  - Update logic di `pageFetcher` dan hasil render di viewer.
-  - Update README + `examples/`.
-  - Tambahkan entri di Decision Log.
-- Jika mengubah UI/tema:
-  - Jaga konsistensi warna, spacing, dan tombol.
-  - Hindari layout sempit; gunakan panel terpisah seperti sekarang.
+## 5) Aturan Kerja (wajib diikuti)
 
-## Checklist selesai perubahan
+- Utamakan solusi paling kecil yang menyelesaikan masalah.
+- Kalau ada solusi lain yang lebih effort tapi lebih worth it (lebih rapi, lebih scalable, lebih aman jangka panjang), kamu boleh mengusulkan sebagai opsi.
+- Jangan jalankan solusi yang lebih besar tanpa persetujuan user.
+- Saat mengusulkan opsi, jelaskan singkat:
+  - Benefit utamanya
+  - Konsekuensi/risikonya
+  - Effort kira-kira (kecil/sedang/besar)
+- Kalau ada opsi A vs B, kasih rekomendasi + alasannya, lalu tunggu persetujuan user.
 
-- UI masih rapi dan ringan.
-- Fetch tidak hardcode cookie.
-- Download AWB Shopee berjalan (get_package -> create_sd_jobs -> download_sd_job).
-- Download AWB TikTok berjalan (shipping_doc/generate -> doc_url).
-- Viewer bisa menampilkan ringkasan + JSON + sheet.
-- README sudah diperbarui jika ada perubahan alur/endpoint.
-- Decision Log diperbarui.
-- Ingatkan user untuk `git push`.
+Aturan umum lainnya:
 
-## Decision Log
+- Hindari refactor besar kalau tidak diminta.
+- Kalau butuh asumsi, tulis asumsinya dengan jelas.
+- Kalau behavior berubah, tambahkan test atau jelaskan kenapa belum ada.
+- Jangan simpan secrets di code/dokumentasi/log (API key, token, credential).
 
-- 2025-01-13: Membuat AGENTS.md dan menetapkan aturan update keputusan.
-- 2025-01-13: Menambahkan panel export API (POST `/api/orders/import`) dengan autentikasi Bearer.
-- 2025-01-13: Default base URL export ditetapkan ke https://powermaxx.test dan token tidak disembunyikan.
-- 2025-01-13: Payload export diganti sesuai format baru (dua field JSON Shopee).
-- 2025-01-16: Menambahkan options page untuk konfigurasi Shopee/TikTok dan auto-detect marketplace.
-- 2025-01-16: Menghapus pengaturan dari popup dan menyederhanakan tampilan.
-- 2025-01-16: Menyembunyikan sheet di viewer secara default dan mengutamakan Order Items.
-- 2025-01-16: Rebrand ke Powermaxx Order Scraper.
-- 2025-01-17: Menata ulang struktur ke `src/` dan `examples/`.
-- 2025-01-17: Menambahkan alur download AWB Shopee + pengaturan endpoint/file.
-- 2025-01-17: Menetapkan format nama file AWB dengan tanggal + Order SN.
-- 2025-01-17: Menambahkan tombol Ambil + Kirim di popup.
-- 2025-01-17: Menambahkan login token global + profil di options.
-- 2025-01-17: Memindahkan login token ke popup dan menyederhanakan options.
-- 2025-01-17: Popup menampilkan layar login terlebih dahulu, lalu main view setelah login; Base URL tetap di pengaturan.
-- 2025-01-17: UI popup dirapikan dengan layout standar app dark tanpa mengubah alur login.
-- 2025-01-17: UI popup disederhanakan (aksi utama + detail) dan status/error dibuat lebih informatif.
-- 2025-01-17: Aksi utama popup diganti ke Download AWB; input token API tidak ditampilkan.
-- 2025-01-17: Aksi utama popup diubah ke Ambil + Kirim; Download AWB jadi aksi sekunder.
-- 2025-01-17: UI popup menyembunyikan teks status login/refresh; logout diakses lewat klik profil.
-- 2025-01-17: Halaman pengaturan dipusatkan dalam card untuk UX lebih rapi.
-- 2025-01-17: Status/notifikasi popup diposisikan di atas agar lebih terlihat.
-- 2025-01-25: TikTok Shop gunakan /api/fulfillment/order/get + /api/v1/pay/statement/order/list; summary di viewer menyesuaikan struktur TikTok.
-- 2026-01-24: Detail error popup ditingkatkan (status, URL, body) untuk debug.
-- 2026-01-24: TikTok auto-pakai URL XHR terbaru dan cek code/message untuk error.
-- 2026-01-24: TikTok statement copy query param dari order + default pagination; UI error bisa scroll.
-- 2026-01-24: TikTok fetch statement transaction detail (per order) + simpan Income Detail JSON.
-- 2026-01-24: Fallback detail TikTok hapus X-Bogus/X-Gnarly + hint bila invalid params.
-- 2026-01-24: Viewer tampilkan modul TikTok (trade_order_module, price_module, sku_records, dsb).
-- 2026-01-24: Viewer TikTok dipecah per endpoint untuk kejelasan.
-- 2026-01-24: Viewer TikTok menampilkan raw response per endpoint.
-- 2026-01-25: Menambahkan tombol Update Income (income-only) di popup dan kirim ulang ke API.
-- 2026-01-25: TikTok detail missing dianggap warning agar tetap bisa lanjut (success).
-- 2026-01-25: Rename keyword marketplace tiktok -> tiktok_shop untuk settings dan payload export.
-- 2026-01-25: Payload TikTok Shop digabung jadi 2 field sesuai kebutuhan DB.
-- 2026-01-25: Menambahkan AWB TikTok (shipping_doc/generate + doc_url) dan opsi pengaturannya.
-- 2026-01-25: Menetapkan format nama file AWB TikTok.
-- 2026-01-25: Menambahkan detik pada format nama file AWB Shopee/TikTok.
-- 2026-01-25: Menambah tombol utama Ambil + Kirim + AWB di popup.
-- 2026-01-25: Memperbesar ukuran popup agar tombol lebih lega.
-- 2026-01-25: Menata ulang tombol (Update Income di utama, Download AWB di dropdown).
-- 2026-01-25: Menambahkan halaman bulk (ikon ☰ di popup) untuk proses massal.
-- 2026-01-25: Bulk Auto mencoba Shopee dulu (search order_sn -> order_id), jika gagal pakai TikTok.
-- 2026-01-26: Bulk UI dipusatkan dalam card, template URL dihapus, ringkasan hasil + log error detail (copy).
-- 2026-01-26: Log bulk tampilkan marketplace di progress dan tersedia tombol copy di setiap item.
-- 2026-01-26: Pesan error bulk ditambah hint izin host/login dan label marketplace distabilkan.
-- 2026-01-26: Bulk menampilkan label marketplace teridentifikasi meski gagal di tahap pencarian.
-- 2026-01-26: Bulk memeriksa URL tab sebelum inject script agar error permission lebih jelas.
-- 2026-01-26: Copy log hanya untuk error, stacktrace tidak ditampilkan di UI.
-- 2026-01-26: Stacktrace error ditampilkan kembali pada log bulk.
-- 2026-01-26: Validasi URL bulk gunakan pendingUrl/orderUrl untuk mengurangi error kosong.
-- 2026-01-26: Bulk menunggu URL host valid sebelum executeScript (hindari error permission saat tab masih newtab/redirect).
-- 2026-01-26: Validasi URL bulk menerima fallback orderUrl saat tab URL kosong tetapi sudah complete.
-- 2026-01-26: Validasi host bulk dinormalisasi untuk variasi nama marketplace TikTok.
-- 2026-01-26: Detail error export bulk ditambahkan (baseUrl/URL/hasToken + hint).
-- 2026-01-26: Log error bulk menampilkan ringkasan kemampuan (Ambil data/AWB/Kirim API).
-- 2026-01-26: Log error bulk kini memuat detail langkah + endpoint + timing + kategori error.
-- 2026-01-26: Bulk mendukung mode Ambil+Kirim (tanpa AWB) atau semua aksi.
-- 2026-01-26: Penyempurnaan tampilan bulk (grid 3 kolom, panel lebih rapi, log lebih jelas).
-- 2026-01-26: Header bulk dirapatkan, tombol tutup dihapus untuk layout lebih bersih.
-- 2026-01-26: Request export bulk menambahkan Accept JSON agar error backend tidak HTML.
-- 2026-01-26: Mengurangi padding atas halaman bulk agar tidak terlalu kosong.
-- 2026-01-26: Mengurangi gap atas bulk agar konten lebih rapat.
+Aturan dokumentasi:
+
+- Setiap kali user bilang “oke/sesuai/sip/lanjut/gas”, anggap keputusan itu FINAL.
+- Keputusan FINAL wajib ditulis di bagian **Keputusan yang Sudah Dikunci**.
+- Kalau ada perubahan cara kerja fitur, tambahkan ringkasan di **Catatan Perilaku Sistem**.
+
+## 6) Standar Penulisan Code (umum)
+
+- Ikuti style yang sudah dominan di repo (jangan bikin gaya baru).
+- Naming konsisten, gampang dibaca.
+- Error message jelas dan bisa ditindaklanjuti.
+- Hindari duplikasi logic tanpa alasan yang kuat.
+- Perubahan harus mudah direview (hindari file berubah terlalu banyak tanpa kebutuhan).
+
+## 7) Aturan “Ikut Beresin Dampaknya” (penting)
+
+Setiap perubahan code biasanya punya efek samping.  
+Kamu wajib cek dan perbarui bagian lain yang perlu ikut berubah, misalnya:
+
+- Test yang relevan
+- Dokumentasi behavior / endpoint / flow (termasuk README.md kalau terdampak)
+- Konfigurasi / env example
+- Validasi dan error message
+- Tempat lain yang mengandalkan kontrak data yang sama (payload/response/schema)
+- Tipe data / mapping / serializer / transformer
+- Query / indexing / performa (kalau terdampak)
+
+Kalau perubahan itu sensitif atau berisiko, minta konfirmasi dulu sebelum lanjut.
+
+Contoh hal sensitif/berisiko (umum):
+
+- Migrasi database atau perubahan schema besar
+- Perubahan kontrak API yang bisa bikin integrasi rusak
+- Perubahan autentikasi/otorisasi
+- Refactor besar yang mengubah banyak file sekaligus
+- Perubahan yang berpotensi menyebabkan data loss / overwrite
+
+Kalau kamu minta konfirmasi, jelaskan:
+
+- Resikonya apa
+- Dampaknya apa
+- Opsi aman yang lebih kecil (kalau ada)
+
+## 8) Definition of Done (DoD)
+
+Task dianggap selesai kalau:
+
+- Requirement sudah terpenuhi
+- Perubahan code rapi dan aman
+- Cara verifikasi jelas
+- Dokumentasi di file ini sudah ter-update kalau ada keputusan/behavior baru
+- Kamu menyarankan langkah commit & push dengan commit message yang kamu rekomendasikan
+- Kamu memberi saran aksi/perubahan berikutnya (kalau memang relevan)
+
+## 9) Format Jawaban Saat Selesai (WAJIB)
+
+Setiap kamu selesai mengerjakan task, jawab pakai format ini:
+
+### Ringkasan
+
+- Apa yang diubah
+- Kenapa diubah
+
+### File yang berubah
+
+- `path/to/file` — ringkas perubahan
+
+### Cara cek (verify)
+
+- Langkah & command yang relevan
+
+### Dokumentasi yang di-update
+
+- Bagian mana yang kamu perbarui + poinnya (termasuk README.md kalau terdampak)
+
+### Next step (commit & push)
+
+Sarankan user:
+
+1. `git status`
+2. Commit dengan message yang kamu rekomendasikan (user tinggal setujui)
+3. Push ke branch
+
+Commit message harus kamu buat berdasarkan perubahan yang kamu lakukan.  
+Format yang disarankan:
+
+- `fix: ...`
+- `feat: ...`
+- `refactor: ...`
+- `test: ...`
+- `docs: ...`
+
+### Saran aksi/perubahan berikutnya (wajib diisi)
+
+Berikan 2–5 poin yang masuk akal untuk langkah lanjutan, misalnya:
+
+- Tambah test coverage di area tertentu
+- Rapihin error handling
+- Refactor kecil untuk nyederhanain logic
+- Optimasi performa
+- Rapihin dokumentasi di bagian yang sering bikin bingung
+
+Catatan:
+
+- Saran ini jangan dipaksain kalau memang gak perlu.
+- Prioritaskan yang paling berdampak dan effort-nya kecil.
+
+## 10) Keputusan yang Sudah Dikunci (update setiap ada konfirmasi)
+
+Format:
+
+- [YYYY-MM-DD] Keputusan — alasan singkat — dampak
+
+Daftar:
+
+- [2025-01-16] Nama ekstensi "Powermaxx Order Scraper" — branding produk — nama ditampilkan di manifest dan UI.
+- [2025-01-17] Token global via `/api/login` — mudah dipakai lintas aksi — token dipakai untuk export API.
+- [2025-01-17] Popup tampil login dahulu lalu main view — UX standar — Base URL tetap di pengaturan.
+- [2026-01-25] Keyword marketplace TikTok adalah `tiktok_shop` — konsistensi payload — backend menerima format ini.
+- [2026-01-25] Payload TikTok Shop hanya 2 field — sesuai kebutuhan DB — `tiktok_shop_fulfillment_order_get_json` dan `tiktok_shop_statement_json`.
+- [2026-01-25] Format nama file AWB pakai detik — konsistensi file — `YYYYMMDD-HHmmss_SHOPEE_{order_sn}.pdf` dan `YYYYMMDD-HHmmss_TIKTOKSHOP_{main_order_id}.pdf`.
+- [2026-01-25] Aksi utama popup Ambil + Kirim + AWB — workflow utama — aksi lain di dropdown.
+- [2026-01-25] Bulk Auto: coba Shopee dulu, fallback TikTok Shop — input order SN campuran — mapping Shopee via search endpoint.
+- [2026-01-26] Bulk punya mode Ambil+Kirim atau Ambil+Kirim+AWB — fleksibilitas — AWB bisa dilewati.
+- [2026-01-26] Log bulk menampilkan detail langkah + endpoint + timing — troubleshooting — error lebih mudah dipahami.
+
+## 11) Catatan Perilaku Sistem (biar agent cepat paham tanpa baca semua code)
+
+Isi yang cocok ditaruh di sini:
+
+- Aturan validasi penting
+- Format response/error yang harus konsisten
+- Alur status/workflow utama
+- Edge case yang sering kejadian
+- Aturan format tanggal/timezone/angka (kalau ada)
+
+Daftar:
+
+- Fetch marketplace dilakukan di tab seller aktif dengan `credentials: include`.
+- Shopee butuh cookie `SPC_CDS` dan `SPC_CDS_VER` untuk request income/order.
+- TikTok order memakai `order_no` di URL; statement detail bisa tidak tersedia dan dianggap warning.
+- Export API memakai `POST /api/orders/import` dengan Bearer token dari `/api/login`.
+- Request export menambahkan `Accept: application/json` agar error backend tidak HTML.
+- Bulk Auto melakukan pencarian order SN di Shopee, jika tidak ketemu lanjut TikTok Shop.
+- Bulk log menyimpan detail langkah (fetch/export/AWB) termasuk endpoint dan timing.
+- Format nama file AWB mengikuti waktu lokal dengan detik.
