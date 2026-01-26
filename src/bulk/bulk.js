@@ -36,6 +36,7 @@ const DEFAULT_TEMPLATES = {
 };
 
 const marketplaceEl = document.getElementById("marketplace");
+const actionEl = document.getElementById("bulkAction");
 const delayEl = document.getElementById("delayMs");
 const orderListEl = document.getElementById("orderList");
 const startBtn = document.getElementById("startBtn");
@@ -191,7 +192,7 @@ const normalizeErrorText = (value) =>
     .replace(/^Error:\s*/i, "")
     .trim();
 
-const buildAbilitySummary = ({ fetched, awbOk, exportOk }) => {
+const buildAbilitySummary = ({ fetched, awbOk, exportOk, awbRequested = true }) => {
   const can = [];
   const cannot = [];
   if (fetched) {
@@ -199,7 +200,9 @@ const buildAbilitySummary = ({ fetched, awbOk, exportOk }) => {
   } else {
     cannot.push("Ambil data");
   }
-  if (awbOk) {
+  if (!awbRequested) {
+    can.push("Download AWB (dilewati)");
+  } else if (awbOk) {
     can.push("Download AWB");
   } else {
     cannot.push("Download AWB");
@@ -439,6 +442,8 @@ const sendExport = async (baseUrl, token, payload) => {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        accept: "application/json",
+        "x-requested-with": "XMLHttpRequest",
         authorization: `Bearer ${token}`
       },
       body: JSON.stringify(payload)
@@ -469,7 +474,13 @@ const sendExport = async (baseUrl, token, payload) => {
   }
 };
 
-const bulkTabRunner = async (marketplace, endpoints, components, awbOptions) => {
+const bulkTabRunner = async (
+  marketplace,
+  endpoints,
+  components,
+  awbOptions,
+  actionOptions
+) => {
   const safeJson = (raw) => {
     try {
       return JSON.parse(raw);
@@ -1209,6 +1220,8 @@ const bulkTabRunner = async (marketplace, endpoints, components, awbOptions) => 
     }
   };
 
+  const includeAwb = actionOptions?.includeAwb !== false;
+
   if (marketplace === "shopee") {
     const result = await pageFetcher(
       endpoints.incomeEndpoint,
@@ -1221,13 +1234,15 @@ const bulkTabRunner = async (marketplace, endpoints, components, awbOptions) => 
     const orderJson = safeJson(result.order?.body || "");
     const incomeOk = result.income?.ok && (incomeJson?.code ?? 0) === 0;
     const orderOk = result.order?.ok && (orderJson?.code ?? 0) === 0;
-    const awbResult = await pageFetcherAwb(
-      endpoints.packageEndpoint,
-      endpoints.createEndpoint,
-      endpoints.downloadEndpoint,
-      endpoints.orderEndpoint,
-      awbOptions
-    );
+    const awbResult = includeAwb
+      ? await pageFetcherAwb(
+          endpoints.packageEndpoint,
+          endpoints.createEndpoint,
+          endpoints.downloadEndpoint,
+          endpoints.orderEndpoint,
+          awbOptions
+        )
+      : { ok: true, skipped: true };
     return {
       ok: incomeOk && orderOk,
       orderRawJson: orderJson,
@@ -1258,11 +1273,13 @@ const bulkTabRunner = async (marketplace, endpoints, components, awbOptions) => 
     const detailMissing =
       !result.incomeDetail?.ok &&
       (result.incomeDetail?.statusText || "").includes("statement_detail_id");
-    const awbResult = await pageFetcherTikTokAwb(
-      endpoints.orderEndpoint,
-      endpoints.generateEndpoint,
-      endpoints.filePrefix
-    );
+    const awbResult = includeAwb
+      ? await pageFetcherTikTokAwb(
+          endpoints.orderEndpoint,
+          endpoints.generateEndpoint,
+          endpoints.filePrefix
+        )
+      : { ok: true, skipped: true };
     return {
       ok: incomeOk && orderOk && (detailOk || detailMissing),
       orderRawJson: orderJson,
@@ -1288,6 +1305,8 @@ const runBulk = async () => {
   settingsCache = await loadSettings();
   const selectedMarketplace = String(marketplaceEl.value || "auto");
   const selectedLabel = getMarketplaceLabel(selectedMarketplace);
+  const actionMode = String(actionEl?.value || "all");
+  const includeAwb = actionMode !== "fetch_send";
   const orders = parseOrders(orderListEl.value);
   const delayMs = Number(delayEl.value || 0);
 
@@ -1405,7 +1424,13 @@ const runBulk = async () => {
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: bulkTabRunner,
-          args: [marketplace, endpoints, DEFAULT_COMPONENTS, awbOptions]
+          args: [
+            marketplace,
+            endpoints,
+            DEFAULT_COMPONENTS,
+            awbOptions,
+            { includeAwb }
+          ]
         }),
         120000,
         "Timeout proses di tab."
@@ -1430,7 +1455,8 @@ const runBulk = async () => {
           ability: buildAbilitySummary({
             fetched: false,
             awbOk: false,
-            exportOk: false
+            exportOk: false,
+            awbRequested: includeAwb
           }),
           steps: {
             fetch: {
@@ -1438,7 +1464,7 @@ const runBulk = async () => {
               error: result?.error || "Gagal ambil data"
             },
             export: { ok: false },
-            awb: { ok: false }
+            awb: { ok: false, requested: includeAwb }
           },
           error: {
             category: classifyError(result?.error || ""),
@@ -1469,6 +1495,8 @@ const runBulk = async () => {
       };
       const awbStep = {
         ok: !result.awb?.error,
+        requested: includeAwb,
+        skipped: !includeAwb,
         downloaded: result.awb?.downloaded,
         fileName: result.awb?.fileName,
         step: result.awb?.step,
@@ -1478,15 +1506,18 @@ const runBulk = async () => {
 
       const exportPayload = buildExportPayload(marketplace, result);
       const exportResult = await sendExport(baseUrl, token, exportPayload);
-      const awbStatus = result.awb?.error
-        ? "AWB gagal"
-        : result.awb?.downloaded || result.awb?.openUrl
-          ? "AWB ok"
-          : "AWB selesai";
+      const awbStatus = !includeAwb
+        ? "AWB dilewati"
+        : result.awb?.error
+          ? "AWB gagal"
+          : result.awb?.downloaded || result.awb?.openUrl
+            ? "AWB ok"
+            : "AWB selesai";
       const abilitySummary = buildAbilitySummary({
         fetched: true,
         awbOk: !result.awb?.error,
-        exportOk: exportResult.ok && result.ok
+        exportOk: exportResult.ok && result.ok,
+        awbRequested: includeAwb
       });
 
       if (exportResult.ok && result.ok) {
@@ -1619,7 +1650,8 @@ const runBulk = async () => {
       const abilitySummary = buildAbilitySummary({
         fetched: false,
         awbOk: false,
-        exportOk: false
+        exportOk: false,
+        awbRequested: includeAwb
       });
       let tabUrl = "";
       if (tab?.id) {
@@ -1647,7 +1679,7 @@ const runBulk = async () => {
         ability: abilitySummary,
         steps: {
           fetch: { ok: false },
-          awb: { ok: false },
+          awb: { ok: false, requested: includeAwb },
           export: { ok: false }
         },
         error: {

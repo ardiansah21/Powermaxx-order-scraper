@@ -13,9 +13,8 @@
   <header class="hero">
     <div class="header-row">
       <h1>Bulk Ambil + Kirim + AWB</h1>
-      <a class="ghost-link" href="javascript:window.close()">Tutup</a>
     </div>
-    <p>Masukkan daftar order, lalu jalankan proses bulk.</p>
+    <p>Masukkan daftar order, pilih mode aksi, lalu jalankan proses bulk.</p>
   </header>
 
   <section class="panel">
@@ -26,6 +25,13 @@
           <option value="auto">Auto (Shopee -> TikTok Shop)</option>
           <option value="shopee">Shopee</option>
           <option value="tiktok_shop">TikTok Shop</option>
+        </select>
+      </div>
+      <div>
+        <label for="bulkAction">Mode Aksi</label>
+        <select id="bulkAction">
+          <option value="all">Ambil + Kirim + AWB</option>
+          <option value="fetch_send">Ambil + Kirim</option>
         </select>
       </div>
       <div>

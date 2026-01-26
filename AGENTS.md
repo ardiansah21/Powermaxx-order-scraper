@@ -73,6 +73,12 @@ Panduan untuk AI yang bekerja di repo ini. Wajib dibaca sebelum mengubah apa pun
 - 2026-01-26: Error export bulk menambahkan detail koneksi (baseUrl/URL/hasToken + hint).
 - 2026-01-26: Log error bulk menambahkan ringkasan kemampuan (bisa/tidak bisa) per langkah.
 - 2026-01-26: Log error bulk diperkaya detail langkah (fetch/export/AWB), endpoint, timing, status, dan kategori error.
+- 2026-01-26: Bulk menambahkan mode aksi (Ambil+Kirim atau Ambil+Kirim+AWB).
+- 2026-01-26: UI halaman bulk disempurnakan (layout, panel, ringkasan, dan log).
+- 2026-01-26: Header bulk dirapatkan dan tombol tutup dihapus.
+- 2026-01-26: Export bulk menambahkan header Accept JSON dan X-Requested-With untuk response error lebih bersih.
+- 2026-01-26: Spacing header bulk dirapatkan untuk mengurangi jarak awal halaman.
+- 2026-01-26: Jarak antara header dan panel pertama bulk diperkecil.
 
 ## Ringkasan proyek
 
@@ -210,3 +216,9 @@ Alur AWB (ringkas):
 - 2026-01-26: Detail error export bulk ditambahkan (baseUrl/URL/hasToken + hint).
 - 2026-01-26: Log error bulk menampilkan ringkasan kemampuan (Ambil data/AWB/Kirim API).
 - 2026-01-26: Log error bulk kini memuat detail langkah + endpoint + timing + kategori error.
+- 2026-01-26: Bulk mendukung mode Ambil+Kirim (tanpa AWB) atau semua aksi.
+- 2026-01-26: Penyempurnaan tampilan bulk (grid 3 kolom, panel lebih rapi, log lebih jelas).
+- 2026-01-26: Header bulk dirapatkan, tombol tutup dihapus untuk layout lebih bersih.
+- 2026-01-26: Request export bulk menambahkan Accept JSON agar error backend tidak HTML.
+- 2026-01-26: Mengurangi padding atas halaman bulk agar tidak terlalu kosong.
+- 2026-01-26: Mengurangi gap atas bulk agar konten lebih rapat.
