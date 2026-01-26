@@ -1220,7 +1220,313 @@ const bulkTabRunner = async (
     }
   };
 
+  const pageFetcherShopeeIncomeOnly = async (
+    incomeBase,
+    defaultComponents = "2,3,4,5"
+  ) => {
+    try {
+      const pickCookie = (name) => {
+        const pair = document.cookie
+          .split(";")
+          .map((c) => c.trim())
+          .find((c) => c.startsWith(`${name}=`));
+        if (!pair) return "";
+        const raw = pair.slice(pair.indexOf("=") + 1);
+        try {
+          return decodeURIComponent(raw);
+        } catch (e) {
+          return raw;
+        }
+      };
+
+      const incomeUrl = new URL(incomeBase);
+      const cdsCookie = pickCookie("SPC_CDS");
+      const cdsVerCookie = pickCookie("SPC_CDS_VER");
+
+      if (!incomeUrl.searchParams.get("SPC_CDS") && cdsCookie) {
+        incomeUrl.searchParams.set("SPC_CDS", cdsCookie);
+      }
+      if (!incomeUrl.searchParams.get("SPC_CDS_VER")) {
+        if (cdsVerCookie) {
+          incomeUrl.searchParams.set("SPC_CDS_VER", cdsVerCookie);
+        } else {
+          incomeUrl.searchParams.set("SPC_CDS_VER", "2");
+        }
+      }
+
+      const parseComponents = (raw) => {
+        const seed = raw || defaultComponents || "2,3,4,5";
+        const nums = seed
+          .split(",")
+          .map((s) => parseInt(s.trim(), 10))
+          .filter((n) => Number.isFinite(n));
+        return nums.length ? nums : [2, 3, 4, 5];
+      };
+
+      const parseOrderId = () => {
+        const match = location.pathname.match(/order\/([0-9]+)/);
+        return match ? match[1] : "";
+      };
+
+      const orderId = parseOrderId();
+      if (!orderId) {
+        return { error: "Order ID tidak ditemukan (buka halaman order Shopee)" };
+      }
+
+      const componentsList = parseComponents("");
+      const payload = {
+        order_id: Number.isFinite(Number(orderId)) ? Number(orderId) : orderId,
+        components: componentsList
+      };
+
+      const response = await fetch(incomeUrl.toString(), {
+        method: "POST",
+        headers: {
+          accept: "application/json, text/plain, */*",
+          "content-type": "application/json;charset=UTF-8"
+        },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+      const body = await response.text();
+
+      return {
+        income: {
+          ok: response.ok,
+          status: response.status,
+          statusText: response.statusText,
+          body,
+          finalUrl: incomeUrl.toString()
+        },
+        orderId
+      };
+    } catch (e) {
+      return { error: e.message };
+    }
+  };
+
+  const pageFetcherTikTokIncomeOnly = async (statementBase, statementDetailBase) => {
+    try {
+      const parseOrderId = () => {
+        const params = new URLSearchParams(location.search || "");
+        const fromQuery =
+          params.get("order_no") ||
+          params.get("orderNo") ||
+          params.get("main_order_id") ||
+          params.get("order_id");
+        if (fromQuery) return fromQuery;
+        const pathMatch = location.pathname.match(/order\/(detail\/)?(\d+)/);
+        return pathMatch ? pathMatch[2] : "";
+      };
+
+      const pickLatestResourceUrl = (keyword, paramKey, paramValue) => {
+        const entries = performance.getEntriesByType("resource") || [];
+        for (let i = entries.length - 1; i >= 0; i -= 1) {
+          const url = entries[i]?.name || "";
+          if (!url.includes(keyword)) continue;
+          if (paramKey && paramValue) {
+            try {
+              const parsed = new URL(url);
+              if (parsed.searchParams.get(paramKey) !== String(paramValue)) {
+                continue;
+              }
+            } catch (e) {
+              continue;
+            }
+          }
+          return url;
+        }
+        return "";
+      };
+
+      const orderId = parseOrderId();
+      if (!orderId) {
+        return { error: "Order ID tidak ditemukan (buka halaman order detail TikTok)" };
+      }
+
+      const perfStatementUrl = pickLatestResourceUrl(
+        "/api/v1/pay/statement/order/list",
+        "reference_id",
+        orderId
+      );
+      const statementUrl = new URL(perfStatementUrl || statementBase);
+      if (!statementUrl.searchParams.get("reference_id")) {
+        statementUrl.searchParams.set("reference_id", orderId);
+      }
+      const ensureParam = (key, value) => {
+        if (!statementUrl.searchParams.has(key)) {
+          statementUrl.searchParams.set(key, value);
+        }
+      };
+      ensureParam("pagination_type", "1");
+      ensureParam("from", "0");
+      ensureParam("size", "5");
+      ensureParam("cursor", "");
+      ensureParam("page_type", "12");
+      ensureParam("need_total_amount", "true");
+
+      let statementResp;
+      let statementBody = "";
+      let statementJson = null;
+      try {
+        statementResp = await fetch(statementUrl.toString(), {
+          method: "GET",
+          headers: { accept: "application/json, text/plain, */*" },
+          credentials: "include"
+        });
+        statementBody = await statementResp.text();
+        statementJson = safeJson(statementBody);
+      } catch (e) {
+        statementResp = null;
+        statementBody = `{"error":"${e.message}"}`;
+      }
+
+      let detailResp;
+      let detailBody = "";
+      let detailJson = null;
+      let detailUrl = "";
+      let statementDetailId = "";
+      const statementRecords = statementJson?.data?.order_records || [];
+      const matchedRecord =
+        statementRecords.find((record) => String(record.reference_id) === String(orderId)) ||
+        statementRecords.find((record) => String(record.trade_order_id) === String(orderId)) ||
+        statementRecords[0];
+      statementDetailId = matchedRecord?.statement_detail_id || "";
+
+      if (statementDetailId && statementDetailBase) {
+        const perfDetailUrl = pickLatestResourceUrl(
+          "/api/v1/pay/statement/transaction/detail",
+          "statement_detail_id",
+          statementDetailId
+        );
+        const detailUrlObj = new URL(perfDetailUrl || statementDetailBase);
+        if (!perfDetailUrl) {
+          for (const [key, value] of statementUrl.searchParams.entries()) {
+            if (!detailUrlObj.searchParams.has(key)) {
+              detailUrlObj.searchParams.set(key, value);
+            }
+          }
+          [
+            "reference_id",
+            "pagination_type",
+            "from",
+            "size",
+            "cursor",
+            "need_total_amount",
+            "page_type",
+            "settlement_status",
+            "no_need_sku_record",
+            "X-Bogus",
+            "X-Gnarly"
+          ].forEach((key) => detailUrlObj.searchParams.delete(key));
+        }
+        const ensureDetailParam = (key, value) => {
+          if (!detailUrlObj.searchParams.has(key)) {
+            detailUrlObj.searchParams.set(key, value);
+          }
+        };
+        ensureDetailParam("terminal_type", "1");
+        ensureDetailParam("page_type", "8");
+        ensureDetailParam("statement_version", "0");
+        detailUrlObj.searchParams.set("statement_detail_id", statementDetailId);
+        detailUrl = detailUrlObj.toString();
+        try {
+          detailResp = await fetch(detailUrl, {
+            method: "GET",
+            headers: { accept: "application/json, text/plain, */*" },
+            credentials: "include"
+          });
+          detailBody = await detailResp.text();
+          detailJson = safeJson(detailBody);
+        } catch (e) {
+          detailResp = null;
+          detailBody = `{"error":"${e.message}"}`;
+        }
+      } else if (!statementDetailId) {
+        detailBody = "{\"error\":\"statement_detail_id not found\"}";
+      }
+
+      return {
+        income: {
+          ok: statementResp ? statementResp.ok : false,
+          status: statementResp ? statementResp.status : 0,
+          statusText: statementResp ? statementResp.statusText : "Statement request failed",
+          appCode: statementJson?.code,
+          appMessage: statementJson?.message,
+          body: statementBody,
+          finalUrl: statementUrl.toString()
+        },
+        incomeDetail: {
+          ok: detailResp ? detailResp.ok : false,
+          status: detailResp ? detailResp.status : 0,
+          statusText: detailResp
+            ? detailResp.statusText
+            : statementDetailId
+              ? "Statement detail request failed"
+              : "statement_detail_id missing",
+          appCode: detailJson?.code,
+          appMessage: detailJson?.message,
+          body: detailBody,
+          finalUrl: detailUrl
+        },
+        orderId,
+        statementDetailId
+      };
+    } catch (e) {
+      return { error: e.message };
+    }
+  };
+
+  const actionMode = actionOptions?.mode || "all";
   const includeAwb = actionOptions?.includeAwb !== false;
+  const incomeOnly = actionMode === "update_income";
+
+  if (marketplace === "shopee" && incomeOnly) {
+    const result = await pageFetcherShopeeIncomeOnly(
+      endpoints.incomeEndpoint,
+      components
+    );
+    if (result.error) return { error: result.error };
+    const incomeJson = safeJson(result.income?.body || "");
+    const incomeOk = result.income?.ok;
+    return {
+      ok: incomeOk,
+      orderRawJson: null,
+      incomeRawJson: incomeJson,
+      incomeDetailRawJson: null,
+      awb: { ok: true, skipped: true },
+      fetchMeta: {
+        income: result.income
+      }
+    };
+  }
+
+  if (marketplace === "tiktok_shop" && incomeOnly) {
+    const result = await pageFetcherTikTokIncomeOnly(
+      endpoints.statementEndpoint,
+      endpoints.statementDetailEndpoint
+    );
+    if (result.error) return { error: result.error };
+    const incomeJson = safeJson(result.income?.body || "");
+    const incomeDetailJson = safeJson(result.incomeDetail?.body || "");
+    const incomeOk = result.income?.ok && (incomeJson?.code ?? 0) === 0;
+    const detailOk =
+      result.incomeDetail?.ok && (incomeDetailJson?.code ?? 0) === 0;
+    const detailMissing =
+      !result.incomeDetail?.ok &&
+      (result.incomeDetail?.statusText || "").includes("statement_detail_id");
+    return {
+      ok: incomeOk && (detailOk || detailMissing),
+      orderRawJson: null,
+      incomeRawJson: incomeJson,
+      incomeDetailRawJson: detailOk ? incomeDetailJson : null,
+      awb: { ok: true, skipped: true },
+      fetchMeta: {
+        income: result.income,
+        incomeDetail: result.incomeDetail
+      }
+    };
+  }
 
   if (marketplace === "shopee") {
     const result = await pageFetcher(
@@ -1306,7 +1612,7 @@ const runBulk = async () => {
   const selectedMarketplace = String(marketplaceEl.value || "auto");
   const selectedLabel = getMarketplaceLabel(selectedMarketplace);
   const actionMode = String(actionEl?.value || "all");
-  const includeAwb = actionMode !== "fetch_send";
+  const includeAwb = actionMode === "all";
   const orders = parseOrders(orderListEl.value);
   const delayMs = Number(delayEl.value || 0);
 
@@ -1429,7 +1735,7 @@ const runBulk = async () => {
             endpoints,
             DEFAULT_COMPONENTS,
             awbOptions,
-            { includeAwb }
+            { includeAwb, mode: actionMode }
           ]
         }),
         120000,

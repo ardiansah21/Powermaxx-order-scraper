@@ -207,6 +207,7 @@ Daftar:
 - [2026-01-25] Aksi utama popup Ambil + Kirim + AWB — workflow utama — aksi lain di dropdown.
 - [2026-01-25] Bulk Auto: coba Shopee dulu, fallback TikTok Shop — input order SN campuran — mapping Shopee via search endpoint.
 - [2026-01-26] Bulk punya mode Ambil+Kirim atau Ambil+Kirim+AWB — fleksibilitas — AWB bisa dilewati.
+- [2026-01-26] Bulk menambahkan mode Update Income — pembaruan income saja — AWB tidak dijalankan.
 - [2026-01-26] Log bulk menampilkan detail langkah + endpoint + timing — troubleshooting — error lebih mudah dipahami.
 
 ## 11) Catatan Perilaku Sistem (biar agent cepat paham tanpa baca semua code)
@@ -228,4 +229,5 @@ Daftar:
 - Request export menambahkan `Accept: application/json` agar error backend tidak HTML.
 - Bulk Auto melakukan pencarian order SN di Shopee, jika tidak ketemu lanjut TikTok Shop.
 - Bulk log menyimpan detail langkah (fetch/export/AWB) termasuk endpoint dan timing.
+- Mode Update Income hanya mengambil income/statement lalu export; order raw bisa null.
 - Format nama file AWB mengikuti waktu lokal dengan detik.

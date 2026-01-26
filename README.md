@@ -19,7 +19,7 @@ Developer: Ardiansah / Arva.
 - Jika income perlu diperbarui, gunakan **Update Income** (income-only) lalu otomatis kirim ulang ke API.
 - Untuk TikTok Shop, order ID diambil dari query `order_no` di URL order detail.
 - **Ambil + Kirim**, **Ambil Data**, **Kirim Data**, **Download AWB**, dan **Lihat Data** ada di menu **Aksi lainnya**.
-- Ikon **Bulk** (☰) di header popup membuka halaman bulk untuk proses **Ambil + Kirim + AWB** banyak order.
+- Ikon **Bulk** (☰) di header popup membuka halaman bulk dengan mode aksi: **Ambil + Kirim + AWB**, **Ambil + Kirim**, atau **Update Income**.
 - Bulk Auto: coba cari order SN di Shopee (search endpoint), jika tidak ditemukan maka diproses sebagai TikTok Shop.
 - Logout ada di menu profil (klik kartu profil).
 
