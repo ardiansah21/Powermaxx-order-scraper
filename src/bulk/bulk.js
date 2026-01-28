@@ -192,6 +192,69 @@ const normalizeErrorText = (value) =>
     .replace(/^Error:\s*/i, "")
     .trim();
 
+const parseJsonMaybe = (value) => {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (!trimmed) return value;
+  if (!(trimmed.startsWith("{") || trimmed.startsWith("["))) return value;
+  try {
+    return JSON.parse(trimmed);
+  } catch (e) {
+    return value;
+  }
+};
+
+const normalizePayloadForLog = (value) => {
+  const parsed = parseJsonMaybe(value);
+  if (Array.isArray(parsed)) {
+    return parsed.map((item) => normalizePayloadForLog(item));
+  }
+  if (parsed && typeof parsed === "object") {
+    const output = {};
+    Object.entries(parsed).forEach(([key, entry]) => {
+      output[key] = normalizePayloadForLog(entry);
+    });
+    return output;
+  }
+  return parsed;
+};
+
+const extractTikTokMessages = (detail) => {
+  const messages = [];
+  const seen = new Set();
+  const pushMessage = (value) => {
+    const text = String(value || "").trim();
+    if (!text || seen.has(text)) return;
+    seen.add(text);
+    messages.push(text);
+  };
+  const visit = (value) => {
+    if (!value) return;
+    const parsed = parseJsonMaybe(value);
+    if (typeof parsed === "string") return;
+    const obj = parsed;
+    if (obj?.hint) pushMessage(obj.hint);
+    if (obj?.appMessage && obj?.appCode && obj?.appCode !== 0) {
+      pushMessage(obj.appMessage);
+    }
+    if (obj?.message && obj?.code !== undefined && obj?.code !== 0) {
+      pushMessage(obj.message);
+    }
+    if (Array.isArray(obj?.failed_reason)) {
+      obj.failed_reason.forEach((reason) => {
+        pushMessage(reason?.status_msg_sop_text);
+        pushMessage(reason?.status_msg_text);
+      });
+    }
+    ["detail", "body", "income", "incomeDetail", "order", "data"].forEach((key) => {
+      if (obj?.[key]) visit(obj[key]);
+    });
+  };
+
+  visit(detail);
+  return messages;
+};
+
 const buildAbilitySummary = ({ fetched, awbOk, exportOk, awbRequested = true }) => {
   const can = [];
   const cannot = [];
@@ -448,12 +511,17 @@ const sendExport = async (baseUrl, token, payload) => {
       },
       body: JSON.stringify(payload)
     });
+    const contentType = response.headers.get("content-type") || "";
     const text = await response.text();
+    const isJson = contentType.includes("application/json");
+    const body = isJson ? text : "";
+    const htmlSnippet = !isJson && text ? snippet(text, 500) : "";
     return {
       ok: response.ok,
       status: response.status,
       statusText: response.statusText,
-      body: text,
+      body,
+      htmlSnippet,
       url
     };
   } catch (err) {
@@ -1642,7 +1710,19 @@ const runBulk = async () => {
   setProgress(0, orders.length);
   setSummary(summary, "Mulai proses bulk...");
   setStatus("Mulai proses bulk...");
-  const buildDetailPayload = (payload) => JSON.stringify(payload, null, 2);
+  const buildDetailPayload = (payload) => {
+    const normalized = normalizePayloadForLog(payload);
+    const tiktokMessages = extractTikTokMessages(normalized);
+    if (
+      normalized &&
+      typeof normalized === "object" &&
+      tiktokMessages.length &&
+      !normalized.tiktokMessages
+    ) {
+      normalized.tiktokMessages = tiktokMessages;
+    }
+    return JSON.stringify(normalized, null, 2);
+  };
 
   let done = 0;
   for (const orderId of orders) {
@@ -1746,6 +1826,12 @@ const runBulk = async () => {
       if (!result || result.error) {
         summary.error += 1;
         const endedAt = Date.now();
+        const tiktokMessages =
+          marketplace === "tiktok_shop" ? extractTikTokMessages(result?.detail) : [];
+        const errorMessage = result?.error || "Gagal ambil data";
+        const messageWithTikTok = tiktokMessages.length
+          ? `${errorMessage} | ${tiktokMessages.join(" • ")}`
+          : errorMessage;
         const detailPayload = buildDetailPayload({
           marketplace,
           orderId,
@@ -1767,22 +1853,24 @@ const runBulk = async () => {
           steps: {
             fetch: {
               ok: false,
-              error: result?.error || "Gagal ambil data"
+              error: errorMessage
             },
             export: { ok: false },
             awb: { ok: false, requested: includeAwb }
           },
+          detail: result?.detail,
           error: {
-            category: classifyError(result?.error || ""),
-            message: result?.error || "Gagal ambil data"
+            category: classifyError(errorMessage),
+            message: messageWithTikTok,
+            tiktokMessages
           }
         });
         updateLog(
           orderId,
           "error",
-          formatLogMessage(mpLabel, result?.error || "Gagal ambil data."),
+          formatLogMessage(mpLabel, messageWithTikTok),
           detailPayload,
-          `${mpLabel} | ${orderId} | ${result?.error || "Gagal ambil data."}`
+          `${mpLabel} | ${orderId} | ${messageWithTikTok}`
         );
         setSummary(summary, `Gagal: ${orderId}`);
         await chrome.tabs.remove(tab.id);
@@ -1807,6 +1895,7 @@ const runBulk = async () => {
         fileName: result.awb?.fileName,
         step: result.awb?.step,
         error: result.awb?.error,
+        detail: result.awb?.detail,
         openUrl: result.awb?.openUrl
       };
 
@@ -1844,7 +1933,8 @@ const runBulk = async () => {
           status: exportResult.status,
           statusText: exportResult.statusText,
           url: exportResult.url,
-          bodySnippet: snippet(exportResult.body, 500)
+          bodySnippet: snippet(exportResult.body, 500),
+          htmlSnippet: snippet(exportResult.htmlSnippet, 500)
         };
         const detailPayload = exportResult.ok
           ? {
@@ -1921,7 +2011,8 @@ const runBulk = async () => {
                 error: {
                   category: "EXPORT_ERROR",
                   message: msg,
-                  bodySnippet: snippet(exportResult.body, 500)
+                  bodySnippet: snippet(exportResult.body, 500),
+                  htmlSnippet: snippet(exportResult.htmlSnippet, 500)
                 }
               };
         const detail = buildDetailPayload(detailPayload);

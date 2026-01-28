@@ -209,6 +209,8 @@ Daftar:
 - [2026-01-26] Bulk punya mode Ambil+Kirim atau Ambil+Kirim+AWB — fleksibilitas — AWB bisa dilewati.
 - [2026-01-26] Bulk menambahkan mode Update Income — pembaruan income saja — AWB tidak dijalankan.
 - [2026-01-26] Log bulk menampilkan detail langkah + endpoint + timing — troubleshooting — error lebih mudah dipahami.
+- [2026-01-28] Pesan error TikTok memakai fallback payload — info lebih jelas — notifikasi dan log menampilkan pesan TikTok lengkap.
+- [2026-01-28] Notifikasi error TikTok dipecah jadi judul + subjudul + deskripsi — UX lebih jelas — `status_msg_text` jadi subjudul, `status_msg_sop_text` jadi deskripsi.
 
 ## 11) Catatan Perilaku Sistem (biar agent cepat paham tanpa baca semua code)
 
@@ -227,7 +229,13 @@ Daftar:
 - TikTok order memakai `order_no` di URL; statement detail bisa tidak tersedia dan dianggap warning.
 - Export API memakai `POST /api/orders/import` dengan Bearer token dari `/api/login`.
 - Request export menambahkan `Accept: application/json` agar error backend tidak HTML.
+- Popup export menambahkan header `Accept: application/json` dan `X-Requested-With` untuk response JSON.
 - Bulk Auto melakukan pencarian order SN di Shopee, jika tidak ketemu lanjut TikTok Shop.
 - Bulk log menyimpan detail langkah (fetch/export/AWB) termasuk endpoint dan timing.
 - Mode Update Income hanya mengambil income/statement lalu export; order raw bisa null.
 - Format nama file AWB mengikuti waktu lokal dengan detik.
+- Pesan error TikTok mengekstrak detail dari `detail/body/failed_reason` agar notifikasi lebih informatif.
+- Notifikasi error TikTok memakai 3 level teks (judul/subjudul/deskripsi) dengan prioritas dari payload fallback.
+- Jika response export API bukan JSON, log akan menyertakan `htmlSnippet` agar tetap terbaca.
+- Error detail di popup mencoba mem-parse string JSON agar tampil rapi.
+- Jika AWB TikTok gagal, notif atas memakai pesan `status_msg_*` dari response `failed_reason` bila ada.

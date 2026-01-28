@@ -104,15 +104,48 @@ const orderSheetTableEl = null;
 let viewerPayloadCache = null;
 let settingsCache = DEFAULT_SETTINGS;
 let activeMarketplace = "shopee";
+let currentStatusTone = "info";
 
 const setStatus = (message, tone = "info") => {
-  statusEl.textContent = message;
+  currentStatusTone = tone;
+  const payload =
+    message && typeof message === "object"
+      ? message
+      : { title: message, subtitle: "", description: "" };
+  statusEl.innerHTML = "";
+  if (payload.title) {
+    const titleEl = document.createElement("div");
+    titleEl.className = "status-title";
+    titleEl.textContent = payload.title;
+    statusEl.appendChild(titleEl);
+  }
+  if (payload.subtitle) {
+    const subtitleEl = document.createElement("div");
+    subtitleEl.className = "status-subtitle";
+    subtitleEl.textContent = payload.subtitle;
+    statusEl.appendChild(subtitleEl);
+  }
+  if (payload.description) {
+    const descEl = document.createElement("div");
+    descEl.className = "status-description";
+    descEl.textContent = payload.description;
+    statusEl.appendChild(descEl);
+  }
   if (statusCardEl) {
     statusCardEl.classList.remove("ok", "error", "info");
     statusCardEl.classList.add(tone);
   }
   if (statusIconEl) {
     statusIconEl.textContent = tone === "ok" ? "✓" : tone === "error" ? "!" : "•";
+  }
+  if (tone !== "error") {
+    if (errorDetailsEl) {
+      errorDetailsEl.classList.add("hidden");
+      errorDetailsEl.open = false;
+    }
+    if (errorTextEl) {
+      errorTextEl.textContent = "";
+    }
   }
 };
 
@@ -291,11 +324,248 @@ const setLoading = (isLoading) => {
   statusSpinner.classList.toggle("hidden", !isLoading);
 };
 
+const parseJsonMaybe = (value) => {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (!trimmed) return value;
+  if (!(trimmed.startsWith("{") || trimmed.startsWith("["))) return value;
+  try {
+    return JSON.parse(trimmed);
+  } catch (e) {
+    return value;
+  }
+};
+
+const extractTikTokStatusInfo = (detail) => {
+  const subtitles = [];
+  const descriptions = [];
+  const seenSubtitle = new Set();
+  const seenDescription = new Set();
+  const pushSubtitle = (value) => {
+    const text = String(value || "").trim();
+    if (!text || seenSubtitle.has(text)) return;
+    seenSubtitle.add(text);
+    subtitles.push(text);
+  };
+  const pushDescription = (value) => {
+    const text = String(value || "").trim();
+    if (!text || seenDescription.has(text)) return;
+    seenDescription.add(text);
+    descriptions.push(text);
+  };
+  const visit = (value) => {
+    if (!value) return;
+    const parsed = parseJsonMaybe(value);
+    if (typeof parsed === "string") return;
+    const obj = parsed;
+    if (Array.isArray(obj?.failed_reason)) {
+      obj.failed_reason.forEach((reason) => {
+        pushSubtitle(reason?.status_msg_text);
+        pushDescription(reason?.status_msg_sop_text);
+      });
+    }
+    ["detail", "body", "income", "incomeDetail", "order", "data"].forEach((key) => {
+      if (obj?.[key]) visit(obj[key]);
+    });
+  };
+
+  visit(detail);
+  return {
+    subtitle: subtitles.join(" • "),
+    description: descriptions.join(" • ")
+  };
+};
+
+const pickFirstValue = (...values) => {
+  for (const value of values) {
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return value;
+    }
+  }
+  return "";
+};
+
+const buildErrorDetailPayload = (message, detail) => {
+  const normalized = normalizeDetailObject(detail);
+  const tiktokMessages = extractTikTokMessages(normalized);
+  const tiktokStatusInfo = extractTikTokStatusInfo(normalized);
+  const status = pickFirstValue(
+    normalized?.status,
+    normalized?.response?.status,
+    normalized?.income?.status,
+    normalized?.incomeDetail?.status,
+    normalized?.order?.status
+  );
+  const statusText = pickFirstValue(
+    normalized?.statusText,
+    normalized?.response?.statusText,
+    normalized?.income?.statusText,
+    normalized?.incomeDetail?.statusText,
+    normalized?.order?.statusText
+  );
+  const endpoints = {};
+  [
+    "incomeEndpoint",
+    "orderEndpoint",
+    "statementEndpoint",
+    "statementDetailEndpoint",
+    "packageEndpoint",
+    "createEndpoint",
+    "downloadEndpoint",
+    "generateEndpoint",
+    "filePrefix"
+  ].forEach((key) => {
+    if (normalized?.[key]) endpoints[key] = normalized[key];
+  });
+  if (normalized?.endpoints && typeof normalized.endpoints === "object") {
+    Object.assign(endpoints, normalized.endpoints);
+  }
+
+  const pruneEmptyFields = (value) => {
+    if (Array.isArray(value)) {
+      const items = value
+        .map((item) => pruneEmptyFields(item))
+        .filter((item) => item !== undefined);
+      return items.length ? items : undefined;
+    }
+    if (value && typeof value === "object") {
+      const result = {};
+      Object.entries(value).forEach(([key, entry]) => {
+        const pruned = pruneEmptyFields(entry);
+        if (pruned !== undefined) result[key] = pruned;
+      });
+      return Object.keys(result).length ? result : undefined;
+    }
+    if (value === "" || value === null || value === undefined) return undefined;
+    return value;
+  };
+
+  const raw =
+    normalized && typeof normalized === "object"
+      ? { ...normalized }
+      : normalized || null;
+  if (raw && typeof raw === "object") {
+    [
+      "marketplace",
+      "step",
+      "status",
+      "statusText",
+      "url",
+      "tabUrl",
+      "orderId",
+      "statementDetailId",
+      "endpoints",
+      "stack",
+      "trace",
+      "tiktokMessages",
+      "tiktokMessage"
+    ].forEach((key) => {
+      delete raw[key];
+    });
+  }
+
+  const summary = {};
+  if (message) summary.title = message;
+  if (tiktokStatusInfo.subtitle) summary.subtitle = tiktokStatusInfo.subtitle;
+  if (tiktokStatusInfo.description) summary.description = tiktokStatusInfo.description;
+
+  const context = {};
+  if (normalized?.marketplace) context.marketplace = normalized.marketplace;
+  if (normalized?.step) context.step = normalized.step;
+  if (status !== "" && status !== undefined && status !== null) context.status = status;
+  if (statusText) context.statusText = statusText;
+  if (normalized?.url) context.url = normalized.url;
+  if (normalized?.tabUrl) context.tabUrl = normalized.tabUrl;
+  if (normalized?.orderId) context.orderId = normalized.orderId;
+  if (normalized?.statementDetailId) context.statementDetailId = normalized.statementDetailId;
+  if (Object.keys(endpoints).length) context.endpoints = endpoints;
+
+  const externalResponse = pruneEmptyFields(raw);
+
+  const output = {};
+  const prunedSummary = pruneEmptyFields(summary);
+  const prunedContext = pruneEmptyFields(context);
+  if (prunedSummary) output.summary = prunedSummary;
+  if (prunedContext) output.context = prunedContext;
+  if (externalResponse !== undefined) output.externalResponse = externalResponse;
+  const trace = pruneEmptyFields(normalized?.stack || normalized?.trace || "");
+  if (trace) output.trace = trace;
+  if (!Object.keys(output).length) {
+    output.summary = { title: "Unknown error" };
+  }
+  return output;
+};
+
+const extractTikTokMessages = (detail) => {
+  const messages = [];
+  const seen = new Set();
+  const pushMessage = (value) => {
+    const text = String(value || "").trim();
+    if (!text || seen.has(text)) return;
+    seen.add(text);
+    messages.push(text);
+  };
+  const visit = (value) => {
+    if (!value) return;
+    const parsed = parseJsonMaybe(value);
+    if (typeof parsed === "string") return;
+    const obj = parsed;
+
+    if (obj?.hint) pushMessage(obj.hint);
+    if (obj?.appMessage && obj?.appCode && obj?.appCode !== 0) {
+      pushMessage(obj.appMessage);
+    }
+    if (obj?.message && obj?.code !== undefined && obj?.code !== 0) {
+      pushMessage(obj.message);
+    }
+    if (Array.isArray(obj?.failed_reason)) {
+      obj.failed_reason.forEach((reason) => {
+        pushMessage(reason?.status_msg_sop_text);
+        pushMessage(reason?.status_msg_text);
+      });
+    }
+    ["detail", "body", "income", "incomeDetail", "order", "data"].forEach((key) => {
+      if (obj?.[key]) visit(obj[key]);
+    });
+  };
+
+  visit(detail);
+  return messages;
+};
+
+const normalizeDetailObject = (detail) => {
+  if (!detail || typeof detail !== "object") return detail;
+  const cloned = Array.isArray(detail) ? [...detail] : { ...detail };
+  const keysToParse = ["detail", "body"];
+  keysToParse.forEach((key) => {
+    if (typeof cloned[key] === "string") {
+      cloned[key] = parseJsonMaybe(cloned[key]);
+    }
+  });
+  return cloned;
+};
+
+const extractTikTokAwbMessage = (detail) => {
+  const parsed = parseJsonMaybe(detail);
+  const payload = typeof parsed === "string" ? null : parsed;
+  const failed = payload?.data?.failed_reason?.[0];
+  return (
+    failed?.status_msg_sop_text ||
+    failed?.status_msg_text ||
+    failed?.status_msg ||
+    ""
+  );
+};
+
 const stringifyDetail = (detail) => {
   if (!detail) return "";
-  if (typeof detail === "string") return detail;
+  if (typeof detail === "string") {
+    const parsed = parseJsonMaybe(detail);
+    return typeof parsed === "string" ? parsed : JSON.stringify(parsed, null, 2);
+  }
   try {
-    return JSON.stringify(detail, null, 2);
+    const normalized = normalizeDetailObject(detail);
+    return JSON.stringify(normalized, null, 2);
   } catch (e) {
     return String(detail);
   }
@@ -309,11 +579,19 @@ const trimDetail = (value, limit = 2000) => {
 };
 
 const setError = (message, detail) => {
-  const detailText = stringifyDetail(detail);
-  const lines = [];
-  if (message) lines.push(message);
-  if (detailText) lines.push(trimDetail(detailText));
-  const finalText = lines.join("\n\n");
+  if (currentStatusTone !== "error") {
+    if (errorDetailsEl) {
+      errorDetailsEl.classList.add("hidden");
+      errorDetailsEl.open = false;
+    }
+    if (errorTextEl) {
+      errorTextEl.textContent = "";
+    }
+    return;
+  }
+  const payload = buildErrorDetailPayload(message, detail);
+  const detailText = stringifyDetail(payload);
+  const finalText = trimDetail(detailText, 8000);
 
   if (!finalText) {
     if (errorDetailsEl) {
@@ -580,16 +858,21 @@ const sendExportRequest = async () => {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        accept: "application/json",
+        "x-requested-with": "XMLHttpRequest",
         authorization: `Bearer ${token}`
       },
       body: JSON.stringify(buildExportPayload())
     });
+    const contentType = response.headers.get("content-type") || "";
     const text = await response.text();
+    const isJson = contentType.includes("application/json");
     const detail = {
       url,
       status: response.status,
       statusText: response.statusText,
-      body: text,
+      body: isJson ? text : "",
+      htmlSnippet: !isJson && text ? text.slice(0, 500) : "",
       marketplace: activeMarketplace
     };
     if (response.ok) {
@@ -2357,16 +2640,33 @@ const fetchData = async () => {
           marketplace: activeMarketplace
         });
       } else {
-        const message = `TikTok error: ${incomeLabel} | ${detailLabel} | ${orderLabel}`;
-        setStatus(message, "error");
-        setError(message, {
+        const detailPayload = {
           income: buildFetchErrorDetail(result.income, "income"),
           incomeDetail: buildFetchErrorDetail(result.incomeDetail, "income_detail"),
           order: buildFetchErrorDetail(result.order, "order"),
           orderId: result.orderId || "",
           statementDetailId: result.statementDetailId || "",
           marketplace: activeMarketplace
-        });
+        };
+        const tiktokMessages = extractTikTokMessages(detailPayload);
+        const tiktokStatusInfo = extractTikTokStatusInfo(detailPayload);
+        const message = `TikTok error: ${incomeLabel} | ${detailLabel} | ${orderLabel}`;
+        const statusMessage = tiktokMessages.length
+          ? `TikTok error: ${tiktokMessages.join(" • ")}`
+          : message;
+        if (tiktokStatusInfo.subtitle || tiktokStatusInfo.description) {
+          setStatus(
+            {
+              title: "TikTok error",
+              subtitle: tiktokStatusInfo.subtitle,
+              description: tiktokStatusInfo.description
+            },
+            "error"
+          );
+        } else {
+          setStatus(statusMessage, "error");
+        }
+        setError(statusMessage, detailPayload);
       }
       openViewerBtn.disabled = false;
       success = Boolean(
@@ -2570,9 +2870,26 @@ const downloadAwb = async () => {
       }
 
       if (result.error) {
-        setStatus(`Gagal download AWB: ${result.error}`, "error");
+        const tiktokMessages = extractTikTokMessages(result.detail);
+        const tiktokStatusInfo = extractTikTokStatusInfo(result.detail);
+        const statusMessage = tiktokMessages.length
+          ? `AWB gagal: ${tiktokMessages.join(" • ")}`
+          : `Gagal download AWB: ${result.error}`;
+        if (tiktokStatusInfo.subtitle || tiktokStatusInfo.description) {
+          setStatus(
+            {
+              title: "AWB gagal",
+              subtitle: tiktokStatusInfo.subtitle,
+              description: tiktokStatusInfo.description
+            },
+            "error"
+          );
+        } else {
+          setStatus(statusMessage, "error");
+        }
         setError(result.error, {
           detail: result.detail,
+          tiktokMessages,
           step: result.step,
           docUrl: result.openUrl,
           marketplace: activeMarketplace
