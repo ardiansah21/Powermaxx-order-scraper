@@ -192,6 +192,74 @@ const normalizeErrorText = (value) =>
     .replace(/^Error:\s*/i, "")
     .trim();
 
+const pruneEmptyFields = (value) => {
+  if (Array.isArray(value)) {
+    const items = value
+      .map((item) => pruneEmptyFields(item))
+      .filter((item) => item !== undefined);
+    return items.length ? items : undefined;
+  }
+  if (value && typeof value === "object") {
+    const result = {};
+    Object.entries(value).forEach(([key, entry]) => {
+      const pruned = pruneEmptyFields(entry);
+      if (pruned !== undefined) result[key] = pruned;
+    });
+    return Object.keys(result).length ? result : undefined;
+  }
+  if (value === "" || value === null || value === undefined) return undefined;
+  return value;
+};
+
+const buildBulkErrorDetailPayload = (message, detail) => {
+  const payload = detail && typeof detail === "object" ? { ...detail } : detail || null;
+  const status = detail?.status ?? detail?.response?.status;
+  const statusText = detail?.statusText ?? detail?.response?.statusText;
+  const context = {};
+  if (detail?.marketplace) context.marketplace = detail.marketplace;
+  if (detail?.stage) context.step = detail.stage;
+  if (detail?.orderId) context.orderId = detail.orderId;
+  if (detail?.orderUrl) context.url = detail.orderUrl;
+  if (detail?.tabUrl) context.tabUrl = detail.tabUrl;
+  if (status !== "" && status !== undefined && status !== null) context.status = status;
+  if (statusText) context.statusText = statusText;
+  if (detail?.endpoints) context.endpoints = detail.endpoints;
+
+  const summary = message ? { title: message } : {};
+  const trace = detail?.error?.stack || detail?.trace || detail?.stack || "";
+
+  if (payload && typeof payload === "object") {
+    [
+      "marketplace",
+      "stage",
+      "orderId",
+      "orderUrl",
+      "tabUrl",
+      "status",
+      "statusText",
+      "endpoints",
+      "stack",
+      "trace"
+    ].forEach((key) => {
+      delete payload[key];
+    });
+  }
+
+  const externalResponse = pruneEmptyFields(payload);
+  const output = {};
+  const prunedSummary = pruneEmptyFields(summary);
+  const prunedContext = pruneEmptyFields(context);
+  if (prunedSummary) output.summary = prunedSummary;
+  if (prunedContext) output.context = prunedContext;
+  if (externalResponse !== undefined) output.externalResponse = externalResponse;
+  const prunedTrace = pruneEmptyFields(trace);
+  if (prunedTrace) output.trace = prunedTrace;
+  if (!Object.keys(output).length) {
+    output.summary = { title: "Unknown error" };
+  }
+  return output;
+};
+
 const parseJsonMaybe = (value) => {
   if (typeof value !== "string") return value;
   const trimmed = value.trim();
@@ -1710,7 +1778,7 @@ const runBulk = async () => {
   setProgress(0, orders.length);
   setSummary(summary, "Mulai proses bulk...");
   setStatus("Mulai proses bulk...");
-  const buildDetailPayload = (payload) => {
+  const buildDetailPayload = (message, payload) => {
     const normalized = normalizePayloadForLog(payload);
     const tiktokMessages = extractTikTokMessages(normalized);
     if (
@@ -1721,7 +1789,8 @@ const runBulk = async () => {
     ) {
       normalized.tiktokMessages = tiktokMessages;
     }
-    return JSON.stringify(normalized, null, 2);
+    const detailPayload = buildBulkErrorDetailPayload(message, normalized);
+    return JSON.stringify(detailPayload, null, 2);
   };
 
   let done = 0;
@@ -1832,7 +1901,7 @@ const runBulk = async () => {
         const messageWithTikTok = tiktokMessages.length
           ? `${errorMessage} | ${tiktokMessages.join(" • ")}`
           : errorMessage;
-        const detailPayload = buildDetailPayload({
+        const detailPayload = buildDetailPayload(messageWithTikTok, {
           marketplace,
           orderId,
           stage,
@@ -2015,7 +2084,7 @@ const runBulk = async () => {
                   htmlSnippet: snippet(exportResult.htmlSnippet, 500)
                 }
               };
-        const detail = buildDetailPayload(detailPayload);
+        const detail = buildDetailPayload(`${msg} | ${awbStatus}`, detailPayload);
         summary.error += 1;
         updateLog(
           orderId,
@@ -2086,7 +2155,7 @@ const runBulk = async () => {
           url: tabUrl || tabUrlForLog || ""
         }
       };
-      const errorDetail = buildDetailPayload(errorPayload);
+      const errorDetail = buildDetailPayload(errorMessage, errorPayload);
       updateLog(
         orderId,
         "error",
