@@ -215,6 +215,13 @@ const buildBulkErrorDetailPayload = (message, detail) => {
   const payload = detail && typeof detail === "object" ? { ...detail } : detail || null;
   const status = detail?.status ?? detail?.response?.status;
   const statusText = detail?.statusText ?? detail?.response?.statusText;
+  const shopeeMessage =
+    detail?.detail?.user_message ||
+    detail?.detail?.message ||
+    detail?.response?.user_message ||
+    detail?.response?.message ||
+    "";
+  const tiktokMessages = extractTikTokMessages(detail);
   const context = {};
   if (detail?.marketplace) context.marketplace = detail.marketplace;
   if (detail?.stage) context.step = detail.stage;
@@ -226,6 +233,11 @@ const buildBulkErrorDetailPayload = (message, detail) => {
   if (detail?.endpoints) context.endpoints = detail.endpoints;
 
   const summary = message ? { title: message } : {};
+  if (tiktokMessages.length) {
+    summary.subtitle = tiktokMessages.join(" • ");
+  } else if (shopeeMessage) {
+    summary.subtitle = String(shopeeMessage || "").trim();
+  }
   const trace = detail?.error?.stack || detail?.trace || detail?.stack || "";
 
   if (payload && typeof payload === "object") {

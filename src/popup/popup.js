@@ -376,6 +376,20 @@ const extractTikTokStatusInfo = (detail) => {
   };
 };
 
+const extractShopeeStatusInfo = (detail) => {
+  const parsed = parseJsonMaybe(detail);
+  const payload = typeof parsed === "string" ? null : parsed;
+  const innerDetail = parseJsonMaybe(payload?.detail);
+  const detailPayload = typeof innerDetail === "string" ? payload?.detail : innerDetail;
+  const subtitle =
+    detailPayload?.user_message ||
+    detailPayload?.message ||
+    payload?.user_message ||
+    payload?.message ||
+    "";
+  return { subtitle: String(subtitle || "").trim() };
+};
+
 const pickFirstValue = (...values) => {
   for (const value of values) {
     if (value !== undefined && value !== null && String(value).trim() !== "") {
@@ -389,6 +403,7 @@ const buildErrorDetailPayload = (message, detail) => {
   const normalized = normalizeDetailObject(detail);
   const tiktokMessages = extractTikTokMessages(normalized);
   const tiktokStatusInfo = extractTikTokStatusInfo(normalized);
+  const shopeeStatusInfo = extractShopeeStatusInfo(normalized);
   const status = pickFirstValue(
     normalized?.status,
     normalized?.response?.status,
@@ -466,8 +481,12 @@ const buildErrorDetailPayload = (message, detail) => {
 
   const summary = {};
   if (message) summary.title = message;
-  if (tiktokStatusInfo.subtitle) summary.subtitle = tiktokStatusInfo.subtitle;
-  if (tiktokStatusInfo.description) summary.description = tiktokStatusInfo.description;
+  if (tiktokStatusInfo.subtitle || tiktokStatusInfo.description) {
+    if (tiktokStatusInfo.subtitle) summary.subtitle = tiktokStatusInfo.subtitle;
+    if (tiktokStatusInfo.description) summary.description = tiktokStatusInfo.description;
+  } else if (shopeeStatusInfo.subtitle) {
+    summary.subtitle = shopeeStatusInfo.subtitle;
+  }
 
   const context = {};
   if (normalized?.marketplace) context.marketplace = normalized.marketplace;
@@ -2954,7 +2973,19 @@ const downloadAwb = async () => {
     }
 
     if (result.error) {
-      setStatus(`Gagal download AWB: ${result.error}`, "error");
+      const shopeeStatusInfo = extractShopeeStatusInfo(result.detail);
+      if (shopeeStatusInfo.subtitle) {
+        setStatus(
+          {
+            title: "AWB gagal",
+            subtitle: shopeeStatusInfo.subtitle,
+            description: ""
+          },
+          "error"
+        );
+      } else {
+        setStatus(`Gagal download AWB: ${result.error}`, "error");
+      }
       setError(result.error, {
         detail: result.detail,
         step: result.step,

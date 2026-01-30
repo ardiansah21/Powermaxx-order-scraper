@@ -212,6 +212,9 @@ Daftar:
 - [2026-01-28] Pesan error TikTok memakai fallback payload — info lebih jelas — notifikasi dan log menampilkan pesan TikTok lengkap.
 - [2026-01-28] Notifikasi error TikTok dipecah jadi judul + subjudul + deskripsi — UX lebih jelas — `status_msg_text` jadi subjudul, `status_msg_sop_text` jadi deskripsi.
 - [2026-01-28] Format detail error bulk disamakan dengan popup — konsisten — pakai `summary/context/externalResponse/trace`.
+- [2026-01-28] Notifikasi Shopee menampilkan subjudul dari `user_message`/`message` — konsistensi UX — digunakan di status/error popup.
+- [2026-01-28] Detail error bulk menambahkan subjudul untuk Shopee/TikTok — konsisten — `user_message` atau pesan TikTok jadi subtitle.
+- [2026-01-30] Aksi utama popup jadi 3 tombol — akses cepat — Ambil+Kirim ditaruh di baris kedua.
 
 ## 11) Catatan Perilaku Sistem (biar agent cepat paham tanpa baca semua code)
 
@@ -238,6 +241,8 @@ Daftar:
 - Pesan error TikTok mengekstrak detail dari `detail/body/failed_reason` agar notifikasi lebih informatif.
 - Notifikasi error TikTok memakai 3 level teks (judul/subjudul/deskripsi) dengan prioritas dari payload fallback.
 - Detail error di bulk mengikuti struktur popup dengan pruning field kosong.
+- Detail error popup memakai subjudul Shopee jika ada `user_message`/`message`.
+- Detail error bulk memakai `summary.subtitle` dari pesan Shopee/TikTok bila tersedia.
 - Jika response export API bukan JSON, log akan menyertakan `htmlSnippet` agar tetap terbaca.
 - Error detail di popup mencoba mem-parse string JSON agar tampil rapi.
 - Jika AWB TikTok gagal, notif atas memakai pesan `status_msg_*` dari response `failed_reason` bila ada.
