@@ -25,7 +25,7 @@
       <div id="statusSpinner" class="spinner hidden" aria-hidden="true"></div>
     </div>
     <details id="errorDetails" class="error-details hidden">
-      <summary>Detail error</summary>
+      <summary id="errorDetailsToggle">Tampilkan detail</summary>
       <div class="error-box">
         <div class="error-text" id="errorText"></div>
         <button id="copyErrorBtn" class="ghost small" title="Copy error">Copy</button>
@@ -47,9 +47,6 @@
     <label for="authPassword">Password</label>
     <input id="authPassword" type="password" spellcheck="false" placeholder="Password">
     <small>Password tidak disimpan.</small>
-
-    <label for="authDeviceName">Device Name</label>
-    <input id="authDeviceName" type="text" spellcheck="false" placeholder="powermaxx-extension">
 
     <div class="actions login-actions">
       <button id="loginBtn" class="primary">Login</button>

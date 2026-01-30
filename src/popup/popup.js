@@ -91,6 +91,7 @@ const profileNameEl = document.getElementById("profileName");
 const profileEmailEl = document.getElementById("profileEmail");
 const statusSpinner = document.getElementById("statusSpinner");
 const errorDetailsEl = document.getElementById("errorDetails");
+const errorDetailsToggleEl = document.getElementById("errorDetailsToggle");
 const errorTextEl = document.getElementById("errorText");
 const copyErrorBtn = document.getElementById("copyErrorBtn");
 const sellerBreakdownEl = null;
@@ -515,6 +516,26 @@ const buildErrorDetailPayload = (message, detail) => {
   return output;
 };
 
+const isUnauthenticated = (status, data, rawText) => {
+  if ([401, 403, 419].includes(Number(status))) return true;
+  const message = String(data?.message || "").toLowerCase();
+  const raw = String(rawText || "").toLowerCase();
+  return message.includes("unauthenticated") || raw.includes("unauthenticated");
+};
+
+const forceLogout = async (reason) => {
+  if (authTokenEl) authTokenEl.value = "";
+  authPasswordEl.value = "";
+  setProfile(null);
+  await persistAuthSettings({
+    baseUrl: resolveAuthBaseUrl(),
+    token: "",
+    profile: null
+  });
+  updateActionState();
+  setStatus(reason || "Sesi login habis. Silakan login ulang.", "error");
+};
+
 const extractTikTokMessages = (detail) => {
   const messages = [];
   const seen = new Set();
@@ -623,7 +644,10 @@ const setError = (message, detail) => {
 
   if (errorDetailsEl) {
     errorDetailsEl.classList.remove("hidden");
-    errorDetailsEl.open = true;
+    errorDetailsEl.open = false;
+    if (errorDetailsToggleEl) {
+      errorDetailsToggleEl.textContent = "Tampilkan detail";
+    }
   }
   errorTextEl.textContent = finalText;
 };
@@ -685,6 +709,10 @@ const fetchProfile = async () => {
     } catch (e) {
       data = null;
     }
+    if (isUnauthenticated(response.status, data, raw)) {
+      await forceLogout("Sesi login habis. Silakan login ulang.");
+      return;
+    }
     if (!response.ok) {
       setStatus(`Gagal ambil profil ${response.status}`, "error");
       return;
@@ -694,7 +722,7 @@ const fetchProfile = async () => {
       baseUrl,
       token,
       email: authEmailEl.value.trim(),
-      deviceName: authDeviceNameEl.value.trim() || DEFAULT_DEVICE_NAME,
+      deviceName: authDeviceNameEl?.value.trim() || settingsCache.auth?.deviceName || "",
       profile: data
     });
     updateActionState();
@@ -711,7 +739,7 @@ const login = async () => {
   const baseUrl = resolveAuthBaseUrl();
   const email = authEmailEl.value.trim();
   const password = authPasswordEl.value;
-  const deviceName = authDeviceNameEl.value.trim() || DEFAULT_DEVICE_NAME;
+  const deviceName = `${email}-powermaxx_extension`;
 
   if (!baseUrl) {
     setStatus("Base URL wajib diisi.", "error");
@@ -826,7 +854,9 @@ const hydrateAuthForm = () => {
     DEFAULT_AUTH_BASE_URL;
   if (authBaseUrlEl) authBaseUrlEl.value = baseUrl;
   authEmailEl.value = settingsCache.auth?.email || "";
-  authDeviceNameEl.value = settingsCache.auth?.deviceName || DEFAULT_DEVICE_NAME;
+  if (authDeviceNameEl) {
+    authDeviceNameEl.value = settingsCache.auth?.deviceName || DEFAULT_DEVICE_NAME;
+  }
   if (authTokenEl) authTokenEl.value = settingsCache.auth?.token || "";
   setProfile(settingsCache.auth?.profile || null);
   updateActionState();
@@ -837,7 +867,7 @@ const syncAuthFromInputs = async () => {
     baseUrl: resolveAuthBaseUrl(),
     token: getAuthToken(),
     email: authEmailEl.value.trim(),
-    deviceName: authDeviceNameEl.value.trim() || DEFAULT_DEVICE_NAME,
+    deviceName: authDeviceNameEl?.value.trim() || settingsCache.auth?.deviceName || "",
     profile: authProfileCache
   });
   updateActionState();
@@ -894,6 +924,19 @@ const sendExportRequest = async () => {
       htmlSnippet: !isJson && text ? text.slice(0, 500) : "",
       marketplace: activeMarketplace
     };
+    let data = null;
+    if (isJson && text) {
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = null;
+      }
+    }
+    if (isUnauthenticated(response.status, data, text)) {
+      await forceLogout("Token tidak valid atau kadaluarsa. Silakan login ulang.");
+      setError("Sesi login habis.", detail);
+      return;
+    }
     if (response.ok) {
       setStatus(`Export OK ${response.status}`, "ok");
     } else {
@@ -3090,6 +3133,15 @@ const init = async () => {
         setStatus(`Gagal copy error: ${err.message}`, "error");
       }
     });
+  }
+  if (errorDetailsEl && errorDetailsToggleEl) {
+    const updateToggle = () => {
+      errorDetailsToggleEl.textContent = errorDetailsEl.open
+        ? "Sembunyikan detail"
+        : "Tampilkan detail";
+    };
+    errorDetailsEl.addEventListener("toggle", updateToggle);
+    updateToggle();
   }
 
   try {

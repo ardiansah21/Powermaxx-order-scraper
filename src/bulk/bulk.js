@@ -596,13 +596,26 @@ const sendExport = async (baseUrl, token, payload) => {
     const isJson = contentType.includes("application/json");
     const body = isJson ? text : "";
     const htmlSnippet = !isJson && text ? snippet(text, 500) : "";
+    let data = null;
+    if (isJson && text) {
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = null;
+      }
+    }
+    const unauthenticated =
+      [401, 403, 419].includes(response.status) ||
+      String(data?.message || "").toLowerCase().includes("unauthenticated") ||
+      String(text || "").toLowerCase().includes("unauthenticated");
     return {
       ok: response.ok,
       status: response.status,
       statusText: response.statusText,
       body,
       htmlSnippet,
-      url
+      url,
+      unauthenticated
     };
   } catch (err) {
     const hint =
@@ -1996,7 +2009,33 @@ const runBulk = async () => {
         awbRequested: includeAwb
       });
 
-      if (exportResult.ok && result.ok) {
+      if (exportResult.unauthenticated) {
+        summary.error += 1;
+        await clearAuthSession(baseUrl);
+        const msg = "Token tidak valid atau kadaluarsa. Login ulang di popup.";
+        const detail = buildDetailPayload(msg, {
+          marketplace,
+          orderId,
+          stage,
+          orderUrl,
+          tabUrl: tabUrlForLog || "",
+          endpoints,
+          error: {
+            category: "AUTH",
+            message: msg
+          },
+          response: exportResult
+        });
+        updateLog(
+          orderId,
+          "error",
+          formatLogMessage(mpLabel, msg),
+          detail,
+          `${mpLabel} | ${orderId} | ${msg}\n${detail}`
+        );
+        setSummary(summary, `Gagal: ${orderId}`);
+        cancelRun = true;
+      } else if (exportResult.ok && result.ok) {
         summary.success += 1;
         updateLog(
           orderId,
@@ -2193,6 +2232,21 @@ const runBulk = async () => {
 const stopBulk = () => {
   cancelRun = true;
   setStatus("Menghentikan proses...");
+};
+
+const clearAuthSession = async (baseUrl = "") => {
+  await chrome.storage.local.set({
+    settings: {
+      ...settingsCache,
+      auth: {
+        ...settingsCache.auth,
+        baseUrl: baseUrl || settingsCache.auth?.baseUrl || "",
+        token: "",
+        profile: null
+      }
+    }
+  });
+  settingsCache = await loadSettings();
 };
 
 const clearForm = () => {

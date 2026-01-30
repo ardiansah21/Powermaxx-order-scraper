@@ -214,6 +214,9 @@ Daftar:
 - [2026-01-28] Format detail error bulk disamakan dengan popup — konsisten — pakai `summary/context/externalResponse/trace`.
 - [2026-01-28] Notifikasi Shopee menampilkan subjudul dari `user_message`/`message` — konsistensi UX — digunakan di status/error popup.
 - [2026-01-28] Detail error bulk menambahkan subjudul untuk Shopee/TikTok — konsisten — `user_message` atau pesan TikTok jadi subtitle.
+- [2026-01-30] Auto logout jika API mengembalikan unauthenticated — keamanan sesi — token dibersihkan di popup dan bulk.
+- [2026-01-30] Detail error popup default collapse — UI lebih ringkas — tombol tampilkan detail disediakan.
+- [2026-01-30] Device Name auto dari email — lebih sederhana — format `{email}-powermaxx_extension` tanpa input.
 - [2026-01-30] Aksi utama popup jadi 3 tombol — akses cepat — Ambil+Kirim ditaruh di baris kedua.
 
 ## 11) Catatan Perilaku Sistem (biar agent cepat paham tanpa baca semua code)
@@ -243,6 +246,9 @@ Daftar:
 - Detail error di bulk mengikuti struktur popup dengan pruning field kosong.
 - Detail error popup memakai subjudul Shopee jika ada `user_message`/`message`.
 - Detail error bulk memakai `summary.subtitle` dari pesan Shopee/TikTok bila tersedia.
+- Jika response API mengandung unauthenticated (401/403/419), token otomatis dihapus.
+- Detail error di popup default tersembunyi dan hanya dibuka lewat tombol.
+- Device Name login otomatis mengikuti email (tanpa field input).
 - Jika response export API bukan JSON, log akan menyertakan `htmlSnippet` agar tetap terbaca.
 - Error detail di popup mencoba mem-parse string JSON agar tampil rapi.
 - Jika AWB TikTok gagal, notif atas memakai pesan `status_msg_*` dari response `failed_reason` bila ada.
