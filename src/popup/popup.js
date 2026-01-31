@@ -107,6 +107,11 @@ let settingsCache = DEFAULT_SETTINGS;
 let activeMarketplace = "shopee";
 let currentStatusTone = "info";
 
+const buildDeviceName = (email) => {
+  const clean = String(email || "").trim();
+  return clean ? `${clean}-powermaxx_extension` : "";
+};
+
 const setStatus = (message, tone = "info") => {
   currentStatusTone = tone;
   const payload =
@@ -718,11 +723,12 @@ const fetchProfile = async () => {
       return;
     }
     setProfile(data);
+    const email = authEmailEl.value.trim();
     await persistAuthSettings({
       baseUrl,
       token,
-      email: authEmailEl.value.trim(),
-      deviceName: authDeviceNameEl?.value.trim() || settingsCache.auth?.deviceName || "",
+      email,
+      deviceName: buildDeviceName(email) || settingsCache.auth?.deviceName || "",
       profile: data
     });
     updateActionState();
@@ -745,7 +751,17 @@ const login = async () => {
     setStatus("Base URL wajib diisi.", "error");
     return;
   }
-  if (!email || !password) {
+  if (!email) {
+    setStatus("Email wajib diisi.", "error");
+    setError("Email tidak boleh kosong. Device Name dibuat dari email.");
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setStatus("Email tidak valid.", "error");
+    setError("Gunakan format email yang benar agar login berhasil.");
+    return;
+  }
+  if (!password) {
     setStatus("Email dan password wajib diisi.", "error");
     return;
   }
@@ -863,11 +879,12 @@ const hydrateAuthForm = () => {
 };
 
 const syncAuthFromInputs = async () => {
+  const email = authEmailEl.value.trim();
   await persistAuthSettings({
     baseUrl: resolveAuthBaseUrl(),
     token: getAuthToken(),
-    email: authEmailEl.value.trim(),
-    deviceName: authDeviceNameEl?.value.trim() || settingsCache.auth?.deviceName || "",
+    email,
+    deviceName: buildDeviceName(email) || settingsCache.auth?.deviceName || "",
     profile: authProfileCache
   });
   updateActionState();

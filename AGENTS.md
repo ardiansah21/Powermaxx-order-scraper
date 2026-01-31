@@ -217,6 +217,9 @@ Daftar:
 - [2026-01-30] Auto logout jika API mengembalikan unauthenticated — keamanan sesi — token dibersihkan di popup dan bulk.
 - [2026-01-30] Detail error popup default collapse — UI lebih ringkas — tombol tampilkan detail disediakan.
 - [2026-01-30] Device Name auto dari email — lebih sederhana — format `{email}-powermaxx_extension` tanpa input.
+- [2026-01-30] Validasi email sebelum login — UX lebih jelas — device name tetap otomatis tanpa input.
+- [2026-01-30] Bulk tidak export jika fetch tidak valid — mencegah data parsial — log berhenti di langkah fetch.
+- [2026-01-30] Bulk TikTok menunggu readiness berbasis perf/load — stabilitas — lanjut fetch saat perf muncul atau load selesai.
 - [2026-01-30] Aksi utama popup jadi 3 tombol — akses cepat — Ambil+Kirim ditaruh di baris kedua.
 
 ## 11) Catatan Perilaku Sistem (biar agent cepat paham tanpa baca semua code)
@@ -249,6 +252,9 @@ Daftar:
 - Jika response API mengandung unauthenticated (401/403/419), token otomatis dihapus.
 - Detail error di popup default tersembunyi dan hanya dibuka lewat tombol.
 - Device Name login otomatis mengikuti email (tanpa field input).
+- Login menolak email kosong atau format tidak valid.
+- Bulk hanya export jika `result.ok` true (fetch valid).
+- TikTok bulk menunggu readiness (perf entries atau load) dengan timeout agar tidak menggantung.
 - Jika response export API bukan JSON, log akan menyertakan `htmlSnippet` agar tetap terbaca.
 - Error detail di popup mencoba mem-parse string JSON agar tampil rapi.
 - Jika AWB TikTok gagal, notif atas memakai pesan `status_msg_*` dari response `failed_reason` bila ada.

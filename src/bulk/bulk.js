@@ -650,6 +650,38 @@ const bulkTabRunner = async (
     }
   };
 
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const waitForDocumentReady = async (timeoutMs = 6000) => {
+    if (document.readyState === "complete") return true;
+    await Promise.race([
+      new Promise((resolve) => {
+        window.addEventListener("load", resolve, { once: true });
+      }),
+      sleep(timeoutMs)
+    ]);
+    return document.readyState === "complete";
+  };
+
+  const hasPerfEntry = (keyword) => {
+    const entries = performance.getEntriesByType("resource") || [];
+    return entries.some((entry) => String(entry?.name || "").includes(keyword));
+  };
+
+  const waitForPerfEntries = async (keywords, timeoutMs = 6000, intervalMs = 400) => {
+    const start = Date.now();
+    while (Date.now() - start <= timeoutMs) {
+      const ok = keywords.every((keyword) => hasPerfEntry(keyword));
+      if (ok) return true;
+      await sleep(intervalMs);
+    }
+    return false;
+  };
+
+  const waitForTikTokReady = async (keywords) => {
+    await Promise.race([waitForPerfEntries(keywords), waitForDocumentReady()]);
+  };
+
   const pageFetcher = async (incomeBase, orderBase, bodyOverride, defaultComponents) => {
     try {
       const pickCookie = (name) => {
@@ -1016,6 +1048,10 @@ const bulkTabRunner = async (
 
   const pageFetcherTikTok = async (orderBase, statementBase, statementDetailBase) => {
     try {
+      await waitForTikTokReady([
+        "/api/fulfillment/order/get",
+        "/api/v1/pay/statement/order/list"
+      ]);
       const parseOrderId = () => {
         const params = new URLSearchParams(location.search || "");
         const fromQuery =
@@ -1218,6 +1254,7 @@ const bulkTabRunner = async (
 
   const pageFetcherTikTokAwb = async (orderBase, generateBase, filePrefix) => {
     try {
+      await waitForTikTokReady(["/api/fulfillment/order/get"]);
       const parseOrderId = () => {
         const params = new URLSearchParams(location.search || "");
         const fromQuery =
@@ -1468,6 +1505,7 @@ const bulkTabRunner = async (
 
   const pageFetcherTikTokIncomeOnly = async (statementBase, statementDetailBase) => {
     try {
+      await waitForTikTokReady(["/api/v1/pay/statement/order/list"]);
       const parseOrderId = () => {
         const params = new URLSearchParams(location.search || "");
         const fromQuery =
@@ -1873,6 +1911,9 @@ const runBulk = async () => {
 
       tab = await chrome.tabs.create({ url: orderUrl, active: false });
       tabUrlForLog = await waitForAllowedUrl(tab.id, safeMarketplace, orderUrl);
+      if (safeMarketplace === "tiktok_shop") {
+        updateLog(orderId, "warn", formatLogMessage(mpLabel, "Menunggu halaman siap..."));
+      }
       stage = "execute_script";
 
       const mpSettings = settingsCache?.marketplaces?.[marketplace] || {};
@@ -1981,6 +2022,47 @@ const runBulk = async () => {
         incomeDetail: buildFetchMeta(fetchMeta.incomeDetail),
         order: buildFetchMeta(fetchMeta.order)
       };
+      if (!result.ok) {
+        summary.error += 1;
+        const msg = "Data error";
+        const detailPayload = buildDetailPayload(msg, {
+          marketplace,
+          orderId,
+          stage,
+          orderUrl,
+          tabUrl: tabUrlForLog || "",
+          endpoints,
+          ability: buildAbilitySummary({
+            fetched: false,
+            awbOk: false,
+            exportOk: false,
+            awbRequested: includeAwb
+          }),
+          steps: {
+            fetch: fetchStep,
+            export: { ok: false },
+            awb: { ok: false, requested: includeAwb }
+          },
+          data: {
+            order: result.orderRawJson,
+            income: result.incomeRawJson,
+            incomeDetail: result.incomeDetailRawJson
+          }
+        });
+        updateLog(
+          orderId,
+          "error",
+          formatLogMessage(mpLabel, msg),
+          detailPayload,
+          `${mpLabel} | ${orderId} | ${msg}\n${detailPayload}`
+        );
+        setSummary(summary, `Gagal: ${orderId}`);
+        await chrome.tabs.remove(tab.id);
+        done += 1;
+        setProgress(done, orders.length);
+        if (delayMs) await sleep(delayMs);
+        continue;
+      }
       const awbStep = {
         ok: !result.awb?.error,
         requested: includeAwb,
