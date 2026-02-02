@@ -112,6 +112,39 @@ const buildDeviceName = (email) => {
   return clean ? `${clean}-powermaxx_extension` : "";
 };
 
+const buildOriginPattern = (baseUrl) => {
+  const clean = normalizeBaseUrl(baseUrl);
+  if (!clean) return "";
+  try {
+    const url = new URL(clean);
+    return `${url.origin}/*`;
+  } catch (e) {
+    return "";
+  }
+};
+
+const requestPowermaxxPermission = (baseUrl) =>
+  new Promise((resolve) => {
+    if (!chrome?.permissions) return resolve(false);
+    const origin = buildOriginPattern(baseUrl);
+    if (!origin) return resolve(false);
+    chrome.permissions.request({ origins: [origin] }, (granted) => {
+      resolve(Boolean(granted));
+    });
+  });
+
+const registerPowermaxxBridge = (baseUrl) =>
+  new Promise((resolve) => {
+    if (!chrome?.runtime?.sendMessage) return resolve(false);
+    chrome.runtime.sendMessage(
+      {
+        type: "POWERMAXX_BRIDGE_REGISTER",
+        baseUrl
+      },
+      () => resolve(true)
+    );
+  });
+
 const setStatus = (message, tone = "info") => {
   currentStatusTone = tone;
   const payload =
@@ -766,6 +799,7 @@ const login = async () => {
     return;
   }
 
+  const bridgeGranted = await requestPowermaxxPermission(baseUrl);
   setStatus("Login...", "info");
   setLoading(true);
   setAuthBusy(true);
@@ -808,6 +842,9 @@ const login = async () => {
       deviceName,
       profile: data?.user || authProfileCache
     });
+    if (bridgeGranted) {
+      await registerPowermaxxBridge(baseUrl);
+    }
     updateActionState();
     setStatus("Login berhasil.", "ok");
     if (!data?.user) {

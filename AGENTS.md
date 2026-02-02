@@ -221,6 +221,10 @@ Daftar:
 - [2026-01-30] Bulk tidak export jika fetch tidak valid — mencegah data parsial — log berhenti di langkah fetch.
 - [2026-01-30] Bulk TikTok menunggu readiness berbasis perf/load — stabilitas — lanjut fetch saat perf muncul atau load selesai.
 - [2026-01-30] Aksi utama popup jadi 3 tombol — akses cepat — Ambil+Kirim ditaruh di baris kedua.
+- [2026-02-01] Bulk menambahkan mode Update Order — update order saja — income/AWB tidak dipakai.
+- [2026-02-01] Web Powermaxx bisa memicu bulk via postMessage — integrasi web → extension — bulk auto-run dari payload order_sn.
+- [2026-02-01] Powermaxx bridge pakai optional host permissions — domain fleksibel — konten script didaftarkan dinamis saat login.
+- [2026-02-01] Base URL API disatukan di Pengaturan — lebih sederhana — auth dan export semua marketplace memakai satu base URL.
 
 ## 11) Catatan Perilaku Sistem (biar agent cepat paham tanpa baca semua code)
 
@@ -255,6 +259,10 @@ Daftar:
 - Login menolak email kosong atau format tidak valid.
 - Bulk hanya export jika `result.ok` true (fetch valid).
 - TikTok bulk menunggu readiness (perf entries atau load) dengan timeout agar tidak menggantung.
+- Bulk bisa dipicu dari web Powermaxx via `window.postMessage` dan membaca `bulkBridgePayload` di storage.
+- Mode Update Order hanya mengambil order lalu export; income/statement null.
+- Powermaxx bridge didaftarkan dinamis ke domain Base URL (permission diminta saat login).
+- Base URL API tunggal dipakai untuk login dan export semua marketplace.
 - Jika response export API bukan JSON, log akan menyertakan `htmlSnippet` agar tetap terbaca.
 - Error detail di popup mencoba mem-parse string JSON agar tampil rapi.
 - Jika AWB TikTok gagal, notif atas memakai pesan `status_msg_*` dari response `failed_reason` bila ada.

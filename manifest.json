@@ -14,5 +14,9 @@
     "https://*.shopee.co.id/*",
     "https://seller-id.tokopedia.com/*"
   ],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "background": {
+    "service_worker": "src/background.js"
+  },
   "options_page": "src/options/options.html"
 }

@@ -1503,6 +1503,79 @@ const bulkTabRunner = async (
     }
   };
 
+  const pageFetcherShopeeOrderOnly = async (orderBase) => {
+    try {
+      const pickCookie = (name) => {
+        const pair = document.cookie
+          .split(";")
+          .map((c) => c.trim())
+          .find((c) => c.startsWith(`${name}=`));
+        if (!pair) return "";
+        const raw = pair.slice(pair.indexOf("=") + 1);
+        try {
+          return decodeURIComponent(raw);
+        } catch (e) {
+          return raw;
+        }
+      };
+
+      const ensureParams = (url) => {
+        const cdsCookie = pickCookie("SPC_CDS");
+        const cdsVerCookie = pickCookie("SPC_CDS_VER");
+        if (!url.searchParams.get("SPC_CDS") && cdsCookie) {
+          url.searchParams.set("SPC_CDS", cdsCookie);
+        }
+        if (!url.searchParams.get("SPC_CDS_VER")) {
+          if (cdsVerCookie) {
+            url.searchParams.set("SPC_CDS_VER", cdsVerCookie);
+          } else {
+            url.searchParams.set("SPC_CDS_VER", "2");
+          }
+        }
+      };
+
+      const parseOrderId = () => {
+        const params = new URLSearchParams(location.search || "");
+        const fromQuery = params.get("order_id") || params.get("orderId");
+        if (fromQuery) return fromQuery;
+        const pathMatch = location.pathname.match(/order\/(detail\/)?(\d+)/);
+        return pathMatch ? pathMatch[2] : "";
+      };
+
+      const orderId = parseOrderId();
+      if (!orderId) {
+        return { error: "Order ID tidak ditemukan (buka halaman order)" };
+      }
+
+      const orderUrl = new URL(orderBase);
+      ensureParams(orderUrl);
+      orderUrl.searchParams.set("order_id", orderId);
+
+      const orderResp = await fetch(orderUrl.toString(), {
+        method: "GET",
+        headers: { accept: "application/json, text/plain, */*" },
+        credentials: "include"
+      });
+      const orderBody = await orderResp.text();
+      const orderJson = safeJson(orderBody);
+
+      return {
+        order: {
+          ok: orderResp.ok,
+          status: orderResp.status,
+          statusText: orderResp.statusText,
+          appCode: orderJson?.code,
+          appMessage: orderJson?.message,
+          body: orderBody,
+          finalUrl: orderUrl.toString()
+        },
+        orderId
+      };
+    } catch (e) {
+      return { error: e.message };
+    }
+  };
+
   const pageFetcherTikTokIncomeOnly = async (statementBase, statementDetailBase) => {
     try {
       await waitForTikTokReady(["/api/v1/pay/statement/order/list"]);
@@ -1676,9 +1749,116 @@ const bulkTabRunner = async (
     }
   };
 
+  const pageFetcherTikTokOrderOnly = async (orderBase) => {
+    try {
+      await waitForTikTokReady(["/api/fulfillment/order/get"]);
+      const parseOrderId = () => {
+        const params = new URLSearchParams(location.search || "");
+        const fromQuery =
+          params.get("order_no") ||
+          params.get("orderNo") ||
+          params.get("main_order_id") ||
+          params.get("order_id");
+        if (fromQuery) return fromQuery;
+        const pathMatch = location.pathname.match(/order\/(detail\/)?(\d+)/);
+        return pathMatch ? pathMatch[2] : "";
+      };
+
+      const pickLatestResourceUrl = (keyword, paramKey, paramValue) => {
+        const entries = performance.getEntriesByType("resource") || [];
+        for (let i = entries.length - 1; i >= 0; i -= 1) {
+          const url = entries[i]?.name || "";
+          if (!url.includes(keyword)) continue;
+          if (paramKey && paramValue) {
+            try {
+              const parsed = new URL(url);
+              if (parsed.searchParams.get(paramKey) !== String(paramValue)) {
+                continue;
+              }
+            } catch (e) {
+              continue;
+            }
+          }
+          return url;
+        }
+        return "";
+      };
+
+      const orderId = parseOrderId();
+      if (!orderId) {
+        return { error: "Order ID tidak ditemukan (buka halaman order detail TikTok)" };
+      }
+
+      const perfOrderUrl = pickLatestResourceUrl("/api/fulfillment/order/get");
+      const orderUrl = new URL(perfOrderUrl || orderBase);
+
+      const orderResp = await fetch(orderUrl.toString(), {
+        method: "POST",
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+          accept: "application/json, text/plain, */*"
+        },
+        credentials: "include",
+        body: JSON.stringify({ main_order_id: [String(orderId)] })
+      });
+      const orderBody = await orderResp.text();
+      const orderJson = safeJson(orderBody);
+
+      return {
+        order: {
+          ok: orderResp.ok,
+          status: orderResp.status,
+          statusText: orderResp.statusText,
+          appCode: orderJson?.code,
+          appMessage: orderJson?.message,
+          body: orderBody,
+          finalUrl: orderUrl.toString()
+        },
+        orderId
+      };
+    } catch (e) {
+      return { error: e.message };
+    }
+  };
+
   const actionMode = actionOptions?.mode || "all";
   const includeAwb = actionOptions?.includeAwb !== false;
   const incomeOnly = actionMode === "update_income";
+  const orderOnly = actionMode === "update_order";
+
+  if (marketplace === "shopee" && orderOnly) {
+    const result = await pageFetcherShopeeOrderOnly(endpoints.orderEndpoint);
+    if (result.error) return { error: result.error };
+    const orderJson = safeJson(result.order?.body || "");
+    const orderOk = result.order?.ok && (orderJson?.code ?? 0) === 0;
+    return {
+      ok: orderOk,
+      orderRawJson: orderJson,
+      incomeRawJson: null,
+      incomeDetailRawJson: null,
+      awb: { ok: true, skipped: true },
+      fetchMeta: {
+        order: result.order
+      }
+    };
+  }
+
+  if (marketplace === "tiktok_shop" && orderOnly) {
+    const result = await pageFetcherTikTokOrderOnly(endpoints.orderEndpoint);
+    if (result.error) return { error: result.error };
+    const orderJson = safeJson(result.order?.body || "");
+    const orderOk = result.order?.ok && (orderJson?.code ?? 0) === 0;
+    return {
+      ok: orderOk,
+      orderRawJson: orderJson,
+      incomeRawJson: null,
+      incomeDetailRawJson: null,
+      awb: { ok: true, skipped: true },
+      fetchMeta: {
+        order: result.order
+      }
+    };
+  }
 
   if (marketplace === "shopee" && incomeOnly) {
     const result = await pageFetcherShopeeIncomeOnly(
@@ -2339,6 +2519,35 @@ const clearForm = () => {
   resetSummary(0);
 };
 
+const applyBridgePayload = async () => {
+  const stored = await chrome.storage.local.get("bulkBridgePayload");
+  const payload = stored?.bulkBridgePayload;
+  if (!payload) return;
+  await chrome.storage.local.remove("bulkBridgePayload");
+
+  const list = Array.isArray(payload.orderSnList) ? payload.orderSnList : [];
+  if (!list.length) {
+    setStatus("Permintaan Powermaxx tidak berisi order.");
+    return;
+  }
+
+  orderListEl.value = list.join("\n");
+  marketplaceEl.value = "auto";
+  const actionMap = {
+    update_income: "update_income",
+    update_order: "update_order",
+    update_both: "fetch_send"
+  };
+  actionEl.value = actionMap[payload.action] || "fetch_send";
+  setStatus("Permintaan dari Powermaxx diterima. Menjalankan bulk...");
+  setSummary(
+    { total: list.length, success: 0, error: 0, skipped: 0 },
+    "Permintaan dari Powermaxx diterima."
+  );
+  setProgress(0, list.length);
+  runBulk();
+};
+
 const init = async () => {
   settingsCache = await loadSettings();
   marketplaceEl.value = "auto";
@@ -2366,6 +2575,8 @@ const init = async () => {
   startBtn.addEventListener("click", runBulk);
   stopBtn.addEventListener("click", stopBulk);
   clearBtn.addEventListener("click", clearForm);
+
+  await applyBridgePayload();
 };
 
 document.addEventListener("DOMContentLoaded", init);

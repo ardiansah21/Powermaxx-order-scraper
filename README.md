@@ -15,18 +15,20 @@ Developer: Ardiansah / Arva.
 - Buka tab `seller.shopee.co.id` (Shopee) atau `seller-id.tokopedia.com` (TikTok Shop) dan biarkan sebagai tab aktif.
 - Saat popup dibuka, tampil layar login (Base URL diambil dari Pengaturan).
 - Login di popup menggunakan **/api/login** agar token global tersimpan.
-- Aksi utama: **Ambil + Kirim + AWB** dan **Update Income**.
+- Aksi utama: **Ambil + Kirim + AWB**, **Ambil + Kirim**, dan **Update Income**.
 - Jika income perlu diperbarui, gunakan **Update Income** (income-only) lalu otomatis kirim ulang ke API.
 - Untuk TikTok Shop, order ID diambil dari query `order_no` di URL order detail.
 - **Ambil + Kirim**, **Ambil Data**, **Kirim Data**, **Download AWB**, dan **Lihat Data** ada di menu **Aksi lainnya**.
-- Ikon **Bulk** (☰) di header popup membuka halaman bulk dengan mode aksi: **Ambil + Kirim + AWB**, **Ambil + Kirim**, atau **Update Income**.
+- Ikon **Bulk** (☰) di header popup membuka halaman bulk dengan mode aksi: **Ambil + Kirim + AWB**, **Ambil + Kirim**, **Update Income**, atau **Update Order**.
+- Web Powermaxx bisa memicu bulk lewat `window.postMessage` dengan action `update_order`, `update_income`, atau `update_both` dan daftar `order_sn` (extension akan buka bulk + auto-run).
+- Domain Powermaxx tidak di-hardcode; izin host akan diminta saat login sesuai Base URL agar tombol web bisa memanggil extension.
 - Bulk Auto: coba cari order SN di Shopee (search endpoint), jika tidak ditemukan maka diproses sebagai TikTok Shop.
 - Logout ada di menu profil (klik kartu profil).
 
 ## Pengaturan
 
 - Klik ikon **Pengaturan** di popup untuk membuka halaman options.
-- Atur Base URL API per marketplace (Shopee/TikTok) untuk kebutuhan export.
+- Atur satu Base URL API untuk kebutuhan login/export semua marketplace.
 - Untuk TikTok Shop, atur endpoint Order (`/api/fulfillment/order/get`), Statement (`/api/v1/pay/statement/order/list`), dan Statement Detail (`/api/v1/pay/statement/transaction/detail`).
 - Untuk TikTok Shop, atur endpoint AWB `shipping_doc/generate` + file prefix label jika perlu.
 - Atur endpoint AWB Shopee (get_package, create_sd_jobs, download_sd_job) + opsi file label.

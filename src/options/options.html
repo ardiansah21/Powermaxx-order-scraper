@@ -14,10 +14,17 @@
       <h1>Powermaxx Pengaturan</h1>
       <p>Konfigurasi marketplace dan endpoint API.</p>
     </div>
-    <button id="saveBtn" class="primary">Simpan</button>
+    <div class="hero-actions">
+      <div class="status" id="status">Belum disimpan.</div>
+      <button id="saveBtn" class="primary">Simpan</button>
+    </div>
   </header>
 
   <section class="panel">
+    <label for="baseUrl">Base URL API</label>
+    <input id="baseUrl" type="url" spellcheck="false" placeholder="https://powermaxx.test">
+    <small>Dipakai untuk login dan export semua marketplace.</small>
+
     <label for="defaultMarketplace">Marketplace Default</label>
     <select id="defaultMarketplace">
       <option value="shopee">Shopee</option>
@@ -28,9 +35,6 @@
 
   <section class="panel">
     <h2>Shopee</h2>
-    <label for="shopeeBaseUrl">Base URL API</label>
-    <input id="shopeeBaseUrl" type="url" spellcheck="false" placeholder="https://powermaxx.test">
-
     <label for="shopeeIncomeEndpoint">Endpoint Income</label>
     <input id="shopeeIncomeEndpoint" type="url" spellcheck="false">
 
@@ -66,9 +70,6 @@
 
   <section class="panel">
     <h2>TikTok Shop</h2>
-    <label for="tiktokBaseUrl">Base URL API</label>
-    <input id="tiktokBaseUrl" type="url" spellcheck="false" placeholder="https://powermaxx.test">
-
     <label for="tiktokOrderEndpoint">Endpoint Order</label>
     <input id="tiktokOrderEndpoint" type="url" spellcheck="false">
 
@@ -87,10 +88,6 @@
 
     <label for="tiktokAwbFilePrefix">File Prefix</label>
     <input id="tiktokAwbFilePrefix" type="text" spellcheck="false" placeholder="Shipping label">
-  </section>
-
-  <section class="panel">
-    <div class="status" id="status">Belum disimpan.</div>
   </section>
 
     </div>

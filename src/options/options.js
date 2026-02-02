@@ -67,7 +67,7 @@ const DEFAULT_SETTINGS = {
 const statusEl = document.getElementById("status");
 const saveBtn = document.getElementById("saveBtn");
 const defaultMarketplaceEl = document.getElementById("defaultMarketplace");
-const shopeeBaseUrlEl = document.getElementById("shopeeBaseUrl");
+const baseUrlEl = document.getElementById("baseUrl");
 const shopeeIncomeEndpointEl = document.getElementById("shopeeIncomeEndpoint");
 const shopeeOrderEndpointEl = document.getElementById("shopeeOrderEndpoint");
 const shopeeAwbPackageEndpointEl = document.getElementById("shopeeAwbPackageEndpoint");
@@ -78,7 +78,6 @@ const shopeeAwbAsyncVersionEl = document.getElementById("shopeeAwbAsyncVersion")
 const shopeeAwbFileTypeEl = document.getElementById("shopeeAwbFileType");
 const shopeeAwbFileNameEl = document.getElementById("shopeeAwbFileName");
 const shopeeAwbFileContentsEl = document.getElementById("shopeeAwbFileContents");
-const tiktokBaseUrlEl = document.getElementById("tiktokBaseUrl");
 const tiktokOrderEndpointEl = document.getElementById("tiktokOrderEndpoint");
 const tiktokStatementEndpointEl = document.getElementById("tiktokStatementEndpoint");
 const tiktokStatementDetailEndpointEl = document.getElementById("tiktokStatementDetailEndpoint");
@@ -151,7 +150,12 @@ const saveSettings = async (settings) => {
 
 const fillForm = (settings) => {
   defaultMarketplaceEl.value = settings.defaultMarketplace || "shopee";
-  shopeeBaseUrlEl.value = settings.marketplaces?.shopee?.baseUrl || "";
+  const resolvedBaseUrl =
+    settings.auth?.baseUrl ||
+    settings.marketplaces?.shopee?.baseUrl ||
+    settings.marketplaces?.tiktok_shop?.baseUrl ||
+    DEFAULT_AUTH_BASE_URL;
+  baseUrlEl.value = resolvedBaseUrl || "";
   shopeeIncomeEndpointEl.value =
     settings.marketplaces?.shopee?.incomeEndpoint || DEFAULT_INCOME_ENDPOINT;
   shopeeOrderEndpointEl.value =
@@ -170,7 +174,6 @@ const fillForm = (settings) => {
   shopeeAwbFileNameEl.value = awbSettings.fileName || DEFAULT_AWB_FILE_NAME;
   shopeeAwbFileContentsEl.value =
     awbSettings.fileContents || DEFAULT_AWB_FILE_CONTENTS;
-  tiktokBaseUrlEl.value = settings.marketplaces?.tiktok_shop?.baseUrl || "";
   tiktokOrderEndpointEl.value =
     settings.marketplaces?.tiktok_shop?.orderEndpoint || DEFAULT_TIKTOK_ORDER_ENDPOINT;
   tiktokStatementEndpointEl.value =
@@ -183,46 +186,55 @@ const fillForm = (settings) => {
   tiktokAwbFilePrefixEl.value = tiktokAwbSettings.filePrefix || DEFAULT_TIKTOK_AWB_FILE_PREFIX;
 };
 
-const collectForm = () => ({
-  defaultMarketplace: defaultMarketplaceEl.value || "shopee",
-  marketplaces: {
-    shopee: {
-      baseUrl: shopeeBaseUrlEl.value.trim(),
-      incomeEndpoint: shopeeIncomeEndpointEl.value.trim() || DEFAULT_INCOME_ENDPOINT,
-      orderEndpoint: shopeeOrderEndpointEl.value.trim() || DEFAULT_ORDER_ENDPOINT,
-      awb: {
-        getPackageEndpoint:
-          shopeeAwbPackageEndpointEl.value.trim() || DEFAULT_AWB_PACKAGE_ENDPOINT,
-        createJobEndpoint:
-          shopeeAwbCreateJobEndpointEl.value.trim() || DEFAULT_AWB_CREATE_JOB_ENDPOINT,
-        downloadJobEndpoint:
-          shopeeAwbDownloadJobEndpointEl.value.trim() || DEFAULT_AWB_DOWNLOAD_JOB_ENDPOINT,
-        regionId: shopeeAwbRegionIdEl.value.trim() || DEFAULT_AWB_REGION_ID,
-        asyncSdVersion:
-          shopeeAwbAsyncVersionEl.value.trim() || DEFAULT_AWB_ASYNC_VERSION,
-        fileType: shopeeAwbFileTypeEl.value.trim() || DEFAULT_AWB_FILE_TYPE,
-        fileName: shopeeAwbFileNameEl.value.trim() || DEFAULT_AWB_FILE_NAME,
-        fileContents:
-          shopeeAwbFileContentsEl.value.trim() || DEFAULT_AWB_FILE_CONTENTS
-      }
+const collectForm = () => {
+  const baseUrl =
+    baseUrlEl.value.trim() || settingsCache.auth?.baseUrl || DEFAULT_AUTH_BASE_URL;
+  return {
+    defaultMarketplace: defaultMarketplaceEl.value || "shopee",
+    auth: {
+      ...settingsCache.auth,
+      baseUrl
     },
-    tiktok_shop: {
-      baseUrl: tiktokBaseUrlEl.value.trim(),
-      orderEndpoint:
-        tiktokOrderEndpointEl.value.trim() || DEFAULT_TIKTOK_ORDER_ENDPOINT,
-      statementEndpoint:
-        tiktokStatementEndpointEl.value.trim() || DEFAULT_TIKTOK_STATEMENT_ENDPOINT,
-      statementDetailEndpoint:
-        tiktokStatementDetailEndpointEl.value.trim() || DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT,
-      awb: {
-        generateEndpoint:
-          tiktokAwbGenerateEndpointEl.value.trim() || DEFAULT_TIKTOK_AWB_GENERATE_ENDPOINT,
-        filePrefix:
-          tiktokAwbFilePrefixEl.value.trim() || DEFAULT_TIKTOK_AWB_FILE_PREFIX
+    marketplaces: {
+      shopee: {
+        baseUrl,
+        incomeEndpoint: shopeeIncomeEndpointEl.value.trim() || DEFAULT_INCOME_ENDPOINT,
+        orderEndpoint: shopeeOrderEndpointEl.value.trim() || DEFAULT_ORDER_ENDPOINT,
+        awb: {
+          getPackageEndpoint:
+            shopeeAwbPackageEndpointEl.value.trim() || DEFAULT_AWB_PACKAGE_ENDPOINT,
+          createJobEndpoint:
+            shopeeAwbCreateJobEndpointEl.value.trim() || DEFAULT_AWB_CREATE_JOB_ENDPOINT,
+          downloadJobEndpoint:
+            shopeeAwbDownloadJobEndpointEl.value.trim() || DEFAULT_AWB_DOWNLOAD_JOB_ENDPOINT,
+          regionId: shopeeAwbRegionIdEl.value.trim() || DEFAULT_AWB_REGION_ID,
+          asyncSdVersion:
+            shopeeAwbAsyncVersionEl.value.trim() || DEFAULT_AWB_ASYNC_VERSION,
+          fileType: shopeeAwbFileTypeEl.value.trim() || DEFAULT_AWB_FILE_TYPE,
+          fileName: shopeeAwbFileNameEl.value.trim() || DEFAULT_AWB_FILE_NAME,
+          fileContents:
+            shopeeAwbFileContentsEl.value.trim() || DEFAULT_AWB_FILE_CONTENTS
+        }
+      },
+      tiktok_shop: {
+        baseUrl,
+        orderEndpoint:
+          tiktokOrderEndpointEl.value.trim() || DEFAULT_TIKTOK_ORDER_ENDPOINT,
+        statementEndpoint:
+          tiktokStatementEndpointEl.value.trim() || DEFAULT_TIKTOK_STATEMENT_ENDPOINT,
+        statementDetailEndpoint:
+          tiktokStatementDetailEndpointEl.value.trim() ||
+          DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT,
+        awb: {
+          generateEndpoint:
+            tiktokAwbGenerateEndpointEl.value.trim() || DEFAULT_TIKTOK_AWB_GENERATE_ENDPOINT,
+          filePrefix:
+            tiktokAwbFilePrefixEl.value.trim() || DEFAULT_TIKTOK_AWB_FILE_PREFIX
+        }
       }
     }
-  }
-});
+  };
+};
 
 
 const init = async () => {
