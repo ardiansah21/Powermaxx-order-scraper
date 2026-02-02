@@ -20,7 +20,11 @@ Developer: Ardiansah / Arva.
 - Untuk TikTok Shop, order ID diambil dari query `order_no` di URL order detail.
 - **Ambil + Kirim**, **Ambil Data**, **Kirim Data**, **Download AWB**, dan **Lihat Data** ada di menu **Aksi lainnya**.
 - Ikon **Bulk** (☰) di header popup membuka halaman bulk dengan mode aksi: **Ambil + Kirim + AWB**, **Ambil + Kirim**, **Update Income**, atau **Update Order**.
-- Web Powermaxx bisa memicu bulk lewat `window.postMessage` dengan action `update_order`, `update_income`, atau `update_both` dan daftar `order_sn` (extension akan buka bulk + auto-run).
+- Web Powermaxx bisa memicu bridge lewat `window.postMessage` dengan `mode: single|bulk` dan action `update_order`, `update_income`, atau `update_both`.
+- Payload bridge memakai `orders` array, tiap item berisi `marketplace` + `mp_order_id` (Shopee) atau `order_sn` (TikTok Shop).
+- Untuk Shopee, set `id_type: "mp_order_id"` agar langsung buka order (tanpa search).
+- `update_both` artinya update order + income.
+- Mode `single` menjalankan proses langsung (tanpa halaman bulk), tetap membuka tab order marketplace.
 - Domain Powermaxx tidak di-hardcode; izin host akan diminta saat login sesuai Base URL agar tombol web bisa memanggil extension.
 - Bulk Auto: coba cari order SN di Shopee (search endpoint), jika tidak ditemukan maka diproses sebagai TikTok Shop.
 - Logout ada di menu profil (klik kartu profil).
