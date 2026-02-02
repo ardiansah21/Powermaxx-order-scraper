@@ -93,6 +93,57 @@ const setStatus = (message, tone = "info") => {
 
 const getStorageArea = () => chrome.storage?.sync || chrome.storage?.local;
 
+const normalizeBaseUrl = (value) => (value || "").trim().replace(/\/+$/, "");
+
+const buildOriginPattern = (baseUrl) => {
+  const clean = normalizeBaseUrl(baseUrl);
+  if (!clean) return "";
+  try {
+    const url = new URL(clean);
+    return `${url.origin}/*`;
+  } catch (e) {
+    return "";
+  }
+};
+
+const hasPowermaxxPermission = (baseUrl) =>
+  new Promise((resolve) => {
+    if (!chrome?.permissions) return resolve(false);
+    const origin = buildOriginPattern(baseUrl);
+    if (!origin) return resolve(false);
+    chrome.permissions.contains({ origins: [origin] }, (granted) => {
+      resolve(Boolean(granted));
+    });
+  });
+
+const requestPowermaxxPermission = (baseUrl) =>
+  new Promise((resolve) => {
+    if (!chrome?.permissions) return resolve(false);
+    const origin = buildOriginPattern(baseUrl);
+    if (!origin) return resolve(false);
+    chrome.permissions.request({ origins: [origin] }, (granted) => {
+      resolve(Boolean(granted));
+    });
+  });
+
+const ensurePowermaxxPermission = async (baseUrl) => {
+  const hasPermission = await hasPowermaxxPermission(baseUrl);
+  if (hasPermission) return true;
+  return requestPowermaxxPermission(baseUrl);
+};
+
+const registerPowermaxxBridge = (baseUrl) =>
+  new Promise((resolve) => {
+    if (!chrome?.runtime?.sendMessage) return resolve(false);
+    chrome.runtime.sendMessage(
+      {
+        type: "POWERMAXX_BRIDGE_REGISTER",
+        baseUrl
+      },
+      () => resolve(true)
+    );
+  });
+
 let settingsCache = DEFAULT_SETTINGS;
 
 const loadSettings = async () => {
@@ -267,7 +318,18 @@ const init = async () => {
     };
     settingsCache = merged;
     await saveSettings(merged);
-    setStatus("Pengaturan tersimpan.", "ok");
+    const baseUrl = normalizeBaseUrl(merged.auth?.baseUrl || "");
+    if (baseUrl) {
+      const granted = await ensurePowermaxxPermission(baseUrl);
+      if (granted) {
+        await registerPowermaxxBridge(baseUrl);
+        setStatus("Pengaturan tersimpan.", "ok");
+      } else {
+        setStatus("Pengaturan tersimpan. Izin host belum diberikan.", "error");
+      }
+    } else {
+      setStatus("Pengaturan tersimpan.", "ok");
+    }
   });
 };
 

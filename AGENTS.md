@@ -225,6 +225,7 @@ Daftar:
 - [2026-02-01] Web Powermaxx bisa memicu bulk via postMessage — integrasi web → extension — bulk auto-run dari payload order_sn.
 - [2026-02-01] Powermaxx bridge pakai optional host permissions — domain fleksibel — konten script didaftarkan dinamis saat login.
 - [2026-02-01] Base URL API disatukan di Pengaturan — lebih sederhana — auth dan export semua marketplace memakai satu base URL.
+- [2026-02-01] Izin host diminta saat popup dibuka dan saat simpan pengaturan — siap pakai — bridge aktif lebih cepat.
 
 ## 11) Catatan Perilaku Sistem (biar agent cepat paham tanpa baca semua code)
 
@@ -263,6 +264,7 @@ Daftar:
 - Mode Update Order hanya mengambil order lalu export; income/statement null.
 - Powermaxx bridge didaftarkan dinamis ke domain Base URL (permission diminta saat login).
 - Base URL API tunggal dipakai untuk login dan export semua marketplace.
+- Permintaan izin host dilakukan di popup dan saat simpan pengaturan (jika belum ada).
 - Jika response export API bukan JSON, log akan menyertakan `htmlSnippet` agar tetap terbaca.
 - Error detail di popup mencoba mem-parse string JSON agar tampil rapi.
 - Jika AWB TikTok gagal, notif atas memakai pesan `status_msg_*` dari response `failed_reason` bila ada.

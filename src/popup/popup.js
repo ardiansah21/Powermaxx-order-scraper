@@ -123,6 +123,16 @@ const buildOriginPattern = (baseUrl) => {
   }
 };
 
+const hasPowermaxxPermission = (baseUrl) =>
+  new Promise((resolve) => {
+    if (!chrome?.permissions) return resolve(false);
+    const origin = buildOriginPattern(baseUrl);
+    if (!origin) return resolve(false);
+    chrome.permissions.contains({ origins: [origin] }, (granted) => {
+      resolve(Boolean(granted));
+    });
+  });
+
 const requestPowermaxxPermission = (baseUrl) =>
   new Promise((resolve) => {
     if (!chrome?.permissions) return resolve(false);
@@ -132,6 +142,12 @@ const requestPowermaxxPermission = (baseUrl) =>
       resolve(Boolean(granted));
     });
   });
+
+const ensurePowermaxxPermission = async (baseUrl) => {
+  const hasPermission = await hasPowermaxxPermission(baseUrl);
+  if (hasPermission) return true;
+  return requestPowermaxxPermission(baseUrl);
+};
 
 const registerPowermaxxBridge = (baseUrl) =>
   new Promise((resolve) => {
@@ -799,7 +815,7 @@ const login = async () => {
     return;
   }
 
-  const bridgeGranted = await requestPowermaxxPermission(baseUrl);
+  const bridgeGranted = await ensurePowermaxxPermission(baseUrl);
   setStatus("Login...", "info");
   setLoading(true);
   setAuthBusy(true);
@@ -3207,6 +3223,13 @@ const init = async () => {
 
   hydrateAuthForm();
   openViewerBtn.disabled = true;
+  const baseUrl = resolveAuthBaseUrl();
+  if (baseUrl) {
+    const granted = await ensurePowermaxxPermission(baseUrl);
+    if (granted) {
+      await registerPowermaxxBridge(baseUrl);
+    }
+  }
 
   if (settingsCache.auth?.token && !settingsCache.auth?.profile) {
     fetchProfile();
