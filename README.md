@@ -1,78 +1,87 @@
 # Powermaxx Order Scraper
 
-Ekstensi Chrome (Manifest V3) untuk mengambil data order dan income marketplace (Shopee/TikTok Shop) lalu mengirim ke API Powermaxx.
+Ekstensi Chrome (Manifest V3) untuk mengambil data order/income dari Shopee & TikTok Shop lalu mengirim ke API Powermaxx.
 
 Developer: Ardiansah / Arva.
 
 ## Cara pasang
 
 - Buka `chrome://extensions`, aktifkan **Developer mode**.
-- Klik **Load unpacked** dan pilih folder ini.
+- Klik **Load unpacked** dan pilih folder repo ini.
 - Pin ekstensi agar mudah dibuka.
 
-## Cara pakai
+## Alur cepat (non-teknis)
 
-- Buka tab `seller.shopee.co.id` (Shopee) atau `seller-id.tokopedia.com` (TikTok Shop) dan biarkan sebagai tab aktif.
-- Saat popup dibuka, tampil layar login (Base URL diambil dari Pengaturan).
-- Login di popup menggunakan **/api/login** agar token global tersimpan.
-- Aksi utama: **Ambil + Kirim + AWB**, **Ambil + Kirim**, dan **Update Income**.
-- Jika income perlu diperbarui, gunakan **Update Income** (income-only) lalu otomatis kirim ulang ke API.
-- Untuk TikTok Shop, order ID diambil dari query `order_no` di URL order detail.
-- **Ambil + Kirim**, **Ambil Data**, **Kirim Data**, **Download AWB**, dan **Lihat Data** ada di menu **Aksi lainnya**.
-- Ikon **Bulk** (☰) di header popup membuka halaman bulk dengan mode aksi: **Ambil + Kirim + AWB**, **Ambil + Kirim**, **Update Income**, atau **Update Order**.
-- Web Powermaxx bisa memicu bridge lewat `window.postMessage` dengan `mode: single|bulk` dan action `update_order`, `update_income`, atau `update_both`.
-- Payload bridge memakai `orders` array, tiap item berisi `marketplace` + `mp_order_id` (Shopee) atau `order_sn` (TikTok Shop).
-- Untuk Shopee, set `id_type: "mp_order_id"` agar langsung buka order (tanpa search).
+1. Buka tab `seller.shopee.co.id` atau `seller-id.tokopedia.com`, pastikan sudah login.
+2. Buka popup extension, login dengan akun Powermaxx (Base URL diambil dari Pengaturan).
+3. Pilih aksi utama: **Ambil + Kirim + AWB**, **Ambil + Kirim**, atau **Update Income**.
+4. Untuk banyak order, buka halaman **Bulk** (ikon ☰) lalu jalankan.
+
+## Alur utama
+
+### Manual via popup
+
+- Aksi utama ada di popup: **Ambil + Kirim + AWB**, **Ambil + Kirim**, **Update Income**.
+- Aksi tambahan ada di menu **Aksi lainnya** (Ambil Data, Kirim Data, Download AWB, Lihat Data).
+- TikTok Shop memakai `order_no` di URL order detail.
+
+### Bulk (halaman Bulk)
+
+- Buka Bulk dari popup (ikon ☰).
+- Pilih mode: **Ambil + Kirim + AWB**, **Ambil + Kirim**, **Update Income**, atau **Update Order**.
+- Tempel daftar order (1 per baris), lalu **Mulai**.
+- Mode **Auto**: coba Shopee dulu, jika tidak ketemu lanjut TikTok Shop.
+
+### Bridge dari Web Powermaxx
+
+- Mode `single` menjalankan proses langsung tanpa halaman bulk (tetap membuka tab order marketplace).
+- Mode `bulk` membuka halaman Bulk dan auto-run.
+- Payload bridge:
+  - `source: "powermaxx"`
+  - `action: "update_order" | "update_income" | "update_both"`
+  - `mode: "single" | "bulk"`
+  - `orders`: array item `{ id, marketplace, id_type }`
+- Shopee pakai `mp_order_id` dengan `id_type: "mp_order_id"` (tanpa search tab).
+- TikTok Shop pakai `order_sn` dengan `marketplace: "tiktok_shop"`.
 - `update_both` artinya update order + income.
-- Mode `single` menjalankan proses langsung (tanpa halaman bulk), tetap membuka tab order marketplace.
-- Domain Powermaxx tidak di-hardcode; izin host akan diminta saat login sesuai Base URL agar tombol web bisa memanggil extension.
-- Bulk Auto: coba cari order SN di Shopee (search endpoint), jika tidak ditemukan maka diproses sebagai TikTok Shop.
-- Logout ada di menu profil (klik kartu profil).
+
+Contoh payload:
+```js
+window.postMessage({
+  source: "powermaxx",
+  action: "update_both",
+  mode: "bulk",
+  orders: [
+    { id: "1234567890", marketplace: "shopee", id_type: "mp_order_id" },
+    { id: "7100112233", marketplace: "tiktok_shop", id_type: "order_sn" }
+  ]
+}, "*");
+```
 
 ## Pengaturan
 
-- Klik ikon **Pengaturan** di popup untuk membuka halaman options.
-- Atur satu Base URL API untuk kebutuhan login/export semua marketplace.
-- Untuk TikTok Shop, atur endpoint Order (`/api/fulfillment/order/get`), Statement (`/api/v1/pay/statement/order/list`), dan Statement Detail (`/api/v1/pay/statement/transaction/detail`).
-- Untuk TikTok Shop, atur endpoint AWB `shipping_doc/generate` + file prefix label jika perlu.
-- Atur endpoint AWB Shopee (get_package, create_sd_jobs, download_sd_job) + opsi file label.
-- Marketplace aktif dideteksi otomatis dari URL tab; jika tidak terdeteksi, pakai default marketplace di pengaturan.
+- Base URL API dipakai untuk login & export semua marketplace.
+- Endpoint TikTok: Order, Statement, Statement Detail, dan AWB `shipping_doc/generate`.
+- Endpoint Shopee: order, income, dan AWB (get_package, create_sd_jobs, download_sd_job).
+- Marketplace aktif dideteksi dari URL tab; jika tidak terdeteksi, pakai default marketplace.
 
-## Catatan
+## Troubleshooting singkat
 
-- Fetch berjalan di tab aktif dengan `credentials: include`, jadi cookie sesi Shopee ikut terkirim.
-- Token API didapat dari `/api/login` di popup, disimpan di storage, dan dipakai di semua request export.
-- Keyword marketplace untuk TikTok Shop di payload/export: `tiktok_shop`.
-- Payload TikTok Shop hanya 2 field: `tiktok_shop_fulfillment_order_get_json` + `tiktok_shop_statement_json` (berisi order/list + transaction/detail).
-- Download AWB membutuhkan tab order detail (URL mengandung `/order/<order_id>`).
-- Download AWB TikTok memakai `shipping_doc/generate` lalu unduh dari `doc_url` (link bisa expired).
-- Nama file AWB otomatis: `YYYYMMDD-HHmmss_SHOPEE_{order_sn}.pdf` (waktu lokal).
-- Nama file AWB TikTok otomatis: `YYYYMMDD-HHmmss_TIKTOKSHOP_{main_order_id}.pdf` (waktu lokal).
-- Endpoint bawaan Shopee:
-  - `https://seller.shopee.co.id/api/v4/accounting/pc/seller_income/income_detail/get_order_income_components`
-  - `https://seller.shopee.co.id/api/v3/order/get_one_order`
-  - `https://seller.shopee.co.id/api/v3/order/get_package`
-  - `https://seller.shopee.co.id/api/v3/logistics/create_sd_jobs`
-  - `https://seller.shopee.co.id/api/v3/logistics/download_sd_job`
+- **Token belum ada** → login ulang di popup.
+- **URL bukan Shopee/TikTok** → pastikan tab seller aktif & sudah login marketplace.
+- **Izin host belum diberikan** → buka popup/pengaturan lalu izinkan host sesuai Base URL.
+- **Export gagal** → cek Base URL + koneksi jaringan.
 
-- Endpoint bawaan TikTok Shop:
-  - `https://seller-id.tokopedia.com/api/fulfillment/order/get`
-  - `https://seller-id.tokopedia.com/api/v1/pay/statement/order/list`
-  - `https://seller-id.tokopedia.com/api/v1/pay/statement/transaction/detail`
-  - `https://seller-id.tokopedia.com/api/v1/fulfillment/shipping_doc/generate`
+## Catatan teknis ringkas
 
-## Output viewer
-
-- Ringkasan berbasis `get_one_order` (Order SN ditampilkan paling besar).
-- **Order Items (Sheet)** dan **Income Breakdown (Sheet)** disembunyikan default; bisa ditampilkan.
-- JSON income/order disembunyikan default; bisa ditampilkan dan diunduh.
-- TikTok: JSON detail settlement tambahan ditampilkan sebagai Income Detail JSON.
-- TikTok: panel "TikTok Detail" dipisah per endpoint (order/get, statement/order/list, transaction/detail) + raw response per endpoint.
+- Fetch marketplace berjalan di tab seller aktif dengan `credentials: include`.
+- Export API memakai `POST /api/orders/import` dengan Bearer token.
+- AWB butuh tab order detail (Shopee `/order/<order_id>`, TikTok detail order).
 
 ## Struktur singkat
 
 - `manifest.json`: konfigurasi MV3 + permissions.
-- `src/popup/`: UI popup (login view -> main view, status di atas, aksi utama + menu aksi lainnya).
-- `src/viewer/`: viewer untuk ringkasan, sheet, dan JSON.
-- `src/options/`: halaman pengaturan per marketplace.
-- `examples/shopee/`: contoh payload dan hasil respons.
+- `src/popup/`: UI popup.
+- `src/bulk/`: UI bulk.
+- `src/viewer/`: viewer ringkasan & JSON.
+- `src/options/`: halaman pengaturan.
