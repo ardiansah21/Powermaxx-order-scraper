@@ -103,11 +103,22 @@
     return ALLOWED_MODES.has(raw) ? raw : "";
   };
 
+  const buildResponsePayload = (payload) => {
+    const countNumber = Number(payload?.count);
+    return {
+      ok: Boolean(payload?.ok),
+      error: payload?.error ? String(payload.error) : "",
+      count: Number.isFinite(countNumber) ? countNumber : 0,
+      mode: payload?.mode === "single" ? "single" : "bulk"
+    };
+  };
+
   const postResponse = (payload) => {
+    const response = buildResponsePayload(payload);
     window.postMessage(
       {
         source: RESPONSE_SOURCE,
-        ...payload,
+        ...response,
       },
       "*"
     );
@@ -123,26 +134,48 @@
       return;
     }
 
+    const rawMode = String(event.data?.mode || "").trim().toLowerCase();
+    const normalizedMode = normalizeMode(rawMode);
+    const responseMode = normalizedMode || "bulk";
+
     if (!ALLOWED_ACTIONS.has(action)) {
-      postResponse({ ok: false, error: "Aksi tidak dikenali." });
+      postResponse({
+        ok: false,
+        error: "Aksi tidak dikenali.",
+        count: 0,
+        mode: responseMode,
+      });
       return;
     }
 
     const orders = normalizeOrders(event.data);
     if (!orders.length) {
-      postResponse({ ok: false, error: "Order tidak ditemukan." });
+      postResponse({
+        ok: false,
+        error: "Order tidak ditemukan.",
+        count: 0,
+        mode: responseMode,
+      });
       return;
     }
 
-    const rawMode = String(event.data?.mode || "").trim().toLowerCase();
-    const normalizedMode = normalizeMode(rawMode);
     if (rawMode && !normalizedMode) {
-      postResponse({ ok: false, error: "Mode tidak dikenali." });
+      postResponse({
+        ok: false,
+        error: "Mode tidak dikenali.",
+        count: orders.length,
+        mode: responseMode,
+      });
       return;
     }
     const mode = normalizedMode || "bulk";
     if (mode === "single" && orders.length !== 1) {
-      postResponse({ ok: false, error: "Mode single hanya untuk 1 order." });
+      postResponse({
+        ok: false,
+        error: "Mode single hanya untuk 1 order.",
+        count: orders.length,
+        mode,
+      });
       return;
     }
 
@@ -161,9 +194,12 @@
           postResponse({
             ok: false,
             error: chrome.runtime.lastError.message,
+            count: orders.length,
+            mode,
           });
           return;
         }
+
         postResponse({
           ok: Boolean(response?.ok),
           error: response?.error || "",

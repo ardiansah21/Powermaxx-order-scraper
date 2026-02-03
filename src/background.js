@@ -46,6 +46,87 @@ if (typeof importScripts === "function") {
       "https://seller-id.tokopedia.com/order/detail?order_no={order_sn}&shop_region=ID"
   };
 
+  const MARKETPLACE_TAB_URL_PATTERNS = [
+    "https://seller.shopee.co.id/*",
+    "https://*.shopee.co.id/*",
+    "https://seller-id.tokopedia.com/*"
+  ];
+
+  let lastMarketplaceTabId = null;
+  let lastMarketplaceTabUrl = "";
+
+  const isMarketplaceUrl = (url) => {
+    const clean = String(url || "");
+    if (!clean) return false;
+    if (clean.startsWith("chrome-extension://")) return false;
+    if (clean.startsWith("chrome://")) return false;
+    if (clean.startsWith("edge://")) return false;
+    return (
+      clean.startsWith("https://seller.shopee.co.id/") ||
+      clean.includes(".shopee.co.id/") ||
+      clean.startsWith("https://seller-id.tokopedia.com/")
+    );
+  };
+
+  const rememberMarketplaceTab = async (tabId) => {
+    if (!tabId) return;
+    try {
+      const tab = await chrome.tabs.get(tabId);
+      if (!tab?.id || !isMarketplaceUrl(tab.url)) return;
+      lastMarketplaceTabId = tab.id;
+      lastMarketplaceTabUrl = tab.url || "";
+    } catch (e) {
+      // ignore: tab might be gone or URL not readable due to permissions
+    }
+  };
+
+  const resolveMarketplaceTab = async () => {
+    // 1) If the current active tab is a marketplace tab, use it.
+    try {
+      const activeTabs = await chrome.tabs.query({
+        active: true,
+        lastFocusedWindow: true
+      });
+      const activeTab = Array.isArray(activeTabs) ? activeTabs[0] : null;
+      if (activeTab?.id && isMarketplaceUrl(activeTab.url)) {
+        lastMarketplaceTabId = activeTab.id;
+        lastMarketplaceTabUrl = activeTab.url || "";
+        return { tabId: activeTab.id, url: activeTab.url || "" };
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // 2) Fallback: last remembered marketplace tab.
+    if (lastMarketplaceTabId) {
+      try {
+        const tab = await chrome.tabs.get(lastMarketplaceTabId);
+        if (tab?.id && isMarketplaceUrl(tab.url)) {
+          lastMarketplaceTabUrl = tab.url || lastMarketplaceTabUrl;
+          return { tabId: tab.id, url: tab.url || "" };
+        }
+      } catch (e) {
+        lastMarketplaceTabId = null;
+        lastMarketplaceTabUrl = "";
+      }
+    }
+
+    // 3) Last resort: find any marketplace tab in any window.
+    try {
+      const tabs = await chrome.tabs.query({ url: MARKETPLACE_TAB_URL_PATTERNS });
+      const first = Array.isArray(tabs) ? tabs.find((tab) => tab?.id) : null;
+      if (first?.id) {
+        lastMarketplaceTabId = first.id;
+        lastMarketplaceTabUrl = first.url || "";
+        return { tabId: first.id, url: first.url || "" };
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    return { tabId: null, url: "" };
+  };
+
   const openBulkPage = () => {
     chrome.tabs.create({ url: BULK_URL });
   };
@@ -520,9 +601,33 @@ if (typeof importScripts === "function") {
     syncBridgeFromSettings();
   });
 
+  chrome.tabs.onActivated.addListener(({ tabId }) => {
+    rememberMarketplaceTab(tabId);
+  });
+
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+    if (changeInfo?.status !== "complete") return;
+    rememberMarketplaceTab(tabId);
+  });
+
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message || !message.type) {
       return;
+    }
+
+    if (message.type === "POWERMAXX_GET_TARGET_TAB") {
+      resolveMarketplaceTab().then(({ tabId, url }) => {
+        if (!tabId) {
+          sendResponse({
+            ok: false,
+            error:
+              "Tidak menemukan tab marketplace (Shopee/TikTok Shop). Fokus dulu ke tab seller, lalu coba lagi."
+          });
+          return;
+        }
+        sendResponse({ ok: true, tabId, url });
+      });
+      return true;
     }
 
     if (message.type === "POWERMAXX_BRIDGE_REGISTER") {

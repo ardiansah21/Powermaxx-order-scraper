@@ -6,9 +6,23 @@ Developer: Ardiansah / Arva.
 
 ## Cara pasang
 
+Opsi A (untuk developer):
+
 - Buka `chrome://extensions`, aktifkan **Developer mode**.
 - Klik **Load unpacked** dan pilih folder repo ini.
 - Pin ekstensi agar mudah dibuka.
+
+Opsi B (untuk tim internal via GitHub Releases / ZIP):
+
+- Download file ZIP release dari GitHub Releases repo ini (contoh: `powermaxx-order-scraper.zip`).
+- Extract ZIP ke folder yang lokasinya stabil (jangan pindah-pindah) agar setting extension tidak hilang.
+- Buka `chrome://extensions`, aktifkan **Developer mode**.
+- Klik **Load unpacked** dan pilih folder hasil extract (folder yang berisi `manifest.json`).
+
+Update (untuk Opsi B):
+
+- Download ZIP versi terbaru, extract, lalu replace isi folder lama (gunakan path folder yang sama).
+- Buka `chrome://extensions` lalu klik **Reload** pada extension.
 
 ## Alur cepat (non-teknis)
 

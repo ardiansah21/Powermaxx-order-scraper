@@ -213,3 +213,4 @@ Daftar:
 - Shopee bridge memakai `mp_order_id` (`id_type: mp_order_id`) sehingga tidak perlu search tab.
 - Bridge bulk dapat memproses order campuran Shopee + TikTok dalam satu payload.
 - Bridge dari web tidak menjalankan AWB (default tanpa AWB).
+- Bridge response ke page selalu lewat `window.postMessage` dengan `source: powermaxx_extension` serta `ok`, `count`, `mode`, dan `error` bila ada.
