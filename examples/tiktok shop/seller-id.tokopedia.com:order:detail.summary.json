@@ -1,0 +1,1690 @@
+{
+  "source_file": "seller-id.tokopedia.com:order:detail.har",
+  "generated_at": "2026-02-03T05:32:54.486446+00:00",
+  "entry_count": 129,
+  "note": "This is a sanitized summary of selected HAR entries (no cookies/tokens).",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/arch/config_center_gw/get_config",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/arch/config_center_gw/get_config?domain_name=gec_universal_data_collection&app_name=tiktokshop&config_name=btm_page_pattern_id",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "app_name",
+        "config_name",
+        "domain_name",
+        "msToken"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "config",
+        "msg"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/arch/config_center_gw/mget_config_by_app_name",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/arch/config_center_gw/mget_config_by_app_name?domain_name=dynokit&app_name=Atlas_I18N&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "app_name",
+        "domain_name",
+        "msToken"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "config",
+        "msg"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/pay/statement/order/list",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/pay/statement/order/list?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&pagination_type=1&from=0&size=5&cursor=&reference_id=582270328401987122&page_type=12&need_total_amount=true&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "cursor",
+        "device_platform",
+        "fp",
+        "from",
+        "language",
+        "locale",
+        "msToken",
+        "need_total_amount",
+        "oec_seller_id",
+        "page_type",
+        "pagination_type",
+        "reference_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "size",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-type",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/menu/get",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/menu/get?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&version=1&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name",
+        "version"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/message/get_page_channels",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/message/get_page_channels?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&biz_id=1&path=%2Forder%2Fdetail&version=1&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "biz_id",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "path",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name",
+        "version"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/message/list",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/message/list?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&biz_id=1&msg_type=2&filter_flag=1&need_msg_body=false&pagination_cursor=0&pagination_size=2&version=1&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "biz_id",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "filter_flag",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "msg_type",
+        "need_msg_body",
+        "oec_seller_id",
+        "pagination_cursor",
+        "pagination_size",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name",
+        "version"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/message/outage/list",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/message/outage/list?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&biz_id=1&channel_type=19&region=ID&seller_type=2&is_test_user=true&version=1&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "biz_id",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "channel_type",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "is_test_user",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "region",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "seller_type",
+        "timezone_name",
+        "version"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/message/pull_by_category_v2",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/message/pull_by_category_v2?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&version=1&biz_id=1&req_page=2&ts_us_from=1769286209548000&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "biz_id",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "req_page",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name",
+        "ts_us_from",
+        "version"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/popup/list",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/popup/list?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&biz_id=1&popup_page=1&msg_type=8&path=%2Forder%2Fdetail&version=1&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "biz_id",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "msg_type",
+        "oec_seller_id",
+        "path",
+        "popup_page",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name",
+        "version"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/search_query_suggestion/get",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/search_query_suggestion/get?locale=id-ID&language=en&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&keyword=&region=ID&version=1&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "keyword",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "region",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name",
+        "version"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/shop_limit_status/get",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/shop_limit_status/get?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&version=1&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name",
+        "version"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/tags/get",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/tags/get?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/tasks/config/get",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/tasks/config/get?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "can_skip_landing",
+        "code",
+        "data",
+        "have_placed_order",
+        "landing_data_version",
+        "landing_finished",
+        "landing_version",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/toko/consolidation/product_merge/query",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/toko/consolidation/product_merge/query?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/sellerassistant/discover_chatbotevent",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/sellerassistant/discover_chatbotevent?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&pageUrl=https%3A%2F%2Fseller-id.tokopedia.com%2Forder%2Fdetail%3Forder_no%3D582270328401987122%26shop_region%3DID&sellerId=7494878142011116144&region=ID&mode=1&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "mode",
+        "msToken",
+        "oec_seller_id",
+        "pageUrl",
+        "region",
+        "screen_height",
+        "screen_width",
+        "sellerId",
+        "seller_id",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "BaseResp"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/shop_im/shop/conversation/get_wait_user_count",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/shop_im/shop/conversation/get_wait_user_count?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v1/trade/orders/warehouse/list",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/trade/orders/warehouse/list?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-type",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/api/v2/seller/message/get_msg_tabs",
+      "sample_url": "https://seller-id.tokopedia.com/api/v2/seller/message/get_msg_tabs?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&biz_id=1&version=2&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "biz_id",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name",
+        "version"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "https://seller-id.tokopedia.com/chat/api/seller/mGetContactBuyerLinkByOrder",
+      "sample_url": "https://seller-id.tokopedia.com/chat/api/seller/mGetContactBuyerLinkByOrder?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&orderType=0&orderIds=582270328401987122",
+      "query_param_names": [
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "oec_seller_id",
+        "orderIds",
+        "orderType",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-type",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "https://seller-id.tokopedia.com/api/fulfillment/order/get",
+      "sample_url": "https://seller-id.tokopedia.com/api/fulfillment/order/get?aid=4068&locale=id-ID&oec_seller_id=7494878142011116144&seller_id=7494878142011116144",
+      "query_param_names": [
+        "aid",
+        "locale",
+        "oec_seller_id",
+        "seller_id"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [
+        "main_order_id"
+      ],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "https://seller-id.tokopedia.com/api/fulfillment/package/list",
+      "sample_url": "https://seller-id.tokopedia.com/api/fulfillment/package/list?aid=4068&locale=id-ID&oec_seller_id=7494878142011116144&seller_id=7494878142011116144",
+      "query_param_names": [
+        "aid",
+        "locale",
+        "oec_seller_id",
+        "seller_id"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [
+        "list_condition",
+        "sort_info"
+      ],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "https://seller-id.tokopedia.com/api/fulfillment/print/seller_config/get",
+      "sample_url": "https://seller-id.tokopedia.com/api/fulfillment/print/seller_config/get?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "https://seller-id.tokopedia.com/api/ticket/newest_reply",
+      "sample_url": "https://seller-id.tokopedia.com/api/ticket/newest_reply?msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "msToken"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [
+        "clientType",
+        "redDotType"
+      ],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "extraInfo",
+        "msg"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "https://seller-id.tokopedia.com/api/v1/fulfillment/order/history",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/fulfillment/order/history?aid=4068&locale=id-ID&oec_seller_id=7494878142011116144&seller_id=7494878142011116144",
+      "query_param_names": [
+        "aid",
+        "locale",
+        "oec_seller_id",
+        "seller_id"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [
+        "main_order_id",
+        "offset",
+        "page_size"
+      ],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "https://seller-id.tokopedia.com/api/v1/fulfillment/seller_setting/biz_switch",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/fulfillment/seller_setting/biz_switch?aid=4068&locale=id-ID&oec_seller_id=7494878142011116144&seller_id=7494878142011116144",
+      "query_param_names": [
+        "aid",
+        "locale",
+        "oec_seller_id",
+        "seller_id"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "https://seller-id.tokopedia.com/api/v1/fulfillment/shipping/options",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/fulfillment/shipping/options?aid=4068&locale=id-ID&oec_seller_id=7494878142011116144&seller_id=7494878142011116144",
+      "query_param_names": [
+        "aid",
+        "locale",
+        "oec_seller_id",
+        "seller_id"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/feelgood/access_token/get",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/feelgood/access_token/get?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [
+        "source_platform"
+      ],
+      "example_response_json_keys": [
+        "code",
+        "data",
+        "message"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "https://seller-id.tokopedia.com/api/v1/seller/prediction",
+      "sample_url": "https://seller-id.tokopedia.com/api/v1/seller/prediction?locale=id-ID&language=id&oec_seller_id=7494878142011116144&seller_id=7494878142011116144&aid=4068&app_name=i18n_ecom_shop&fp=verify_mjoho7u7_G912KXu9_NDix_4lEb_94IZ_k3IqhYLYDWId&device_platform=web&cookie_enabled=true&screen_width=3440&screen_height=1440&browser_language=id&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F143.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FJakarta&msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "aid",
+        "app_name",
+        "browser_language",
+        "browser_name",
+        "browser_online",
+        "browser_platform",
+        "browser_version",
+        "cookie_enabled",
+        "device_platform",
+        "fp",
+        "language",
+        "locale",
+        "msToken",
+        "oec_seller_id",
+        "screen_height",
+        "screen_width",
+        "seller_id",
+        "timezone_name"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-tt-oec-region"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [
+        "queryType"
+      ],
+      "example_response_json_keys": [
+        "BaseResp",
+        "data"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "https://seller-id.tokopedia.com/api/v2/sitebuilder/get_runtime_widget_conf",
+      "sample_url": "https://seller-id.tokopedia.com/api/v2/sitebuilder/get_runtime_widget_conf?msToken=<redacted>&X-Bogus=<redacted>&X-Gnarly=<redacted>",
+      "query_param_names": [
+        "X-Bogus",
+        "X-Gnarly",
+        "msToken"
+      ],
+      "request_header_names": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "response_statuses": [
+        200
+      ],
+      "response_mime_types": [
+        "application/json"
+      ],
+      "example_request_json_keys": [
+        "name",
+        "tenant_id"
+      ],
+      "example_response_json_keys": [
+        "BaseResp",
+        "data"
+      ]
+    }
+  ]
+}
