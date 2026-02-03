@@ -36,3 +36,4 @@ Indeks keputusan yang sudah disepakati. Jika ada keputusan besar yang butuh kont
 - [2026-02-02] `update_both` artinya update order + income — konsistensi aksi — dipetakan ke mode ambil + kirim tanpa AWB.
 - [2026-02-03] Distribusi internal tanpa Chrome Web Store pakai GitHub Releases (ZIP) — praktis untuk tim Windows non-managed — user install via `Load unpacked` dari folder hasil extract, update dengan download ZIP versi baru lalu replace isi folder yang sama dan klik **Reload** di `chrome://extensions` (tanpa uninstall).
 - [2026-02-03] Referensi `examples/` disimpan tanpa file `.har` — repo lebih ringan & lebih aman — HAR di-ignore dan diganti ringkasan `.summary.json` yang sudah disanitasi (tanpa cookie/token).
+- [2026-02-03] Nama repo GitHub diubah menjadi `powermaxx-order-scraper` — konsisten dengan nama aplikasi — distribusi tetap via GitHub Releases (ZIP) dan link lama diharapkan redirect dari GitHub.
