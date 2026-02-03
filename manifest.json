@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Powermaxx Order Scraper",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Scraper order Powermaxx untuk Shopee dan TikTok Shop.",
   "author": "Ardiansah",
   "action": {
