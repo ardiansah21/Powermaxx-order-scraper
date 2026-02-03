@@ -161,6 +161,25 @@ const registerPowermaxxBridge = (baseUrl) =>
     );
   });
 
+const getTargetTab = () =>
+  new Promise((resolve) => {
+    if (!chrome?.runtime?.sendMessage) {
+      return resolve({
+        ok: false,
+        error: "Chrome runtime tidak tersedia."
+      });
+    }
+    chrome.runtime.sendMessage({ type: "POWERMAXX_GET_TARGET_TAB" }, (resp) => {
+      const payload = resp && typeof resp === "object" ? resp : null;
+      resolve(
+        payload || {
+          ok: false,
+          error: "Gagal mendapatkan target tab."
+        }
+      );
+    });
+  });
+
 const setStatus = (message, tone = "info") => {
   currentStatusTone = tone;
   const payload =
@@ -2438,14 +2457,14 @@ const refreshIncomeOnly = async () => {
 
   let success = false;
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.id) {
-      setStatus("Tidak ada tab aktif ditemukan.", "error");
-      setError("Tidak ada tab aktif. Buka halaman seller lalu coba lagi.");
+    const targetTab = await getTargetTab();
+    if (!targetTab?.ok || !targetTab?.tabId) {
+      setStatus("Tidak ada tab marketplace ditemukan.", "error");
+      setError(targetTab?.error || "Tidak ada tab marketplace. Buka halaman seller lalu coba lagi.");
       return false;
     }
 
-    activeMarketplace = detectMarketplace(tab.url);
+    activeMarketplace = detectMarketplace(targetTab.url);
 
     if (activeMarketplace === "tiktok_shop") {
       const tiktokCfg = settingsCache.marketplaces?.tiktok_shop || {};
@@ -2454,7 +2473,7 @@ const refreshIncomeOnly = async () => {
         tiktokCfg.statementDetailEndpoint || DEFAULT_TIKTOK_STATEMENT_DETAIL_ENDPOINT;
 
       const [execResult] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
+        target: { tabId: targetTab.tabId },
         func: pageFetcherTikTokIncomeOnly,
         args: [statementUrl, statementDetailUrl]
       });
@@ -2462,7 +2481,7 @@ const refreshIncomeOnly = async () => {
       if (!result) {
         setStatus("Tidak ada hasil dari tab (mungkin diblokir CSP atau error lain).", "error");
         setError("Eksekusi script di tab gagal. Coba refresh halaman seller.", {
-          tabUrl: tab.url || "",
+          tabUrl: targetTab.url || "",
           statementEndpoint: statementUrl,
           statementDetailEndpoint: statementDetailUrl,
           marketplace: activeMarketplace
@@ -2472,7 +2491,7 @@ const refreshIncomeOnly = async () => {
       if (result.error) {
         setStatus(`Gagal di tab: ${result.error}`, "error");
         setError(result.error, {
-          tabUrl: tab.url || "",
+          tabUrl: targetTab.url || "",
           statementEndpoint: statementUrl,
           statementDetailEndpoint: statementDetailUrl,
           marketplace: activeMarketplace
@@ -2626,16 +2645,17 @@ const fetchData = async () => {
   fetchBtn.disabled = true;
   openViewerBtn.disabled = true;
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) {
-    setStatus("Tidak ada tab aktif ditemukan.", "error");
-    setError("Tidak ada tab aktif. Buka halaman seller lalu coba lagi.");
+  const targetTab = await getTargetTab();
+  if (!targetTab?.ok || !targetTab?.tabId) {
+    setStatus("Tidak ada tab marketplace ditemukan.", "error");
+    setError(targetTab?.error || "Tidak ada tab marketplace. Buka halaman seller lalu coba lagi.");
     fetchBtn.disabled = false;
     openViewerBtn.disabled = false;
     setLoading(false);
     return false;
   }
-  activeMarketplace = detectMarketplace(tab.url);
+  activeMarketplace = detectMarketplace(targetTab.url);
+  const tab = { id: targetTab.tabId, url: targetTab.url };
 
   if (activeMarketplace === "tiktok_shop") {
     const tiktokCfg = settingsCache.marketplaces?.tiktok_shop || {};
@@ -2646,7 +2666,7 @@ const fetchData = async () => {
 
     try {
       const [execResult] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
+        target: { tabId: targetTab.tabId },
         func: pageFetcherTikTok,
         args: [orderUrl, statementUrl, statementDetailUrl]
       });
@@ -2654,7 +2674,7 @@ const fetchData = async () => {
       if (!result) {
         setStatus("Tidak ada hasil dari tab (mungkin diblokir CSP atau error lain).", "error");
         setError("Eksekusi script di tab gagal. Coba refresh halaman seller.", {
-          tabUrl: tab.url || "",
+          tabUrl: targetTab.url || "",
           orderEndpoint: orderUrl,
           statementEndpoint: statementUrl,
           statementDetailEndpoint: statementDetailUrl,
@@ -2666,7 +2686,7 @@ const fetchData = async () => {
       if (result.error) {
         setStatus(`Gagal di tab: ${result.error}`, "error");
         setError(result.error, {
-          tabUrl: tab.url || "",
+          tabUrl: targetTab.url || "",
           orderEndpoint: orderUrl,
           statementEndpoint: statementUrl,
           statementDetailEndpoint: statementDetailUrl,
@@ -2927,7 +2947,7 @@ const fetchData = async () => {
   } catch (err) {
     setStatus(`Gagal mengambil data: ${err.message}`, "error");
     setError(err.message, {
-      tabUrl: tab.url || "",
+      tabUrl: targetTab?.url || "",
       incomeEndpoint: incomeUrl,
       orderEndpoint: orderUrl,
       marketplace: activeMarketplace
@@ -2968,14 +2988,15 @@ const downloadAwb = async () => {
   if (downloadAwbBtn) downloadAwbBtn.disabled = true;
 
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.id) {
-      setStatus("Tidak ada tab aktif ditemukan.", "error");
-      setError("Tidak ada tab aktif. Buka halaman seller lalu coba lagi.");
+    const targetTab = await getTargetTab();
+    if (!targetTab?.ok || !targetTab?.tabId) {
+      setStatus("Tidak ada tab marketplace ditemukan.", "error");
+      setError(targetTab?.error || "Tidak ada tab marketplace. Buka halaman seller lalu coba lagi.");
       return;
     }
 
-    activeMarketplace = detectMarketplace(tab.url);
+    activeMarketplace = detectMarketplace(targetTab.url);
+    const tab = { id: targetTab.tabId, url: targetTab.url };
     if (activeMarketplace === "tiktok_shop") {
       const tiktokCfg = settingsCache.marketplaces?.tiktok_shop || {};
       const awbCfg = tiktokCfg.awb || {};
@@ -2984,7 +3005,7 @@ const downloadAwb = async () => {
       const filePrefix = awbCfg.filePrefix || DEFAULT_TIKTOK_AWB_FILE_PREFIX;
 
       const [execResult] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
+        target: { tabId: targetTab.tabId },
         func: pageFetcherTikTokAwb,
         args: [orderUrl, generateUrl, filePrefix]
       });
@@ -2993,7 +3014,7 @@ const downloadAwb = async () => {
       if (!result) {
         setStatus("Tidak ada hasil dari tab (mungkin diblokir CSP atau error lain).", "error");
         setError("Eksekusi script di tab gagal. Coba refresh halaman seller.", {
-          tabUrl: tab.url || "",
+          tabUrl: targetTab.url || "",
           orderEndpoint: orderUrl,
           generateEndpoint: generateUrl,
           marketplace: activeMarketplace
@@ -3215,8 +3236,8 @@ const init = async () => {
   }
 
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    activeMarketplace = detectMarketplace(tab?.url);
+    const targetTab = await getTargetTab();
+    activeMarketplace = detectMarketplace(targetTab?.url);
   } catch (e) {
     activeMarketplace = settingsCache.defaultMarketplace || "shopee";
   }

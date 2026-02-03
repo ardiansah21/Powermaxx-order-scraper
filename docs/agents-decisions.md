@@ -34,3 +34,4 @@ Indeks keputusan yang sudah disepakati. Jika ada keputusan besar yang butuh kont
 - [2026-02-02] Bridge Shopee memakai `mp_order_id` dengan `id_type: mp_order_id` — tidak perlu search tab — order langsung dibuka.
 - [2026-02-02] Bridge bulk bisa campur marketplace per order — fleksibel — tiap item punya field `marketplace`.
 - [2026-02-02] `update_both` artinya update order + income — konsistensi aksi — dipetakan ke mode ambil + kirim tanpa AWB.
+- [2026-02-03] Distribusi internal tanpa Chrome Web Store pakai GitHub Releases (ZIP) — praktis untuk tim Windows non-managed — user install via `Load unpacked` dari folder hasil extract, update dengan download ZIP versi baru lalu replace isi folder yang sama dan klik **Reload** di `chrome://extensions` (tanpa uninstall).
