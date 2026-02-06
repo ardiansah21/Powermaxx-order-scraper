@@ -70,6 +70,8 @@ const refreshIncomeBtn = document.getElementById("refreshIncomeBtn");
 const statusEl = document.getElementById("status");
 const statusCardEl = document.getElementById("statusCard");
 const statusIconEl = document.getElementById("statusIcon");
+const statusActionsEl = document.getElementById("statusActions");
+const openOrderBtn = document.getElementById("openOrderBtn");
 const sendExportBtn = document.getElementById("sendExportBtn");
 const fetchSendBtn = document.getElementById("fetchSendBtn");
 const downloadAwbBtn = document.getElementById("downloadAwbBtn");
@@ -180,8 +182,18 @@ const getTargetTab = () =>
     });
   });
 
+const clearStatusAction = () => {
+  if (statusActionsEl) statusActionsEl.classList.add("hidden");
+  if (openOrderBtn) {
+    openOrderBtn.textContent = "Buka Order";
+    openOrderBtn.dataset.url = "";
+    openOrderBtn.dataset.orderId = "";
+  }
+};
+
 const setStatus = (message, tone = "info") => {
   currentStatusTone = tone;
+  clearStatusAction();
   const payload =
     message && typeof message === "object"
       ? message
@@ -326,6 +338,66 @@ const buildExportPayload = () => {
 };
 
 const normalizeBaseUrl = (value) => (value || "").trim().replace(/\/+$/, "");
+
+const normalizeOrderIdValue = (value) => {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "object") return "";
+  const text = String(value).trim();
+  return text ? text : "";
+};
+
+const extractPowermaxxOrderId = (data) => {
+  if (!data) return "";
+  if (Array.isArray(data)) {
+    for (const item of data) {
+      const id = extractPowermaxxOrderId(item);
+      if (id) return id;
+    }
+    return "";
+  }
+  if (typeof data !== "object") return "";
+  const candidates = [
+    data.order_id,
+    data.orderId,
+    data.id,
+    data.data?.order_id,
+    data.data?.orderId,
+    data.data?.id,
+    data.data?.order?.order_id,
+    data.data?.order?.orderId,
+    data.data?.order?.id,
+    data.order?.order_id,
+    data.order?.orderId,
+    data.order?.id,
+    data.result?.order_id,
+    data.result?.orderId,
+    data.result?.id,
+    data.orders?.[0]?.order_id,
+    data.orders?.[0]?.orderId,
+    data.orders?.[0]?.id,
+    data.data?.orders?.[0]?.order_id,
+    data.data?.orders?.[0]?.orderId,
+    data.data?.orders?.[0]?.id
+  ];
+  for (const candidate of candidates) {
+    const id = normalizeOrderIdValue(candidate);
+    if (id) return id;
+  }
+  return "";
+};
+
+const setOrderAction = (orderId, baseUrl) => {
+  if (!statusActionsEl || !openOrderBtn) return;
+  const cleanBaseUrl = normalizeBaseUrl(baseUrl);
+  if (!cleanBaseUrl) return;
+  const normalizedId = normalizeOrderIdValue(orderId);
+  if (!normalizedId) return;
+  const orderUrl = `${cleanBaseUrl}/admin/orders/${encodeURIComponent(normalizedId)}`;
+  openOrderBtn.textContent = `Buka Order #${normalizedId}`;
+  openOrderBtn.dataset.url = orderUrl;
+  openOrderBtn.dataset.orderId = normalizedId;
+  statusActionsEl.classList.remove("hidden");
+};
 
 const getStorageArea = () => chrome.storage?.sync || chrome.storage?.local;
 
@@ -1026,8 +1098,21 @@ const sendExportRequest = async () => {
       setError("Sesi login habis.", detail);
       return;
     }
+    const orderId = extractPowermaxxOrderId(data);
     if (response.ok) {
-      setStatus(`Export OK ${response.status}`, "ok");
+      if (orderId) {
+        setStatus(
+          {
+            title: `Export berhasil (${response.status})`,
+            subtitle: `Order ID: ${orderId}`,
+            description: "Klik tombol di bawah untuk membuka order di Powermaxx."
+          },
+          "ok"
+        );
+        setOrderAction(orderId, baseUrl);
+      } else {
+        setStatus(`Export berhasil (${response.status})`, "ok");
+      }
     } else {
       const message = `Export gagal ${response.status}: ${response.statusText || "Error"}`;
       setStatus(message, "error");
@@ -3197,6 +3282,17 @@ const init = async () => {
   if (downloadAwbBtn) downloadAwbBtn.addEventListener("click", downloadAwb);
   if (openViewerBtn) openViewerBtn.addEventListener("click", openViewerPage);
   if (openBulkBtn) openBulkBtn.addEventListener("click", openBulkPage);
+  if (openOrderBtn) {
+    openOrderBtn.addEventListener("click", async () => {
+      const url = openOrderBtn.dataset.url || "";
+      if (!url) return;
+      try {
+        await chrome.tabs.create({ url });
+      } catch (err) {
+        setStatus(`Gagal membuka order: ${err.message}`, "error");
+      }
+    });
+  }
   if (sendExportBtn) sendExportBtn.addEventListener("click", sendExportRequest);
   if (openSettingsBtn) openSettingsBtn.addEventListener("click", openOptionsPage);
   if (loginBtn) loginBtn.addEventListener("click", login);

@@ -185,6 +185,7 @@ Daftar:
 - Export API memakai `POST /api/orders/import` dengan Bearer token dari `/api/login`.
 - Request export menambahkan `Accept: application/json` agar error backend tidak HTML.
 - Popup export menambahkan header `Accept: application/json` dan `X-Requested-With` untuk response JSON.
+- Setelah export sukses di popup, jika response API berisi `order_id`, tombol buka order muncul menuju `{base_url}/admin/orders/{order_id}`.
 - Bulk Auto melakukan pencarian order SN di Shopee, jika tidak ketemu lanjut TikTok Shop.
 - Bulk log menyimpan detail langkah (fetch/export/AWB) termasuk endpoint dan timing.
 - Mode Update Income hanya mengambil income/statement lalu export; order raw bisa null.
