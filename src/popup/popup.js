@@ -78,6 +78,7 @@ const downloadAwbBtn = document.getElementById("downloadAwbBtn");
 const openBulkBtn = document.getElementById("openBulkBtn");
 const openSettingsBtn = document.getElementById("openSettingsBtn");
 const openViewerBtn = document.getElementById("openViewerBtn");
+const profileMenuEl = document.getElementById("profileMenu");
 const authBaseUrlEl = document.getElementById("authBaseUrl");
 const authEmailEl = document.getElementById("authEmail");
 const authPasswordEl = document.getElementById("authPassword");
@@ -91,6 +92,7 @@ const refreshProfileBtn = document.getElementById("refreshProfileBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const profileNameEl = document.getElementById("profileName");
 const profileEmailEl = document.getElementById("profileEmail");
+const profileInitialsEl = document.getElementById("profileInitials");
 const statusSpinner = document.getElementById("statusSpinner");
 const errorDetailsEl = document.getElementById("errorDetails");
 const errorDetailsToggleEl = document.getElementById("errorDetailsToggle");
@@ -245,10 +247,23 @@ const setProfile = (profile) => {
   if (!authProfileCache) {
     profileNameEl.textContent = "-";
     profileEmailEl.textContent = "-";
+    if (profileInitialsEl) profileInitialsEl.textContent = "U";
     return;
   }
   profileNameEl.textContent = authProfileCache?.name || "-";
   profileEmailEl.textContent = authProfileCache?.email || "-";
+  if (profileInitialsEl) {
+    const source = authProfileCache?.name || authProfileCache?.email || "";
+    const initials = String(source)
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase();
+    profileInitialsEl.textContent = initials || "U";
+  }
 };
 
 const updateAuthStatus = () => {
@@ -279,6 +294,7 @@ const setAuthBusy = (isBusy) => {
 const updateActionState = () => {
   const loggedIn = updateAuthStatus();
   toggleAuthViews(loggedIn);
+  if (profileMenuEl) profileMenuEl.classList.toggle("hidden", !loggedIn);
   if (fetchBtn) fetchBtn.disabled = !loggedIn;
   if (fetchSendAwbBtn) fetchSendAwbBtn.disabled = !loggedIn;
   if (refreshIncomeBtn) refreshIncomeBtn.disabled = !loggedIn;

@@ -13,6 +13,20 @@
       <div class="header-actions">
         <button id="openBulkBtn" class="icon-btn" aria-label="Bulk" title="Bulk">☰</button>
         <button id="openSettingsBtn" class="icon-btn" aria-label="Pengaturan" title="Pengaturan">⚙</button>
+        <details class="profile-menu hidden" id="profileMenu">
+          <summary class="icon-btn profile-icon" aria-label="Profil" title="Profil">
+            <span class="profile-initials" id="profileInitials">U</span>
+          </summary>
+          <div class="profile-popover">
+            <div class="profile-info">
+              <div class="profile-name" id="profileName">-</div>
+              <div class="profile-email" id="profileEmail">-</div>
+            </div>
+            <div class="profile-actions">
+              <button id="logoutBtn" class="ghost small">Logout</button>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
     <p>Ambil data dan kirim ke API.</p>
@@ -57,21 +71,6 @@
   </section>
 
   <div id="mainView" class="view hidden">
-    <section class="panel">
-      <details class="profile-menu" id="profileMenu">
-        <summary class="profile-card" id="profileCard">
-          <div class="profile-info">
-            <div class="profile-name" id="profileName">-</div>
-            <div class="profile-email" id="profileEmail">-</div>
-          </div>
-          <span class="profile-chevron" aria-hidden="true">▾</span>
-        </summary>
-        <div class="profile-actions">
-          <button id="logoutBtn" class="ghost small">Logout</button>
-        </div>
-      </details>
-    </section>
-
     <section class="panel compact">
       <div class="actions-primary">
         <button id="fetchSendAwbBtn" class="primary">Ambil + Kirim + AWB</button>
